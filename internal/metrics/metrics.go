@@ -8,10 +8,28 @@ import (
 	"strings"
 )
 
+// Aggregation says how many samples of one day become one daily value.
+type Aggregation string
+
+const (
+	// Sum adds the samples up. Right for amounts that accumulate over a day,
+	// such as steps or energy: 300 steps + 500 steps = 800 steps that day.
+	Sum Aggregation = "sum"
+	// Avg takes the mean. Right for rates sampled many times a day, such as
+	// heart rate: adding up heart rates would mean nothing.
+	Avg Aggregation = "avg"
+	// Latest takes the sample that started last that day. Right for a point
+	// reading where the newest one replaces the older ones, such as a weigh-in.
+	Latest Aggregation = "latest"
+)
+
 // Metric describes one kind of measurement.
 type Metric struct {
 	Name string // stored in samples.metric, e.g. "heart_rate"
 	Unit string // canonical unit, stored in samples.unit
+	// Daily is how the samples of one local day become a single value.
+	// See docs/design.md ("Read side") for why each metric uses its kind.
+	Daily Aggregation
 	// Conversions maps other units a user may type to the factor that
 	// turns them into the canonical unit (value_in_canonical = value * factor).
 	Conversions map[string]float64
@@ -25,13 +43,18 @@ const kjToKcal = 1 / 4.184
 
 // Heart rates are stored as "bpm". Apple calls the same unit "count/min", so
 // it is accepted as an input unit with factor 1.
+//
+// resting_heart_rate is Avg: Apple usually writes one value per day, but it
+// can write a revised estimate later; the mean of a day's estimates is stable
+// and equals the single value on normal days. body_mass is Latest: averaging
+// a morning and an evening weigh-in gives a number nobody saw on the scale.
 var known = []Metric{
-	{Name: "heart_rate", Unit: "bpm", Conversions: map[string]float64{"count/min": 1}},
-	{Name: "resting_heart_rate", Unit: "bpm", Conversions: map[string]float64{"count/min": 1}},
-	{Name: "step_count", Unit: "count"},
-	{Name: "hrv_sdnn", Unit: "ms", Conversions: map[string]float64{"s": 1000}},
-	{Name: "body_mass", Unit: "kg", Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
-	{Name: "active_energy", Unit: "kcal", Conversions: map[string]float64{"kj": kjToKcal}},
+	{Name: "heart_rate", Unit: "bpm", Daily: Avg, Conversions: map[string]float64{"count/min": 1}},
+	{Name: "resting_heart_rate", Unit: "bpm", Daily: Avg, Conversions: map[string]float64{"count/min": 1}},
+	{Name: "step_count", Unit: "count", Daily: Sum},
+	{Name: "hrv_sdnn", Unit: "ms", Daily: Avg, Conversions: map[string]float64{"s": 1000}},
+	{Name: "body_mass", Unit: "kg", Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
+	{Name: "active_energy", Unit: "kcal", Daily: Sum, Conversions: map[string]float64{"kj": kjToKcal}},
 }
 
 // appleTypes maps Apple's HealthKit identifiers to our metric names. Anything

@@ -39,3 +39,20 @@ func TestToCanonical(t *testing.T) {
 		t.Error("want error for lb on heart_rate")
 	}
 }
+
+func TestEveryMetricHasDailyAggregation(t *testing.T) {
+	want := map[string]Aggregation{
+		"step_count": Sum, "active_energy": Sum,
+		"heart_rate": Avg, "hrv_sdnn": Avg, "resting_heart_rate": Avg,
+		"body_mass": Latest,
+	}
+	for _, name := range Names() {
+		m, _ := Lookup(name)
+		if m.Daily == "" {
+			t.Errorf("%s has no Daily aggregation", name)
+		}
+		if w, ok := want[name]; ok && m.Daily != w {
+			t.Errorf("%s: Daily = %s, want %s", name, m.Daily, w)
+		}
+	}
+}
