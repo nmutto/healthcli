@@ -60,6 +60,9 @@ func runLog(cmd *cobra.Command, opts *options, metricArg, valueArg, unit, at str
 	if math.IsInf(value, 0) { // a huge value can overflow during conversion
 		return fmt.Errorf("value %q is too large", valueArg)
 	}
+	if value < 0 || (value == 0 && metric.Name != "step_count" && metric.Name != "active_energy") {
+		return fmt.Errorf("value %q is not a plausible %s", valueArg, metric.Name)
+	}
 	when, err := parseTime(at, time.Now())
 	if err != nil {
 		return err
@@ -91,6 +94,17 @@ func runLog(cmd *cobra.Command, opts *options, metricArg, valueArg, unit, at str
 		return err
 	}
 	inserted := n > 0
+	if !inserted {
+		// Same metric, instant and source but possibly another value: the old
+		// one stays, and saying "no change" about the new one would mislead.
+		var stored float64
+		if err := conn.QueryRow(`SELECT value FROM samples
+			WHERE metric = ? AND start_ts = ? AND end_ts = ? AND source = ?`,
+			metric.Name, ts, ts, manualSource).Scan(&stored); err == nil && math.Abs(stored-value) > 1e-9 {
+			return fmt.Errorf("%s is already logged as %s %s at that time; nothing changed",
+				metric.Name, strconv.FormatFloat(stored, 'g', 6, 64), metric.Unit)
+		}
+	}
 
 	out := cmd.OutOrStdout()
 	if opts.jsonOutput {

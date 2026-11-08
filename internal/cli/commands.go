@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -33,13 +34,19 @@ Importing the same file again adds nothing new.`,
 	return importCmd
 }
 
-func newVersionCmd() *cobra.Command {
+func newVersionCmd(opts *options) *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
 		Short: "Print the healthcli version",
 		Args:  cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if opts.jsonOutput {
+				return json.NewEncoder(cmd.OutOrStdout()).Encode(map[string]string{
+					"version": Version, "commit": Commit, "date": Date,
+				})
+			}
 			fmt.Fprintf(cmd.OutOrStdout(), "healthcli %s (commit %s, built %s)\n", Version, Commit, Date)
+			return nil
 		},
 	}
 }

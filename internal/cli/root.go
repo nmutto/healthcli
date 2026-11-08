@@ -66,7 +66,7 @@ and lets you log, review and query your data. Nothing leaves your machine.`,
 		newTrendCmd(opts),
 		newQueryCmd(opts),
 		newImportCmd(opts),
-		newVersionCmd(),
+		newVersionCmd(opts),
 	)
 	// The "completion" command is added automatically by cobra.
 	return root
