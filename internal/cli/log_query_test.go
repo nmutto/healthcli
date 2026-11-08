@@ -209,3 +209,36 @@ func TestLogAtRespectsDSTAndOddOffsets(t *testing.T) {
 		}
 	}
 }
+
+// An explicit offset in --at is what the person meant, so that is the offset
+// we store, whatever zone this machine happens to be in. "Z" means UTC (0).
+func TestLogAtExplicitOffsetIsStored(t *testing.T) {
+	old := time.Local
+	t.Cleanup(func() { time.Local = old })
+	time.Local = time.FixedZone("CET", 3600) // deliberately different from every case
+
+	cases := []struct {
+		at      string
+		wantTS  int64
+		wantOff int
+	}{
+		{"2025-03-01T08:30:00+05:30", 1740798000, 19800},
+		{"2025-03-01T08:30:00-09:30", 1740852000, -34200},
+		{"2025-03-01T08:30:00Z", 1740817800, 0},
+		{"2025-03-01 08:30", 1740814200, 3600}, // no offset typed: machine zone
+	}
+	for _, c := range cases {
+		db := tempDB(t)
+		if _, _, err := run(t, "--db", db, "log", "steps", "1", "--at", c.at, "--json"); err != nil {
+			t.Fatal(err)
+		}
+		out, _, err := run(t, "--db", db, "query", "SELECT start_ts, tz_offset FROM samples", "--json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := fmt.Sprintf(`{"start_ts": %d, "tz_offset": %d}`, c.wantTS, c.wantOff)
+		if !strings.Contains(out, want) {
+			t.Errorf("--at %s: got %s, want %s", c.at, out, want)
+		}
+	}
+}

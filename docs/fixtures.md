@@ -25,7 +25,7 @@ The XML is streamed to disk, never built in memory.
 | Steps and active energy from "Alex’s iPhone" and "Alex’s Apple Watch" for the same hours | Same period, two sources: dedupe/prefer a source, don't double-count. |
 | Curly apostrophe (U+2019) in source names | UTF-8 handling. |
 | Sleep stages `InBed`, `AsleepCore`, `AsleepDeep`, `AsleepREM`, `Awake`, `AsleepUnspecified` | Modern values; the iPhone writes `InBed` (plus legacy `AsleepUnspecified` every 7th night), the Watch writes stages. Nights cross midnight. |
-| Workouts (running/walking/cycling) with `duration`, `totalDistance`, `totalEnergyBurned` and units | Attributes live on the element, with child `MetadataEntry`/`WorkoutStatistics`. |
+| Workouts (running/walking/cycling), two styles alternating | Old style: `totalDistance`/`totalEnergyBurned` (+ units) on `<Workout>`. iOS 16+ style: those attributes omitted, totals only in `WorkoutStatistics` children (`ActiveEnergyBurned`, `DistanceWalkingRunning` / `DistanceCycling`). Same numbers either way, so both must import identically. |
 | `MetadataEntry` / `HeartRateVariabilityMetadataList` children inside some `Record`s | A Record is not always self-closing. |
 | Byte-identical resting-HR record repeated on some days | Re-importing / exact duplicates must be harmless. |
 | Malformed records: missing `value`, impossible date (`2024-13-45 99:99:99`), unknown type, non-numeric value (`"fast"`) | Still well-formed XML; the importer must skip them and carry on. Small has three (days 2, 7, 12). |

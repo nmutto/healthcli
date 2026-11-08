@@ -65,9 +65,10 @@ func runLog(cmd *cobra.Command, opts *options, metricArg, valueArg, unit, at str
 		return err
 	}
 
-	// tz_offset is seconds east of UTC in the local zone at that moment, so
-	// daylight saving on the chosen date is respected.
-	_, offset := when.In(time.Local).Zone()
+	// tz_offset is seconds east of UTC of the time as typed: the offset written
+	// in an RFC3339 --at, otherwise the local zone at that moment (so daylight
+	// saving on the chosen date is respected).
+	_, offset := when.Zone()
 	ts := when.Unix()
 
 	conn, err := openDB(opts)
@@ -105,7 +106,6 @@ func runLog(cmd *cobra.Command, opts *options, metricArg, valueArg, unit, at str
 			"inserted":  inserted,
 		})
 	}
-	when = when.In(time.Local)
 	desc := fmt.Sprintf("%s = %s %s at %s", metric.Name, strconv.FormatFloat(value, 'g', 6, 64), metric.Unit, when.Format("2006-01-02 15:04"))
 	if inserted {
 		fmt.Fprintln(out, "Logged", desc)
