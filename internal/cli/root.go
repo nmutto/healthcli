@@ -8,10 +8,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Version is the program version. It can be overridden at build time with:
+// Version, Commit and Date describe the build. GoReleaser sets them at build
+// time; you can too:
 //
 //	go build -ldflags "-X github.com/nmutto/healthcli/internal/cli.Version=1.2.3"
-var Version = "0.1.0-dev"
+var (
+	Version = "0.1.0-dev"
+	Commit  = "none"
+	Date    = "unknown"
+)
 
 // options holds the global flags shared by every subcommand.
 // Subcommands receive a pointer to it, so they see the final flag values.
@@ -39,7 +44,7 @@ func NewRootCmd() *cobra.Command {
 	root := &cobra.Command{
 		Use:   "healthcli",
 		Short: "Local-first Apple Health data in SQLite",
-		Long: `health imports your Apple Health export into a local SQLite database
+		Long: `healthcli imports your Apple Health export into a local SQLite database
 and lets you log, review and query your data. Nothing leaves your machine.`,
 		Example: `  healthcli import apple export.zip
   healthcli log weight 72.5

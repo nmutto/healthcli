@@ -39,7 +39,7 @@ func newVersionCmd() *cobra.Command {
 		Short: "Print the healthcli version",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintln(cmd.OutOrStdout(), "healthcli", Version)
+			fmt.Fprintf(cmd.OutOrStdout(), "healthcli %s (commit %s, built %s)\n", Version, Commit, Date)
 		},
 	}
 }

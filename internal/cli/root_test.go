@@ -56,3 +56,15 @@ func TestWrongArgCountIsAnError(t *testing.T) {
 		t.Fatal("expected an error when value is missing")
 	}
 }
+
+func TestVersionShowsBuildInfo(t *testing.T) {
+	out, _, err := run(t, "version")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"commit " + Commit, "built " + Date} {
+		if !strings.Contains(out, want) {
+			t.Errorf("version output %q missing %q", out, want)
+		}
+	}
+}
