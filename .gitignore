@@ -7,3 +7,6 @@
 export.zip
 export.xml
 apple_health_export/
+# synthetic fixtures: the small sample is committed, large is generated on demand
+!testdata/small/export.xml
+/testdata/large/
