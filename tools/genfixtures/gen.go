@@ -1,0 +1,316 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math/rand"
+	"strings"
+	"time"
+)
+
+// dateLayout is the date format Apple uses everywhere in export.xml.
+const dateLayout = "2006-01-02 15:04:05 -0700"
+
+const (
+	homeOffset = 1 * 3600  // +0100
+	tripOffset = -5 * 3600 // -0500
+)
+
+// profile describes how big and how dense a dataset is.
+type profile struct {
+	start        time.Time // first day (only the date matters)
+	days         int
+	hrEvery      int   // minutes between heart-rate samples
+	stepEvery    int   // minutes between step / energy buckets
+	tripDays     []int // day numbers (0-based) spent in the trip timezone
+	malformFrom  int   // a malformed record is emitted when day%malformEvery == malformFrom
+	malformEvery int
+}
+
+var profiles = map[string]profile{
+	"small": {
+		start: time.Date(2024, 12, 1, 0, 0, 0, 0, time.UTC), days: 14,
+		hrEvery: 60, stepEvery: 60,
+		tripDays:     []int{5, 6, 7, 8, 9},
+		malformEvery: 5, malformFrom: 2, // days 2, 7, 12
+	},
+	"large": {
+		start: time.Date(2021, 1, 1, 0, 0, 0, 0, time.UTC), days: 4 * 365,
+		hrEvery: 1, stepEvery: 5,
+		tripDays:     tripsEveryYear(4),
+		malformEvery: 30, malformFrom: 2,
+	},
+}
+
+// tripsEveryYear returns two weeks in July of each year as trip days.
+func tripsEveryYear(years int) []int {
+	var d []int
+	for y := 0; y < years; y++ {
+		for i := 0; i < 14; i++ {
+			d = append(d, y*365+190+i)
+		}
+	}
+	return d
+}
+
+// source is the device that "recorded" a sample. Real exports use a curly
+// apostrophe (U+2019) in device names, so we do too: it tests UTF-8 handling.
+type source struct{ name, version string }
+
+var (
+	iphone = source{"Alex’s iPhone", "17.2"}
+	watch  = source{"Alex’s Apple Watch", "10.2"}
+)
+
+type gen struct {
+	w    *bufio.Writer
+	prof profile
+	rng  *rand.Rand
+	trip map[int]bool
+}
+
+func newGen(w *bufio.Writer, prof profile, seed int64) *gen {
+	g := &gen{w: w, prof: prof, rng: rand.New(rand.NewSource(seed)), trip: map[int]bool{}}
+	for _, d := range prof.tripDays {
+		g.trip[d] = true
+	}
+	return g
+}
+
+func (g *gen) writeAll() {
+	end := g.prof.start.AddDate(0, 0, g.prof.days)
+	g.writeHeader(end)
+	for day := 0; day < g.prof.days; day++ {
+		g.writeDay(day)
+	}
+	g.w.WriteString("</HealthData>\n")
+}
+
+// at builds a local wall-clock time for a day, using that day's UTC offset.
+// Offsets change between days, which is how the mid-dataset timezone shift appears.
+func (g *gen) at(day, hour, min int) time.Time {
+	off := homeOffset
+	if g.trip[day] {
+		off = tripOffset
+	}
+	d := g.prof.start.AddDate(0, 0, day)
+	return time.Date(d.Year(), d.Month(), d.Day(), hour, min, 0, 0, time.FixedZone("", off))
+}
+
+func (g *gen) writeDay(day int) {
+	// Sample times are bucketed through the day; hours 7-22 count as "awake".
+	for m := 0; m < 24*60; m += g.prof.hrEvery {
+		start := g.at(day, 0, m)
+		asleep := m < 7*60 || m >= 23*60
+		bpm := 58 + g.rng.Intn(8)
+		if !asleep {
+			bpm = 65 + g.rng.Intn(35)
+		}
+		g.record("HKQuantityTypeIdentifierHeartRate", watch, "count/min", start, start.Add(time.Minute), fmt.Sprint(bpm), "")
+	}
+	for m := 7 * 60; m < 23*60; m += g.prof.stepEvery {
+		start, end := g.at(day, 0, m), g.at(day, 0, m+g.prof.stepEvery)
+		steps := g.rng.Intn(40 * g.prof.stepEvery)
+		// Same period, two sources: the importer must not double-count these.
+		g.record("HKQuantityTypeIdentifierStepCount", watch, "count", start, end, fmt.Sprint(steps), "")
+		g.record("HKQuantityTypeIdentifierStepCount", iphone, "count", start, end, fmt.Sprint(steps*9/10), "")
+		kcal := float64(steps) * 0.04
+		g.record("HKQuantityTypeIdentifierActiveEnergyBurned", watch, "kcal", start, end, fmt.Sprintf("%.3f", kcal), "")
+	}
+
+	// Once-a-day readings.
+	hrv := g.at(day, 6, 40)
+	g.record("HKQuantityTypeIdentifierHeartRateVariabilitySDNN", watch, "ms", hrv, hrv, fmt.Sprintf("%.2f", 35+g.rng.Float64()*30),
+		`<HeartRateVariabilityMetadataList><InstantaneousBeatsPerMinute bpm="62" time="6:40:01.00"/></HeartRateVariabilityMetadataList>`)
+	rest := g.at(day, 12, 0)
+	restLine := func() {
+		g.record("HKQuantityTypeIdentifierRestingHeartRate", watch, "count/min", rest, rest, fmt.Sprint(54+day%7), "")
+	}
+	restLine()
+	if day%5 == 3 {
+		restLine() // byte-identical repeat: an importer should be idempotent
+	}
+	if day%3 == 0 {
+		w := g.at(day, 7, 5)
+		g.record("HKQuantityTypeIdentifierBodyMass", iphone, "kg", w, w, fmt.Sprintf("%.1f", 78+g.rng.Float64()*2),
+			`<MetadataEntry key="HKWasUserEntered" value="1"/>`)
+	}
+
+	g.writeSleep(day)
+	g.writeWorkout(day)
+	g.writeMalformed(day)
+}
+
+// writeSleep emits a night starting at 23:00 on `day`: an iPhone InBed span
+// plus Apple Watch stage records (or, every 7th night, a legacy
+// AsleepUnspecified block like pre-iOS-16 exports have).
+func (g *gen) writeSleep(day int) {
+	const t = "HKCategoryTypeIdentifierSleepAnalysis"
+	const p = "HKCategoryValueSleepAnalysis"
+	bedStart := g.at(day, 23, 0)
+	bedEnd := bedStart.Add(7*time.Hour + time.Duration(g.rng.Intn(60))*time.Minute)
+	g.record(t, iphone, "", bedStart, bedEnd, p+"InBed", "")
+	if day%7 == 6 {
+		g.record(t, iphone, "", bedStart.Add(10*time.Minute), bedEnd, p+"AsleepUnspecified", "")
+		return
+	}
+	// Cycle through stages until we run out of night.
+	stages := []struct {
+		val string
+		min int
+	}{{"AsleepCore", 45}, {"AsleepDeep", 25}, {"AsleepCore", 30}, {"AsleepREM", 25}, {"Awake", 4}}
+	cur := bedStart.Add(12 * time.Minute)
+	for i := 0; cur.Before(bedEnd); i++ {
+		s := stages[i%len(stages)]
+		next := cur.Add(time.Duration(s.min+g.rng.Intn(10)) * time.Minute)
+		if next.After(bedEnd) {
+			next = bedEnd
+		}
+		g.record(t, watch, "", cur, next, p+s.val, "")
+		cur = next
+	}
+}
+
+func (g *gen) writeWorkout(day int) {
+	if day%2 == 1 {
+		return
+	}
+	kinds := []struct {
+		typ      string
+		speedKmh float64
+		kcalKm   float64
+	}{
+		{"HKWorkoutActivityTypeRunning", 10, 65},
+		{"HKWorkoutActivityTypeWalking", 5, 45},
+		{"HKWorkoutActivityTypeCycling", 20, 30},
+	}
+	k := kinds[(day/2)%len(kinds)]
+	minutes := 25 + g.rng.Float64()*50
+	km := k.speedKmh * minutes / 60
+	start := g.at(day, 18, 0)
+	end := start.Add(time.Duration(minutes * float64(time.Minute)))
+	fmt.Fprintf(g.w, ` <Workout workoutActivityType="%s" duration="%.4f" durationUnit="min" totalDistance="%.4f" totalDistanceUnit="km" totalEnergyBurned="%.4f" totalEnergyBurnedUnit="kcal" sourceName="%s" sourceVersion="%s" creationDate="%s" startDate="%s" endDate="%s">
+  <MetadataEntry key="HKIndoorWorkout" value="0"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="%s" endDate="%s" sum="%.4f" unit="kcal"/>
+ </Workout>
+`, k.typ, minutes, km, km*k.kcalKm, watch.name, watch.version,
+		fmtTime(end), fmtTime(start), fmtTime(end), fmtTime(start), fmtTime(end), km*k.kcalKm)
+}
+
+// writeMalformed emits records a robust importer must skip. All are still
+// well-formed XML, so a streaming parser reaches them and must decide.
+func (g *gen) writeMalformed(day int) {
+	if day%g.prof.malformEvery != g.prof.malformFrom {
+		return
+	}
+	s := g.at(day, 14, 0)
+	e := s.Add(time.Minute)
+	switch (day / g.prof.malformEvery) % 4 {
+	case 0: // missing value attribute
+		fmt.Fprintf(g.w, ` <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="%s" sourceVersion="%s" unit="count/min" creationDate="%s" startDate="%s" endDate="%s"/>
+`, watch.name, watch.version, fmtTime(e), fmtTime(s), fmtTime(e))
+	case 1: // impossible date
+		fmt.Fprintf(g.w, ` <Record type="HKQuantityTypeIdentifierStepCount" sourceName="%s" sourceVersion="%s" unit="count" creationDate="%s" startDate="2024-13-45 99:99:99 +0100" endDate="%s" value="12"/>
+`, iphone.name, iphone.version, fmtTime(e), fmtTime(e))
+	case 2: // type this importer has never heard of
+		g.record("HKQuantityTypeIdentifierSomethingFromTheFuture", watch, "count", s, e, "1", "")
+	case 3: // value that is not a number
+		g.record("HKQuantityTypeIdentifierHeartRate", watch, "count/min", s, e, "fast", "")
+	}
+}
+
+// record writes one <Record>. `children` is raw XML placed inside it.
+func (g *gen) record(typ string, src source, unit string, start, end time.Time, value, children string) {
+	g.w.WriteString(` <Record type="` + typ + `" sourceName="` + src.name + `" sourceVersion="` + src.version + `"`)
+	if unit != "" {
+		g.w.WriteString(` unit="` + unit + `"`)
+	}
+	g.w.WriteString(` creationDate="` + fmtTime(end.Add(2*time.Second)) + `" startDate="` + fmtTime(start) + `" endDate="` + fmtTime(end) + `" value="` + value + `"`)
+	if children == "" {
+		g.w.WriteString("/>\n")
+		return
+	}
+	g.w.WriteString(">\n  " + children + "\n </Record>\n")
+}
+
+func fmtTime(t time.Time) string { return t.Format(dateLayout) }
+
+func (g *gen) writeHeader(end time.Time) {
+	exportDate := time.Date(end.Year(), end.Month(), end.Day(), 8, 30, 0, 0, time.FixedZone("", homeOffset))
+	g.w.WriteString(xmlHeader)
+	g.w.WriteString(strings.Replace(`<HealthData locale="en_US">
+ <ExportDate value="DATE"/>
+ <Me HKCharacteristicTypeIdentifierDateOfBirth="1990-01-01" HKCharacteristicTypeIdentifierBiologicalSex="HKBiologicalSexNotSet" HKCharacteristicTypeIdentifierBloodType="HKBloodTypeNotSet" HKCharacteristicTypeIdentifierFitzpatrickSkinType="HKFitzpatrickSkinTypeNotSet" HKCharacteristicTypeIdentifierCardioFitnessMedicationsUse="None"/>
+`, "DATE", fmtTime(exportDate), 1))
+}
+
+// xmlHeader mimics the DOCTYPE Apple writes. The internal DTD matters: a parser
+// must tolerate it (Go's encoding/xml reads it as a Directive token).
+const xmlHeader = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE HealthData [
+<!-- HealthKit Export Version: 14 -->
+<!ELEMENT HealthData (ExportDate,Me,(Record|Correlation|Workout|ActivitySummary|ClinicalRecord|Audiogram|VisionPrescription)*)>
+<!ATTLIST HealthData
+  locale CDATA #REQUIRED
+>
+<!ELEMENT ExportDate EMPTY>
+<!ATTLIST ExportDate
+  value CDATA #REQUIRED
+>
+<!ELEMENT Me EMPTY>
+<!ATTLIST Me
+  HKCharacteristicTypeIdentifierDateOfBirth         CDATA #REQUIRED
+  HKCharacteristicTypeIdentifierBiologicalSex       CDATA #REQUIRED
+  HKCharacteristicTypeIdentifierBloodType           CDATA #REQUIRED
+  HKCharacteristicTypeIdentifierFitzpatrickSkinType CDATA #REQUIRED
+>
+<!ELEMENT Record ((MetadataEntry|HeartRateVariabilityMetadataList)*)>
+<!ATTLIST Record
+  type          CDATA #REQUIRED
+  unit          CDATA #IMPLIED
+  value         CDATA #IMPLIED
+  sourceName    CDATA #REQUIRED
+  sourceVersion CDATA #IMPLIED
+  device        CDATA #IMPLIED
+  creationDate  CDATA #IMPLIED
+  startDate     CDATA #REQUIRED
+  endDate       CDATA #REQUIRED
+>
+<!ELEMENT MetadataEntry EMPTY>
+<!ATTLIST MetadataEntry
+  key   CDATA #REQUIRED
+  value CDATA #REQUIRED
+>
+<!ELEMENT HeartRateVariabilityMetadataList (InstantaneousBeatsPerMinute*)>
+<!ELEMENT InstantaneousBeatsPerMinute EMPTY>
+<!ATTLIST InstantaneousBeatsPerMinute
+  bpm  CDATA #REQUIRED
+  time CDATA #REQUIRED
+>
+<!ELEMENT Workout ((MetadataEntry|WorkoutEvent|WorkoutStatistics)*)>
+<!ATTLIST Workout
+  workoutActivityType   CDATA #REQUIRED
+  duration              CDATA #IMPLIED
+  durationUnit          CDATA #IMPLIED
+  totalDistance         CDATA #IMPLIED
+  totalDistanceUnit     CDATA #IMPLIED
+  totalEnergyBurned     CDATA #IMPLIED
+  totalEnergyBurnedUnit CDATA #IMPLIED
+  sourceName            CDATA #REQUIRED
+  sourceVersion         CDATA #IMPLIED
+  device                CDATA #IMPLIED
+  creationDate          CDATA #IMPLIED
+  startDate             CDATA #REQUIRED
+  endDate               CDATA #REQUIRED
+>
+<!ELEMENT WorkoutEvent EMPTY>
+<!ELEMENT WorkoutStatistics EMPTY>
+<!ATTLIST WorkoutStatistics
+  type      CDATA #REQUIRED
+  startDate CDATA #REQUIRED
+  endDate   CDATA #REQUIRED
+  sum       CDATA #IMPLIED
+  unit      CDATA #IMPLIED
+>
+]>
+`
