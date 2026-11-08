@@ -1,0 +1,77 @@
+# GoReleaser v2 config. Nothing is published unless you run a real release
+# (see docs/release.md). Local test:  goreleaser release --snapshot --clean --skip=publish
+version: 2
+
+project_name: healthcli
+
+before:
+  hooks:
+    - go mod tidy
+    - sh -c 'rm -rf completions && mkdir completions'
+    - sh -c 'go run ./cmd/healthcli completion bash > completions/healthcli.bash'
+    - sh -c 'go run ./cmd/healthcli completion zsh > completions/_healthcli'
+    - sh -c 'go run ./cmd/healthcli completion fish > completions/healthcli.fish'
+
+builds:
+  - id: healthcli
+    main: ./cmd/healthcli
+    binary: healthcli
+    env:
+      - CGO_ENABLED=0
+    goos: [darwin, linux]
+    goarch: [amd64, arm64]
+    flags: [-trimpath]
+    ldflags:
+      - -s -w
+      - -X github.com/nmutto/healthcli/internal/cli.Version={{.Version}}
+      - -X github.com/nmutto/healthcli/internal/cli.Commit={{.Commit}}
+      - -X github.com/nmutto/healthcli/internal/cli.Date={{.Date}}
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - README.md
+      - LICENSE
+      - CHANGELOG.md
+      - src: completions/*
+        dst: completions
+        strip_parent: true
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+
+# Never publish by accident: a GitHub release is only created when you run
+# goreleaser without --skip=publish AND have a tag and GITHUB_TOKEN.
+release:
+  github:
+    owner: nmutto
+    name: healthcli
+  draft: true
+  prerelease: auto
+
+brews:
+  - name: healthcli
+    repository:
+      owner: nmutto
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: https://github.com/nmutto/healthcli
+    description: Local-first CLI that imports Apple Health exports into SQLite
+    license: MIT
+    install: |
+      bin.install "healthcli"
+      bash_completion.install "completions/healthcli.bash" => "healthcli"
+      zsh_completion.install "completions/_healthcli"
+      fish_completion.install "completions/healthcli.fish"
+    test: |
+      assert_match version.to_s, shell_output("#{bin}/healthcli version")
