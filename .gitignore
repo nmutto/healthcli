@@ -1,0 +1,9 @@
+.DS_Store
+/bin/
+/dist/
+*.db
+*.db-*
+# never commit real health data
+export.zip
+export.xml
+apple_health_export/
