@@ -11,11 +11,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/nmutto/health/internal/metrics"
-	"github.com/nmutto/health/internal/stats"
+	"github.com/nmutto/healthcli/internal/metrics"
+	"github.com/nmutto/healthcli/internal/stats"
 )
 
-// This file FETCHES the data for "health trend" and shapes it into a
+// This file FETCHES the data for "healthcli trend" and shapes it into a
 // trendReport. Text output lives in trend_render.go.
 
 // sleepMetric is the pseudo-metric name for "asleep hours per night". Sleep
@@ -23,7 +23,7 @@ import (
 // command handles it as a special case.
 const sleepMetric = "sleep"
 
-// Field names below are the documented --json contract of "health trend".
+// Field names below are the documented --json contract of "healthcli trend".
 type trendReport struct {
 	Status    string      `json:"status"` // "ok" or "no_data" (nothing in the window)
 	Metric    string      `json:"metric"` // canonical name, or "sleep"
@@ -100,10 +100,10 @@ JSON output (--json) has these fields:
               previous7_days_with_data, delta, delta_pct
   baseline    available, days_with_data, days_needed, mean   (28 days up to "to")
 Sleep values are hours asleep.`,
-		Example: `  health trend steps
-  health trend weight --days 90
-  health trend sleep --verbose
-  health trend hr --days 14 --json`,
+		Example: `  healthcli trend steps
+  healthcli trend weight --days 90
+  healthcli trend sleep --verbose
+  healthcli trend hr --days 14 --json`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runTrend(cmd, opts, args[0], days, date, verbose)

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nmutto/health/internal/importer"
+	"github.com/nmutto/healthcli/internal/importer"
 )
 
 // TestSmallFixture runs the read side over the real importer and the

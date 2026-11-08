@@ -1,4 +1,4 @@
-// Package cli defines the health command-line interface (cobra commands).
+// Package cli defines the healthcli command-line interface (cobra commands).
 package cli
 
 import (
@@ -10,7 +10,7 @@ import (
 
 // Version is the program version. It can be overridden at build time with:
 //
-//	go build -ldflags "-X github.com/nmutto/health/internal/cli.Version=1.2.3"
+//	go build -ldflags "-X github.com/nmutto/healthcli/internal/cli.Version=1.2.3"
 var Version = "0.1.0-dev"
 
 // options holds the global flags shared by every subcommand.
@@ -37,15 +37,15 @@ func NewRootCmd() *cobra.Command {
 	opts := &options{}
 
 	root := &cobra.Command{
-		Use:   "health",
+		Use:   "healthcli",
 		Short: "Local-first Apple Health data in SQLite",
 		Long: `health imports your Apple Health export into a local SQLite database
 and lets you log, review and query your data. Nothing leaves your machine.`,
-		Example: `  health import apple export.zip
-  health log weight 72.5
-  health today
-  health trend steps --days 30
-  health query "SELECT * FROM samples LIMIT 5" --json`,
+		Example: `  healthcli import apple export.zip
+  healthcli log weight 72.5
+  healthcli today
+  healthcli trend steps --days 30
+  healthcli query "SELECT * FROM samples LIMIT 5" --json`,
 		// We print errors in Execute, and usage on every error is just noise.
 		SilenceErrors: true,
 		SilenceUsage:  true,

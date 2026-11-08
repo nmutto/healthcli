@@ -1,6 +1,6 @@
 # Importer
 
-`health import apple <export.zip|export.xml>` streams an Apple Health export into SQLite.
+`healthcli import apple <export.zip|export.xml>` streams an Apple Health export into SQLite.
 Code: `internal/importer` (`importer.go` = parse loop, `convert.go` = record -> row, `store.go` = batching and zip).
 
 ## How it works
@@ -39,8 +39,8 @@ Reproduce:
 
 ```
 go run ./tools/genfixtures --size large --out "$TMPDIR/large"
-go build -o "$TMPDIR/health" ./cmd/health
-/usr/bin/time -l "$TMPDIR/health" --db "$TMPDIR/b.db" import apple "$TMPDIR/large/apple_health_export/export.xml"
+go build -o "$TMPDIR/healthcli" ./cmd/healthcli
+/usr/bin/time -l "$TMPDIR/healthcli" --db "$TMPDIR/b.db" import apple "$TMPDIR/large/apple_health_export/export.xml"
 # or the Go benchmark (records/s):
 HEALTH_BENCH_FILE="$TMPDIR/large/apple_health_export/export.xml" \
   go test ./internal/importer -run xxx -bench Import -benchtime 1x -benchmem
@@ -50,4 +50,4 @@ Most time goes to `encoding/xml` (about 125M allocations for the run; the Go ben
 
 ## Metrics registry change
 
-Heart rates are now stored as `bpm` (was `count/min`), so `health log hr` and imported rows agree. `count/min` is still accepted as an input unit.
+Heart rates are now stored as `bpm` (was `count/min`), so `healthcli log hr` and imported rows agree. `count/min` is still accepted as an input unit.

@@ -23,8 +23,8 @@ your profile picture, then "Export All Health Data", and pass the resulting file
 
 The file is streamed, so even multi-gigabyte exports use little memory.
 Importing the same file again adds nothing new.`,
-		Example: `  health import apple export.zip
-  health import apple export.xml --json`,
+		Example: `  healthcli import apple export.zip
+  healthcli import apple export.xml --json`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runImportApple(cmd, opts, args[0])
@@ -36,10 +36,10 @@ Importing the same file again adds nothing new.`,
 func newVersionCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
-		Short: "Print the health version",
+		Short: "Print the healthcli version",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintln(cmd.OutOrStdout(), "health", Version)
+			fmt.Fprintln(cmd.OutOrStdout(), "healthcli", Version)
 		},
 	}
 }

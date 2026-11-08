@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nmutto/health/internal/db"
+	"github.com/nmutto/healthcli/internal/db"
 )
 
 const smallFixture = "../../testdata/small/export.xml"

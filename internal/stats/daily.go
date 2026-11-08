@@ -7,7 +7,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/nmutto/health/internal/metrics"
+	"github.com/nmutto/healthcli/internal/metrics"
 )
 
 // DayValue is one metric's value for one local day.

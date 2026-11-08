@@ -10,11 +10,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/nmutto/health/internal/metrics"
-	"github.com/nmutto/health/internal/stats"
+	"github.com/nmutto/healthcli/internal/metrics"
+	"github.com/nmutto/healthcli/internal/stats"
 )
 
-// This file FETCHES the data for "health today" and shapes it into a
+// This file FETCHES the data for "healthcli today" and shapes it into a
 // todayReport. Turning the report into text lives in today_render.go, so the
 // text can be tested without a database.
 
@@ -35,7 +35,7 @@ const (
 	statusNoData   = "no_data"  // the database has nothing at all
 )
 
-// Field names below are the documented --json contract of "health today".
+// Field names below are the documented --json contract of "healthcli today".
 type todayReport struct {
 	Status        string         `json:"status"`
 	RequestedDate string         `json:"requested_date"`
@@ -118,9 +118,9 @@ JSON output (--json) has these fields:
                   rem_seconds, unspecified_seconds, awake_seconds, in_bed_seconds}
   workouts[]      activity, start, duration_seconds, energy_kcal, distance_m (null if not
                   recorded), source`,
-		Example: `  health today
-  health today --date 2026-11-08
-  health today --json`,
+		Example: `  healthcli today
+  healthcli today --date 2026-11-08
+  healthcli today --json`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runToday(cmd, opts, date)

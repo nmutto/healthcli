@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/nmutto/health/internal/metrics"
+	"github.com/nmutto/healthcli/internal/metrics"
 )
 
 const (

@@ -5,18 +5,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nmutto/health/internal/stats"
+	"github.com/nmutto/healthcli/internal/stats"
 )
 
-// renderToday turns a report into the text "health today" prints. It does no
+// renderToday turns a report into the text "healthcli today" prints. It does no
 // I/O, so a test can build a report by hand and compare the exact text.
 func renderToday(r *todayReport, st style) string {
 	var b strings.Builder
 
 	if r.Status == statusNoData {
 		b.WriteString("No health data yet.\n")
-		b.WriteString("Import an Apple Health export:  health import apple <export.zip>\n")
-		b.WriteString("or log a reading by hand:       health log weight 72.5\n")
+		b.WriteString("Import an Apple Health export:  healthcli import apple <export.zip>\n")
+		b.WriteString("or log a reading by hand:       healthcli log weight 72.5\n")
 		return b.String()
 	}
 	if r.Status == statusFallback {

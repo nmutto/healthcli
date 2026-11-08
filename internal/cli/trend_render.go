@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-// renderTrend turns a report into the text "health trend" prints. Like
+// renderTrend turns a report into the text "healthcli trend" prints. Like
 // renderToday it does no I/O.
 func renderTrend(r *trendReport, st style) string {
 	var b strings.Builder
@@ -17,10 +17,10 @@ func renderTrend(r *trendReport, st style) string {
 	if r.Status == statusNoData {
 		fmt.Fprintf(&b, "\nNo %s data in this window.\n", trendTitle(r.Metric))
 		if r.LatestDay != "" {
-			fmt.Fprintf(&b, "Latest data is from %s; try:  health trend %s --days %d --date %s\n",
+			fmt.Fprintf(&b, "Latest data is from %s; try:  healthcli trend %s --days %d --date %s\n",
 				r.LatestDay, r.Metric, r.Days, r.LatestDay)
 		} else {
-			b.WriteString("Import an Apple Health export with  health import apple <export.zip>  or use  health log.\n")
+			b.WriteString("Import an Apple Health export with  healthcli import apple <export.zip>  or use  healthcli log.\n")
 		}
 		return b.String()
 	}

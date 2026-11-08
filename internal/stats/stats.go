@@ -38,7 +38,7 @@ const (
 
 // SourceClass sorts a free-text source name (e.g. "Alex’s Apple Watch") into
 // one of the classes above by looking for a word in it, ignoring case.
-// "manual" is what `health log` writes.
+// "manual" is what `healthcli log` writes.
 func SourceClass(source string) string {
 	s := strings.ToLower(source)
 	switch {

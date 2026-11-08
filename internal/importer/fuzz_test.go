@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nmutto/health/internal/db"
+	"github.com/nmutto/healthcli/internal/db"
 )
 
 // seedRecords picks, from the small fixture, the first element of every

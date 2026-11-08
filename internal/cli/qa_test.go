@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nmutto/health/internal/db"
+	"github.com/nmutto/healthcli/internal/db"
 )
 
 // An iPhone alone writes only in_bed rows. Those nights have no sleep

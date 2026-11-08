@@ -6,7 +6,7 @@ Short, living notes on how `health` is put together. Update when a decision chan
 
 | Path | Owns |
 |---|---|
-| `cmd/health` | `main`: only wires things up and calls into `internal/cli`. |
+| `cmd/healthcli` | `main`: only wires things up and calls into `internal/cli`. |
 | `internal/cli` | Commands, flags, output. Calls `internal/db`; never writes SQL schema. |
 | `internal/db` | Database location, opening, migrations. The only package that knows the schema exists as files. |
 | `internal/db/migrations` | Numbered SQL files (`0001_init.sql`, ...), embedded into the binary. |
@@ -26,10 +26,10 @@ defer conn.Close()
 - `db.Migrate(conn *sql.DB) error` is exported for tests and tools. `Open` already calls it.
 - `db.DefaultPath() (string, error)`, first match wins:
   1. `--db` flag (the CLI checks this itself, before calling `DefaultPath`)
-  2. `$HEALTH_DB` (`db.EnvPath`)
-  3. `$XDG_DATA_HOME/health/health.db`
-  4. macOS: `~/Library/Application Support/health/health.db`
-  5. otherwise: `~/.local/share/health/health.db`
+  2. `$HEALTHCLI_DB` (`db.EnvPath`)
+  3. `$XDG_DATA_HOME/healthcli/healthcli.db`
+  4. macOS: `~/Library/Application Support/healthcli/healthcli.db`
+  5. otherwise: `~/.local/share/healthcli/healthcli.db`
 
 ## Migrations
 
@@ -67,7 +67,7 @@ stats.AddDays(day string, n int) (string, error); stats.SourceClass(name) string
 **Rules**
 
 - **Local day** = date of `start_ts + tz_offset`: the date on the clock where the reading was taken, so a trip from Rome to New York needs no special case. A sample that spans midnight counts for the day it starts. SQL first narrows by a UTC window padded by the widest real offsets (-12h/+14h, so the indexes are used), then keeps rows whose local date is in range.
-- **One source per metric per day.** Sources are classed by name, case-insensitive substring: `watch` > `iphone` > `manual` (what `health log` writes) > anything else. Only the best class with data that day is used; the rest are ignored, never added. Two sources in the same class (old and new iPhone) are not added either: more rows that day wins, then the name, so results never depend on row order.
+- **One source per metric per day.** Sources are classed by name, case-insensitive substring: `watch` > `iphone` > `manual` (what `healthcli log` writes) > anything else. Only the best class with data that day is used; the rest are ignored, never added. Two sources in the same class (old and new iPhone) are not added either: more rows that day wins, then the name, so results never depend on row order.
 - **Daily aggregation** lives in the metrics registry (`Metric.Daily`):
   - `sum`: `step_count`, `active_energy` (amounts that add up over the day).
   - `avg`: `heart_rate`, `hrv_sdnn` (rates sampled many times), and `resting_heart_rate`: Apple writes about one per day but may write a revised estimate; the mean is stable and equals the value on normal days.

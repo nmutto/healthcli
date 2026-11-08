@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nmutto/health/internal/db"
+	"github.com/nmutto/healthcli/internal/db"
 )
 
 // Goldens for these commands live next to the code (internal/cli/testdata),
@@ -137,7 +137,7 @@ func TestTodayEmptyDatabaseHint(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"health import apple <export.zip>", "health log"} {
+	for _, want := range []string{"healthcli import apple <export.zip>", "healthcli log"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q in:\n%s", want, out)
 		}

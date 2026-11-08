@@ -157,7 +157,7 @@ func TestQueryJSONKeepsColumnOrder(t *testing.T) {
 	}
 }
 
-// BUG: `health log steps NaN` passed ParseFloat, and `inf` was stored. NaN hit
+// BUG: `healthcli log steps NaN` passed ParseFloat, and `inf` was stored. NaN hit
 // a confusing NOT NULL database error; Inf later broke `query --json`.
 func TestLogRejectsNonFiniteValues(t *testing.T) {
 	db := tempDB(t)
@@ -173,7 +173,7 @@ func TestLogRejectsNonFiniteValues(t *testing.T) {
 	}
 }
 
-// `health log --at "YYYY-MM-DD HH:MM"` reads local time. Across a daylight
+// `healthcli log --at "YYYY-MM-DD HH:MM"` reads local time. Across a daylight
 // saving change the same wall-clock time must give different UTC instants and
 // different stored offsets, and odd offsets such as +0530 must be exact.
 func TestLogAtRespectsDSTAndOddOffsets(t *testing.T) {

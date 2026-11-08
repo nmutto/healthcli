@@ -23,7 +23,7 @@ import (
 
 // EnvPath is the environment variable that overrides the default database
 // location. Handy for tests and for keeping several databases around.
-const EnvPath = "HEALTH_DB"
+const EnvPath = "HEALTHCLI_DB"
 
 // Open opens (creating if needed) the SQLite database at path, applies any
 // pending migrations, and returns a ready-to-use handle.
@@ -74,10 +74,10 @@ func Open(path string) (*sql.DB, error) {
 // DefaultPath returns where the database lives when the user does not say.
 //
 // Rules, first match wins:
-//  1. $HEALTH_DB, if set.
-//  2. $XDG_DATA_HOME/health/health.db, if XDG_DATA_HOME is set.
-//  3. macOS: ~/Library/Application Support/health/health.db
-//  4. elsewhere: ~/.local/share/health/health.db
+//  1. $HEALTHCLI_DB, if set.
+//  2. $XDG_DATA_HOME/healthcli/healthcli.db, if XDG_DATA_HOME is set.
+//  3. macOS: ~/Library/Application Support/healthcli/healthcli.db
+//  4. elsewhere: ~/.local/share/healthcli/healthcli.db
 //
 // A --db command-line flag, if the CLI has one, should be checked by the
 // caller before calling DefaultPath.
@@ -86,14 +86,14 @@ func DefaultPath() (string, error) {
 		return p, nil
 	}
 	if xdg := os.Getenv("XDG_DATA_HOME"); xdg != "" {
-		return filepath.Join(xdg, "health", "health.db"), nil
+		return filepath.Join(xdg, "healthcli", "healthcli.db"), nil
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("db: find home directory: %w", err)
 	}
 	if runtime.GOOS == "darwin" {
-		return filepath.Join(home, "Library", "Application Support", "health", "health.db"), nil
+		return filepath.Join(home, "Library", "Application Support", "healthcli", "healthcli.db"), nil
 	}
-	return filepath.Join(home, ".local", "share", "health", "health.db"), nil
+	return filepath.Join(home, ".local", "share", "healthcli", "healthcli.db"), nil
 }

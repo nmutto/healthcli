@@ -1,4 +1,4 @@
-module github.com/nmutto/health
+module github.com/nmutto/healthcli
 
 go 1.27.3
 

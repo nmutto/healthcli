@@ -17,8 +17,8 @@ func newQueryCmd(opts *options) *cobra.Command {
 		Short: "Run a read-only SQL query",
 		Long: `Run a read-only SQL query (SELECT or WITH) against the local database and print the rows.
 Main table: samples(metric, start_ts, end_ts, value, unit, tz_offset, source).`,
-		Example: `  health query "SELECT count(*) FROM samples"
-  health query "SELECT * FROM samples LIMIT 5" --json`,
+		Example: `  healthcli query "SELECT count(*) FROM samples"
+  healthcli query "SELECT * FROM samples LIMIT 5" --json`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runQuery(cmd, opts, args[0])

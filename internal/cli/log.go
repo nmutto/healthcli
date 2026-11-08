@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/nmutto/health/internal/metrics"
+	"github.com/nmutto/healthcli/internal/metrics"
 	"github.com/spf13/cobra"
 )
 
@@ -28,10 +28,10 @@ active_energy. Aliases: weight (body_mass), hr (heart_rate), steps (step_count).
 Weight is stored in kg; use --unit lb to enter pounds.
 
 --at accepts RFC3339 ("2025-03-01T08:30:00Z") or local time ("2025-03-01 08:30").`,
-		Example: `  health log weight 72.5
-  health log weight 160 --unit lb
-  health log hr 58 --at "2025-03-01 07:45"
-  health log steps 8000 --json`,
+		Example: `  healthcli log weight 72.5
+  healthcli log weight 160 --unit lb
+  healthcli log hr 58 --at "2025-03-01 07:45"
+  healthcli log steps 8000 --json`,
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runLog(cmd, opts, args[0], args[1], unit, at)

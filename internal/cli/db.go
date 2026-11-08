@@ -3,7 +3,7 @@ package cli
 import (
 	"database/sql"
 
-	"github.com/nmutto/health/internal/db"
+	"github.com/nmutto/healthcli/internal/db"
 )
 
 // openDB opens the database named by --db, or the default location when the

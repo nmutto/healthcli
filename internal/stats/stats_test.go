@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nmutto/health/internal/db"
+	"github.com/nmutto/healthcli/internal/db"
 )
 
 const (

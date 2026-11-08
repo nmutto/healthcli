@@ -6,7 +6,7 @@ import (
 	"os"
 	"sort"
 
-	"github.com/nmutto/health/internal/importer"
+	"github.com/nmutto/healthcli/internal/importer"
 	"github.com/spf13/cobra"
 )
 

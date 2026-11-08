@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nmutto/health/internal/metrics"
+	"github.com/nmutto/healthcli/internal/metrics"
 )
 
 // sleepType is Apple's identifier for sleep records (not a numeric metric).
@@ -67,7 +67,7 @@ func interval(a map[string]string) (start, end int64, tz int, ok bool) {
 	return start, end, tz, true
 }
 
-// round4 drops floating-point noise from unit conversions (same as `health log`).
+// round4 drops floating-point noise from unit conversions (same as `healthcli log`).
 func round4(v float64) float64 { return math.Round(v*10000) / 10000 }
 
 // finite reports whether v can be stored: SQLite turns NaN into NULL and

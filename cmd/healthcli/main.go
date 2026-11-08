@@ -1,11 +1,11 @@
-// Command health is a local-first CLI for Apple Health data.
+// Command healthcli is a local-first CLI for Apple Health data.
 // All the real work lives in internal/cli; main stays thin on purpose.
 package main
 
 import (
 	"os"
 
-	"github.com/nmutto/health/internal/cli"
+	"github.com/nmutto/healthcli/internal/cli"
 )
 
 func main() {
