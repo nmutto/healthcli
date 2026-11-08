@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -169,5 +170,42 @@ func TestLogRejectsNonFiniteValues(t *testing.T) {
 	out, _, err := run(t, "--db", db, "query", "SELECT count(*) AS n FROM samples", "--json")
 	if err != nil || !strings.Contains(out, `"n": 0`) {
 		t.Errorf("nothing should have been stored, got %q, %v", out, err)
+	}
+}
+
+// `health log --at "YYYY-MM-DD HH:MM"` reads local time. Across a daylight
+// saving change the same wall-clock time must give different UTC instants and
+// different stored offsets, and odd offsets such as +0530 must be exact.
+func TestLogAtRespectsDSTAndOddOffsets(t *testing.T) {
+	old := time.Local
+	t.Cleanup(func() { time.Local = old })
+	newYork, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		t.Skipf("no tz database: %v", err)
+	}
+	cases := []struct {
+		zone    *time.Location
+		at      string
+		wantTS  int64
+		wantOff int
+	}{
+		{newYork, "2025-03-08 12:00", 1741453200, -18000}, // EST, day before the change
+		{newYork, "2025-03-10 12:00", 1741622400, -14400}, // EDT, day after
+		{time.FixedZone("IST", 19800), "2025-03-01 08:30", 1740798000, 19800},
+	}
+	for _, c := range cases {
+		time.Local = c.zone
+		db := tempDB(t)
+		if _, _, err := run(t, "--db", db, "log", "steps", "1", "--at", c.at); err != nil {
+			t.Fatal(err)
+		}
+		out, _, err := run(t, "--db", db, "query", "SELECT start_ts, tz_offset FROM samples", "--json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := fmt.Sprintf(`{"start_ts": %d, "tz_offset": %d}`, c.wantTS, c.wantOff)
+		if !strings.Contains(out, want) {
+			t.Errorf("%s in %v: got %s, want %s", c.at, c.zone, out, want)
+		}
 	}
 }

@@ -1,0 +1,40 @@
+# import summary
+{
+  "duplicates": 9,
+  "inserted": 1232,
+  "read": 1244,
+  "skipped": {
+    "bad_date": 1,
+    "missing_value": 1,
+    "unknown_type": 1
+  }
+}
+
+# samples per metric
+metric              unit   n    sources  min    avg     max
+active_energy       kcal   224  1        0.28   50.25   95.56
+body_mass           kg     5    1        78.5   79.16   79.7
+heart_rate          bpm    330  1        58     75.02   99
+hrv_sdnn            ms     14   1        36.29  47.75   63.38
+resting_heart_rate  bpm    14   1        54     57      60
+step_count          count  448  2        6      1193.3  2389
+
+# sleep per stage
+stage               n   hours
+asleep_unspecified  2   15.07
+awake               28  4.02
+core                76  51.1
+deep                36  18.02
+in_bed              14  106.27
+rem                 34  15.33
+
+# workouts
+activity  n  minutes  km     kcal
+cycling   2  103.9    34.65  1039.5
+running   3  168.8    28.13  1828.2
+walking   2  100.1    8.34   375.5
+
+# time zones seen
+tz_offset  n
+-18000     372
+3600       663
