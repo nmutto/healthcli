@@ -19,6 +19,8 @@ var sleepStages = map[string]string{
 	"HKCategoryValueSleepAnalysisAsleepREM":         "rem",
 	"HKCategoryValueSleepAnalysisAwake":             "awake",
 	"HKCategoryValueSleepAnalysisAsleepUnspecified": "asleep_unspecified",
+	// iOS 15 and older wrote plain "Asleep"; Apple renamed it AsleepUnspecified.
+	"HKCategoryValueSleepAnalysisAsleep": "asleep_unspecified",
 }
 
 // Row types: exactly the columns we insert.
@@ -68,6 +70,10 @@ func interval(a map[string]string) (start, end int64, tz int, ok bool) {
 // round4 drops floating-point noise from unit conversions (same as `health log`).
 func round4(v float64) float64 { return math.Round(v*10000) / 10000 }
 
+// finite reports whether v can be stored: SQLite turns NaN into NULL and
+// cannot be read back as JSON when it holds Inf.
+func finite(v float64) bool { return !math.IsNaN(v) && !math.IsInf(v, 0) }
+
 // sampleRow converts a numeric <Record>. A non-empty reason means "skip it".
 func sampleRow(a map[string]string) (sampleData, string) {
 	m, known := metrics.FromApple(a["type"])
@@ -85,13 +91,17 @@ func sampleRow(a map[string]string) (sampleData, string) {
 	if err != nil {
 		return sampleData{}, reasonBadUnit
 	}
+	// Conversion and rounding can overflow a huge but finite number to Inf.
+	if value = round4(value); !finite(value) {
+		return sampleData{}, reasonBadValue
+	}
 	start, end, tz, ok := interval(a)
 	if !ok {
 		return sampleData{}, reasonBadDate
 	}
 	return sampleData{
 		metric: m.Name, unit: m.Unit, source: a["sourceName"],
-		start: start, end: end, value: round4(value), tz: tz,
+		start: start, end: end, value: value, tz: tz,
 	}, ""
 }
 
@@ -130,6 +140,9 @@ func optional(a map[string]string, key, unitKey string, factors map[string]float
 		return nil, false
 	}
 	out := round4(raw * f)
+	if !finite(out) {
+		return nil, false
+	}
 	return &out, true
 }
 

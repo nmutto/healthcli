@@ -27,6 +27,8 @@ const (
 	reasonBadWorkout   = "bad_workout"
 )
 
+var errNotApple = errors.New("not an Apple Health export (no <HealthData> element found)")
+
 // Summary is what an import did. The json tags are what `--json` prints.
 type Summary struct {
 	Read       int64            `json:"read"`       // Record and Workout elements seen
@@ -106,25 +108,30 @@ func parse(r io.Reader, sum *Summary, w *writer, opts Options) error {
 		switch el.Name.Local {
 		case "HealthData":
 			sawRoot = true
-		case "Record":
+		case "Record", "Workout":
+			// Fail before writing anything if this is not an Apple export.
+			if !sawRoot {
+				return errNotApple
+			}
 			sum.Read++
-			if err := handleRecord(el, sum, w); err != nil {
+			if el.Name.Local == "Record" {
+				err = handleRecord(el, sum, w)
+			} else {
+				err = handleWorkout(el, sum, w)
+			}
+			if err != nil {
 				return err
 			}
-		case "Workout":
-			sum.Read++
-			if err := handleWorkout(el, sum, w); err != nil {
-				return err
+			// Only report right after a record: child elements must not
+			// repeat the same milestone.
+			if opts.Progress != nil && sum.Read%progressEvery == 0 {
+				opts.Progress(sum.Read)
 			}
-		}
-
-		if opts.Progress != nil && sum.Read > 0 && sum.Read%progressEvery == 0 {
-			opts.Progress(sum.Read)
 		}
 	}
 
 	if !sawRoot {
-		return errors.New("not an Apple Health export (no <HealthData> element found)")
+		return errNotApple
 	}
 	return nil
 }
@@ -175,5 +182,6 @@ func number(s string) (float64, bool) {
 		return 0, false
 	}
 	f, err := strconv.ParseFloat(s, 64)
-	return f, err == nil
+	// ParseFloat accepts "NaN" and "Inf"; neither is a measurement.
+	return f, err == nil && finite(f)
 }

@@ -155,3 +155,19 @@ func TestQueryJSONKeepsColumnOrder(t *testing.T) {
 		t.Errorf("output is not valid JSON: %v", err)
 	}
 }
+
+// BUG: `health log steps NaN` passed ParseFloat, and `inf` was stored. NaN hit
+// a confusing NOT NULL database error; Inf later broke `query --json`.
+func TestLogRejectsNonFiniteValues(t *testing.T) {
+	db := tempDB(t)
+	for _, v := range []string{"NaN", "inf", "1e305"} {
+		_, _, err := run(t, "--db", db, "log", "steps", v)
+		if err == nil || (!strings.Contains(err.Error(), "not a number") && !strings.Contains(err.Error(), "too large")) {
+			t.Errorf("log steps %s: err = %v, want 'not a number' or 'too large'", v, err)
+		}
+	}
+	out, _, err := run(t, "--db", db, "query", "SELECT count(*) AS n FROM samples", "--json")
+	if err != nil || !strings.Contains(out, `"n": 0`) {
+		t.Errorf("nothing should have been stored, got %q, %v", out, err)
+	}
+}

@@ -48,7 +48,7 @@ func runLog(cmd *cobra.Command, opts *options, metricArg, valueArg, unit, at str
 		return err
 	}
 	raw, err := strconv.ParseFloat(valueArg, 64)
-	if err != nil {
+	if err != nil || math.IsNaN(raw) || math.IsInf(raw, 0) {
 		return fmt.Errorf("value %q is not a number", valueArg)
 	}
 	value, err := metric.ToCanonical(raw, unit)
@@ -57,6 +57,9 @@ func runLog(cmd *cobra.Command, opts *options, metricArg, valueArg, unit, at str
 	}
 	// Round so unit conversion noise (72.57477920000001) never reaches the DB.
 	value = math.Round(value*10000) / 10000
+	if math.IsInf(value, 0) { // a huge value can overflow during conversion
+		return fmt.Errorf("value %q is too large", valueArg)
+	}
 	when, err := parseTime(at, time.Now())
 	if err != nil {
 		return err
