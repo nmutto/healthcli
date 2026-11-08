@@ -5,7 +5,7 @@ package main
 import (
 	"os"
 
-	"github.com/muttoni/health/internal/cli"
+	"github.com/nmutto/health/internal/cli"
 )
 
 func main() {

@@ -10,7 +10,7 @@ import (
 
 // Version is the program version. It can be overridden at build time with:
 //
-//	go build -ldflags "-X github.com/muttoni/health/internal/cli.Version=1.2.3"
+//	go build -ldflags "-X github.com/nmutto/health/internal/cli.Version=1.2.3"
 var Version = "0.1.0-dev"
 
 // options holds the global flags shared by every subcommand.

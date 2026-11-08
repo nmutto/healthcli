@@ -1,4 +1,4 @@
-module github.com/muttoni/health
+module github.com/nmutto/health
 
 go 1.27.3
 
