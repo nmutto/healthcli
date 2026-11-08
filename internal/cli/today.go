@@ -133,8 +133,8 @@ JSON output (--json) has these fields:
 func runToday(cmd *cobra.Command, opts *options, date string) error {
 	if date == "" {
 		date = nowFunc().Format(stats.DayLayout)
-	} else if _, err := time.Parse(stats.DayLayout, date); err != nil {
-		return fmt.Errorf("bad --date %q: want YYYY-MM-DD, e.g. 2026-11-08", date)
+	} else if err := checkDateFlag(date); err != nil {
+		return err
 	}
 
 	conn, err := openDB(opts)
@@ -155,6 +155,20 @@ func runToday(cmd *cobra.Command, opts *options, date string) error {
 	}
 	_, err = fmt.Fprint(out, renderToday(report, style{color: colorFor(out)}))
 	return err
+}
+
+// checkDateFlag validates --date. Years are limited to 1900..2999: nothing
+// real lies outside, and day arithmetic at the ends of the calendar
+// (year 0, year 10000) is not worth supporting.
+func checkDateFlag(date string) error {
+	t, err := time.Parse(stats.DayLayout, date)
+	if err != nil {
+		return fmt.Errorf("bad --date %q: want YYYY-MM-DD, e.g. 2026-11-08", date)
+	}
+	if y := t.Year(); y < 1900 || y > 2999 {
+		return fmt.Errorf("bad --date %q: year must be between 1900 and 2999", date)
+	}
+	return nil
 }
 
 // cmdContext returns the command's context, or a background one if cobra

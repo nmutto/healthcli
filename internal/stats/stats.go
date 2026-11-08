@@ -98,7 +98,11 @@ func AddDays(day string, n int) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return t.AddDate(0, 0, n).Format(DayLayout), nil
+	t = t.AddDate(0, 0, n)
+	if y := t.Year(); y < 1 || y > 9999 {
+		return "", fmt.Errorf("stats: %d days from %s is out of range", n, day)
+	}
+	return t.Format(DayLayout), nil
 }
 
 // Real-world UTC offsets run from -12:00 to +14:00. A local day can thus

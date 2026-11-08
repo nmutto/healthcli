@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"math"
 	"strings"
-	"time"
 
 	"github.com/spf13/cobra"
 
@@ -122,8 +121,8 @@ func runTrend(cmd *cobra.Command, opts *options, name string, days int, date str
 	}
 	if date == "" {
 		date = nowFunc().Format(stats.DayLayout)
-	} else if _, err := time.Parse(stats.DayLayout, date); err != nil {
-		return fmt.Errorf("bad --date %q: want YYYY-MM-DD, e.g. 2026-11-08", date)
+	} else if err := checkDateFlag(date); err != nil {
+		return err
 	}
 
 	// Check the name before opening the database, so a typo gives the
@@ -229,6 +228,9 @@ func readValues(ctx context.Context, conn *sql.DB, metric, from, to string) (map
 			return nil, err
 		}
 		for _, n := range nights {
+			if n.Source == "" {
+				continue // only in_bed rows (an iPhone alone): not hours asleep, not 0 h
+			}
 			out[n.Night] = stats.DayValue{Day: n.Night, Value: n.Asleep.Hours(), Source: n.Source}
 		}
 		return out, nil
@@ -267,7 +269,10 @@ func meanOver(byDay map[string]stats.DayValue, from, to string) (mean float64, n
 			sum += dv.Value
 			n++
 		}
-		next, _ := stats.AddDays(d, 1)
+		next, err := stats.AddDays(d, 1)
+		if err != nil {
+			break // end of the calendar; never loop on ""
+		}
 		d = next
 	}
 	if n == 0 {
@@ -345,7 +350,7 @@ func latestDayFor(ctx context.Context, conn *sql.DB, metric string) (string, boo
 	if metric == sleepMetric {
 		var d sql.NullString
 		err := conn.QueryRowContext(ctx,
-			`SELECT max(date(end_ts + tz_offset + 21600, 'unixepoch')) FROM sleep_stages`).Scan(&d)
+			`SELECT max(date(end_ts + tz_offset + 21600, 'unixepoch')) FROM sleep_stages WHERE stage != 'in_bed'`).Scan(&d)
 		return d.String, d.Valid, err
 	}
 	s, err := stats.LatestSample(ctx, conn, metric)
