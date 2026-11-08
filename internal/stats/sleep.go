@@ -47,10 +47,36 @@ type SleepNight struct {
 // that ends before 18:00 counts toward the night that just ended.
 const nightShift = 6 * 60 * 60
 
-// sleepTotals adds up the stage rows of one source for one night.
+// interval is a stage row's [start, end) in Unix seconds.
+type interval struct{ start, end int64 }
+
+// sleepTotals collects the stage rows of one source for one night.
 type sleepTotals struct {
 	rows    int
-	byStage map[string]time.Duration
+	byStage map[string][]interval
+}
+
+// total is how long the stage lasted. Rows of the same stage that overlap
+// (a revised estimate written next to the old one) count once, and a row
+// that ends before it starts counts for nothing.
+func (t *sleepTotals) total(stage string) time.Duration {
+	ivs := append([]interval(nil), t.byStage[stage]...)
+	sort.Slice(ivs, func(i, j int) bool { return ivs[i].start < ivs[j].start })
+	var secs, curEnd int64
+	started := false
+	for _, iv := range ivs {
+		if iv.end <= iv.start {
+			continue
+		}
+		if !started || iv.start > curEnd {
+			secs += iv.end - iv.start
+			curEnd, started = iv.end, true
+		} else if iv.end > curEnd {
+			secs += iv.end - curEnd
+			curEnd = iv.end
+		}
+	}
+	return time.Duration(secs) * time.Second
 }
 
 // SleepNights returns one SleepNight per night from fromDay to toDay (both
@@ -71,7 +97,7 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 	// (migration 0002). tz_offset is the one the row STARTED in, which is
 	// all the database stores.
 	rows, err := conn.QueryContext(ctx, `
-		SELECT date(end_ts + tz_offset + ?, 'unixepoch') AS night, stage, source, end_ts - start_ts
+		SELECT date(end_ts + tz_offset + ?, 'unixepoch') AS night, stage, source, start_ts, end_ts
 		FROM sleep_stages
 		WHERE end_ts >= ? AND end_ts < ?
 		  AND date(end_ts + tz_offset + ?, 'unixepoch') BETWEEN ? AND ?`,
@@ -86,8 +112,8 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 	inBed := map[string]map[string]*sleepTotals{}
 	for rows.Next() {
 		var night, stage, source string
-		var seconds int64
-		if err := rows.Scan(&night, &stage, &source, &seconds); err != nil {
+		var start, end int64
+		if err := rows.Scan(&night, &stage, &source, &start, &end); err != nil {
 			return nil, fmt.Errorf("stats: read sleep: %w", err)
 		}
 		group := stages
@@ -99,11 +125,11 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 		}
 		t := group[night][source]
 		if t == nil {
-			t = &sleepTotals{byStage: map[string]time.Duration{}}
+			t = &sleepTotals{byStage: map[string][]interval{}}
 			group[night][source] = t
 		}
 		t.rows++
-		t.byStage[stage] += time.Duration(seconds) * time.Second
+		t.byStage[stage] = append(t.byStage[stage], interval{start, end})
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("stats: read sleep: %w", err)
@@ -127,16 +153,16 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 		if source, t := bestSleepSource(stages[night]); t != nil {
 			n.Source = source
 			n.Segments = t.rows
-			n.Core = t.byStage["core"]
-			n.Deep = t.byStage["deep"]
-			n.REM = t.byStage["rem"]
-			n.Unspecified = t.byStage["asleep_unspecified"]
-			n.Awake = t.byStage["awake"]
+			n.Core = t.total("core")
+			n.Deep = t.total("deep")
+			n.REM = t.total("rem")
+			n.Unspecified = t.total("asleep_unspecified")
+			n.Awake = t.total("awake")
 			n.Asleep = n.Core + n.Deep + n.REM + n.Unspecified
 		}
 		if source, t := bestSleepSource(inBed[night]); t != nil {
 			n.InBedSource = source
-			n.InBed = t.byStage["in_bed"]
+			n.InBed = t.total("in_bed")
 		}
 		out = append(out, n)
 	}

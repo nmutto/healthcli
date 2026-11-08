@@ -109,6 +109,20 @@ func tiny(x, scale float64) bool {
 	return math.Abs(x) <= 1e-9*math.Max(1, math.Abs(scale))
 }
 
+// finite clamps an overflowed ratio to the largest float, keeping its sign,
+// because encoding/json refuses to print Inf or NaN (a NaN becomes 0).
+func finite(x float64) float64 {
+	switch {
+	case math.IsNaN(x):
+		return 0
+	case math.IsInf(x, 1):
+		return math.MaxFloat64
+	case math.IsInf(x, -1):
+		return -math.MaxFloat64
+	}
+	return x
+}
+
 // Labels returned by Compare.
 const (
 	Above   = "above"
@@ -132,16 +146,16 @@ type Comparison struct {
 // Typical. If every baseline day had the same value (Stddev 0), there is no
 // spread to measure against, so any difference at all counts as above/below.
 func Compare(value float64, b Baseline) Comparison {
-	c := Comparison{Value: value, Mean: b.Mean, Delta: value - b.Mean}
+	c := Comparison{Value: value, Mean: b.Mean, Delta: finite(value - b.Mean)}
 	if tiny(c.Delta, b.Mean) {
 		c.Delta = 0 // same value, give or take float rounding
 	}
 	if b.Mean != 0 {
-		c.DeltaPct = c.Delta / math.Abs(b.Mean) * 100
+		c.DeltaPct = finite(c.Delta / math.Abs(b.Mean) * 100)
 	}
 
 	if b.Stddev > 0 {
-		c.Z = c.Delta / b.Stddev
+		c.Z = finite(c.Delta / b.Stddev)
 	}
 	switch {
 	case b.Stddev > 0 && c.Z >= TypicalZ, b.Stddev == 0 && c.Delta > 0:
