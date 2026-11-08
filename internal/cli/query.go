@@ -94,19 +94,43 @@ func readRows(rows *sql.Rows) ([]string, [][]any, error) {
 	return cols, data, rows.Err()
 }
 
+// writeJSON prints an array of objects whose keys follow the SELECT column
+// order. A map[string]any would sort keys alphabetically, so we write the
+// brackets and commas ourselves and let encoding/json format each piece.
 func writeJSON(w io.Writer, cols []string, data [][]any) error {
-	// Start from an empty slice so zero rows print [] rather than null.
-	out := []map[string]any{}
-	for _, row := range data {
-		obj := make(map[string]any, len(cols))
-		for i, c := range cols {
-			obj[c] = row[i]
-		}
-		out = append(out, obj)
+	if len(data) == 0 {
+		_, err := io.WriteString(w, "[]\n")
+		return err
 	}
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
-	return enc.Encode(out)
+	var sb strings.Builder
+	sb.WriteString("[\n")
+	for r, row := range data {
+		sb.WriteString("  {")
+		for i, c := range cols {
+			if i > 0 {
+				sb.WriteString(", ")
+			}
+			key, err := json.Marshal(c)
+			if err != nil {
+				return err
+			}
+			val, err := json.Marshal(row[i])
+			if err != nil {
+				return err
+			}
+			sb.Write(key)
+			sb.WriteString(": ")
+			sb.Write(val)
+		}
+		sb.WriteString("}")
+		if r < len(data)-1 {
+			sb.WriteString(",")
+		}
+		sb.WriteString("\n")
+	}
+	sb.WriteString("]\n")
+	_, err := io.WriteString(w, sb.String())
+	return err
 }
 
 func writeTable(w io.Writer, cols []string, data [][]any) error {

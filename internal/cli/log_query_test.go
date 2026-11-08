@@ -124,3 +124,34 @@ func TestQueryRejectsWrites(t *testing.T) {
 		t.Errorf("%q should fail", q)
 	}
 }
+
+func TestLogRoundsConvertedValue(t *testing.T) {
+	db := tempDB(t)
+	args := []string{"--db", db, "log", "weight", "160", "--unit", "lb", "--at", "2025-03-01T08:30:00Z", "--json"}
+	out, _, err := run(t, args...)
+	if err != nil || !strings.Contains(out, `"value":72.5748}`) {
+		t.Fatalf("want rounded 72.5748, got %q, %v", out, err)
+	}
+	// Re-logging the same row must still be recognised as a duplicate.
+	out, _, err = run(t, args...)
+	if err != nil || !strings.Contains(out, `"inserted":false`) {
+		t.Errorf("want inserted:false, got %q, %v", out, err)
+	}
+}
+
+func TestQueryJSONKeepsColumnOrder(t *testing.T) {
+	db := tempDB(t)
+	run(t, "--db", db, "log", "hr", "60", "--at", "2025-03-01T08:30:00Z")
+	out, _, err := run(t, "--db", db, "query", "SELECT value, metric, unit AS a FROM samples", "--json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "[\n  {\"value\": 60, \"metric\": \"heart_rate\", \"a\": \"count/min\"}\n]\n"
+	if out != want {
+		t.Errorf("got %q, want %q", out, want)
+	}
+	var rows []map[string]any
+	if err := json.Unmarshal([]byte(out), &rows); err != nil {
+		t.Errorf("output is not valid JSON: %v", err)
+	}
+}

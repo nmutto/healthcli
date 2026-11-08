@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 
@@ -54,6 +55,8 @@ func runLog(cmd *cobra.Command, opts *options, metricArg, valueArg, unit, at str
 	if err != nil {
 		return err
 	}
+	// Round so unit conversion noise (72.57477920000001) never reaches the DB.
+	value = math.Round(value*10000) / 10000
 	when, err := parseTime(at, time.Now())
 	if err != nil {
 		return err
