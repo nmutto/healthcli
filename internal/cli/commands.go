@@ -6,22 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// The commands below are stubs for Phase 1: they only define the shape of the
+// The commands below (except log and query, which live in their own files) are stubs for Phase 1: they only define the shape of the
 // CLI (names, arguments, help text). Real behaviour comes in later phases.
-
-func newLogCmd(opts *options) *cobra.Command {
-	return &cobra.Command{
-		Use:   "log <metric> <value>",
-		Short: "Record a manual measurement",
-		Long:  "Log a single measurement (for example weight or mood) with the current time.",
-		Example: `  health log weight 72.5
-  health log mood 4`,
-		Args: cobra.ExactArgs(2),
-		Run: func(cmd *cobra.Command, args []string) {
-			notImplemented(cmd, opts)
-		},
-	}
-}
 
 func newTodayCmd(opts *options) *cobra.Command {
 	return &cobra.Command{
@@ -53,20 +39,6 @@ func newTrendCmd(opts *options) *cobra.Command {
 	}
 	cmd.Flags().IntVar(&days, "days", 30, "number of days to look back")
 	return cmd
-}
-
-func newQueryCmd(opts *options) *cobra.Command {
-	return &cobra.Command{
-		Use:   "query <sql>",
-		Short: "Run a read-only SQL query",
-		Long:  "Run a read-only SQL query against the local database and print the rows.",
-		Example: `  health query "SELECT count(*) FROM records"
-  health query "SELECT * FROM records LIMIT 5" --json`,
-		Args: cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			notImplemented(cmd, opts)
-		},
-	}
 }
 
 // newImportCmd is a parent command: "import" itself does nothing, it only

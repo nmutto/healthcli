@@ -45,7 +45,7 @@ and lets you log, review and query your data. Nothing leaves your machine.`,
   health log weight 72.5
   health today
   health trend steps --days 30
-  health query "SELECT * FROM records LIMIT 5" --json`,
+  health query "SELECT * FROM samples LIMIT 5" --json`,
 		// We print errors in Execute, and usage on every error is just noise.
 		SilenceErrors: true,
 		SilenceUsage:  true,
