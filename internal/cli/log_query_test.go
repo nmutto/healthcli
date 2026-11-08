@@ -146,7 +146,7 @@ func TestQueryJSONKeepsColumnOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := "[\n  {\"value\": 60, \"metric\": \"heart_rate\", \"a\": \"count/min\"}\n]\n"
+	want := "[\n  {\"value\": 60, \"metric\": \"heart_rate\", \"a\": \"bpm\"}\n]\n"
 	if out != want {
 		t.Errorf("got %q, want %q", out, want)
 	}

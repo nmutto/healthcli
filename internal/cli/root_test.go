@@ -55,7 +55,6 @@ func TestStubsPrintNotImplemented(t *testing.T) {
 	cases := [][]string{
 		{"today"},
 		{"trend", "steps"},
-		{"import", "apple", "export.zip"},
 	}
 	for _, args := range cases {
 		out, _, err := run(t, args...)

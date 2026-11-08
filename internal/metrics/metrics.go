@@ -20,13 +20,39 @@ type Metric struct {
 // poundsToKg is the exact definition of the avoirdupois pound.
 const poundsToKg = 0.45359237
 
+// kjToKcal converts kilojoules to (thermochemical) kilocalories.
+const kjToKcal = 1 / 4.184
+
+// Heart rates are stored as "bpm". Apple calls the same unit "count/min", so
+// it is accepted as an input unit with factor 1.
 var known = []Metric{
-	{Name: "heart_rate", Unit: "count/min"},
-	{Name: "resting_heart_rate", Unit: "count/min"},
+	{Name: "heart_rate", Unit: "bpm", Conversions: map[string]float64{"count/min": 1}},
+	{Name: "resting_heart_rate", Unit: "bpm", Conversions: map[string]float64{"count/min": 1}},
 	{Name: "step_count", Unit: "count"},
-	{Name: "hrv_sdnn", Unit: "ms"},
-	{Name: "body_mass", Unit: "kg", Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg}},
-	{Name: "active_energy", Unit: "kcal"},
+	{Name: "hrv_sdnn", Unit: "ms", Conversions: map[string]float64{"s": 1000}},
+	{Name: "body_mass", Unit: "kg", Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
+	{Name: "active_energy", Unit: "kcal", Conversions: map[string]float64{"kj": kjToKcal}},
+}
+
+// appleTypes maps Apple's HealthKit identifiers to our metric names. Anything
+// not listed here is skipped by the importer as "unknown_type".
+var appleTypes = map[string]string{
+	"HKQuantityTypeIdentifierHeartRate":                "heart_rate",
+	"HKQuantityTypeIdentifierRestingHeartRate":         "resting_heart_rate",
+	"HKQuantityTypeIdentifierStepCount":                "step_count",
+	"HKQuantityTypeIdentifierHeartRateVariabilitySDNN": "hrv_sdnn",
+	"HKQuantityTypeIdentifierBodyMass":                 "body_mass",
+	"HKQuantityTypeIdentifierActiveEnergyBurned":       "active_energy",
+}
+
+// FromApple returns the metric for an Apple type identifier, if we track it.
+func FromApple(identifier string) (Metric, bool) {
+	name, ok := appleTypes[identifier]
+	if !ok {
+		return Metric{}, false
+	}
+	m, err := Lookup(name)
+	return m, err == nil
 }
 
 // aliases maps friendly names people type to canonical metric names.
