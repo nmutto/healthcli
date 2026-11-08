@@ -54,9 +54,7 @@ func TestVersion(t *testing.T) {
 func TestStubsPrintNotImplemented(t *testing.T) {
 	cases := [][]string{
 		{"today"},
-		{"log", "weight", "72.5"},
 		{"trend", "steps"},
-		{"query", "SELECT 1"},
 		{"import", "apple", "export.zip"},
 	}
 	for _, args := range cases {
