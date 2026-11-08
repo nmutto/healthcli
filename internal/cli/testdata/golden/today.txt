@@ -1,0 +1,14 @@
+2026-11-08 (Sunday)
+
+Steps               12,345 steps  baseline 7,537              +4,808 (+63.8%)  above
+Active energy       -
+Avg heart rate      64 bpm        baseline 62                 +2 (+3.2%)       above
+Resting heart rate  58 bpm        baseline n/a (need 7 days)
+HRV                 -
+Weight              72.5 kg       baseline n/a (need 7 days)
+
+Sleep
+  Asleep 7h 00m  (core 4h 30m, deep 1h 30m, REM 1h 00m, awake 15m)
+
+Workouts
+  Running  18:00  45m  6.2 km  412 kcal

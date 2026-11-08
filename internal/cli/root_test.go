@@ -51,32 +51,6 @@ func TestVersion(t *testing.T) {
 	}
 }
 
-func TestStubsPrintNotImplemented(t *testing.T) {
-	cases := [][]string{
-		{"today"},
-		{"trend", "steps"},
-	}
-	for _, args := range cases {
-		out, _, err := run(t, args...)
-		if err != nil {
-			t.Errorf("%v: unexpected error %v", args, err)
-		}
-		if !strings.Contains(out, "not implemented yet") {
-			t.Errorf("%v: output %q missing stub message", args, out)
-		}
-	}
-}
-
-func TestJSONFlagOnStub(t *testing.T) {
-	out, _, err := run(t, "today", "--json", "--db", "x.db")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(out, `"status"`) {
-		t.Errorf("expected JSON output, got %q", out)
-	}
-}
-
 func TestWrongArgCountIsAnError(t *testing.T) {
 	if _, _, err := run(t, "log", "weight"); err == nil {
 		t.Fatal("expected an error when value is missing")

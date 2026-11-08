@@ -66,16 +66,3 @@ and lets you log, review and query your data. Nothing leaves your machine.`,
 	// The "completion" command is added automatically by cobra.
 	return root
 }
-
-// notImplemented is the shared body of the Phase 1 stub commands.
-//
-// TODO(architect): once internal/db exists, open the database here using
-// opts.dbPath (falling back to the default location when empty) and pass it
-// to the real command implementation. Commands must close it when done.
-func notImplemented(cmd *cobra.Command, opts *options) {
-	if opts.jsonOutput {
-		fmt.Fprintln(cmd.OutOrStdout(), `{"status":"not implemented yet"}`)
-		return
-	}
-	fmt.Fprintln(cmd.OutOrStdout(), "not implemented yet")
-}
