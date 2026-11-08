@@ -117,7 +117,10 @@ func parse(r io.Reader, sum *Summary, w *writer, opts Options) error {
 			if el.Name.Local == "Record" {
 				err = handleRecord(el, sum, w)
 			} else {
-				err = handleWorkout(el, sum, w)
+				var stats []map[string]string
+				if stats, err = workoutStatistics(dec); err == nil {
+					err = handleWorkout(el, stats, sum, w)
+				}
 			}
 			if err != nil {
 				return err
@@ -158,8 +161,30 @@ func handleRecord(el xml.StartElement, sum *Summary, w *writer) error {
 	return w.addSample(row)
 }
 
-func handleWorkout(el xml.StartElement, sum *Summary, w *writer) error {
-	row, reason := workoutRow(attrs(el))
+// workoutStatistics reads the rest of a <Workout> (the decoder is just past its
+// start tag) and returns the attributes of its <WorkoutStatistics> children.
+func workoutStatistics(dec *xml.Decoder) ([]map[string]string, error) {
+	var stats []map[string]string
+	for depth := 1; depth > 0; {
+		tok, err := dec.Token()
+		if err != nil { // io.EOF here means the file ends inside the workout
+			return nil, fmt.Errorf("not a valid Apple Health export (XML error: %w)", err)
+		}
+		switch t := tok.(type) {
+		case xml.StartElement:
+			depth++
+			if t.Name.Local == "WorkoutStatistics" {
+				stats = append(stats, attrs(t))
+			}
+		case xml.EndElement:
+			depth--
+		}
+	}
+	return stats, nil
+}
+
+func handleWorkout(el xml.StartElement, stats []map[string]string, sum *Summary, w *writer) error {
+	row, reason := workoutRow(attrs(el), stats)
 	if reason != "" {
 		sum.Skipped[reason]++
 		return nil

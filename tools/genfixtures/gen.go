@@ -189,12 +189,27 @@ func (g *gen) writeWorkout(day int) {
 	km := k.speedKmh * minutes / 60
 	start := g.at(day, 18, 0)
 	end := start.Add(time.Duration(minutes * float64(time.Minute)))
-	fmt.Fprintf(g.w, ` <Workout workoutActivityType="%s" duration="%.4f" durationUnit="min" totalDistance="%.4f" totalDistanceUnit="km" totalEnergyBurned="%.4f" totalEnergyBurnedUnit="kcal" sourceName="%s" sourceVersion="%s" creationDate="%s" startDate="%s" endDate="%s">
+	kcal := km * k.kcalKm
+	distType := "DistanceWalkingRunning"
+	if k.typ == "HKWorkoutActivityTypeCycling" {
+		distType = "DistanceCycling"
+	}
+	stat := func(typ string, sum float64, unit string) string {
+		return fmt.Sprintf(`  <WorkoutStatistics type="HKQuantityTypeIdentifier%s" startDate="%s" endDate="%s" sum="%.4f" unit="%s"/>
+`, typ, fmtTime(start), fmtTime(end), sum, unit)
+	}
+	// Two styles, alternating. Old exports carry the totals as attributes of
+	// <Workout>; iOS 16+ exports leave them off and use <WorkoutStatistics>
+	// children only. Both describe the same numbers.
+	totals := ""
+	if (day/2)%2 == 0 {
+		totals = fmt.Sprintf(` totalDistance="%.4f" totalDistanceUnit="km" totalEnergyBurned="%.4f" totalEnergyBurnedUnit="kcal"`, km, kcal)
+	}
+	fmt.Fprintf(g.w, ` <Workout workoutActivityType="%s" duration="%.4f" durationUnit="min"%s sourceName="%s" sourceVersion="%s" creationDate="%s" startDate="%s" endDate="%s">
   <MetadataEntry key="HKIndoorWorkout" value="0"/>
-  <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="%s" endDate="%s" sum="%.4f" unit="kcal"/>
- </Workout>
-`, k.typ, minutes, km, km*k.kcalKm, watch.name, watch.version,
-		fmtTime(end), fmtTime(start), fmtTime(end), fmtTime(start), fmtTime(end), km*k.kcalKm)
+%s%s </Workout>
+`, k.typ, minutes, totals, watch.name, watch.version, fmtTime(end), fmtTime(start), fmtTime(end),
+		stat("ActiveEnergyBurned", kcal, "kcal"), stat(distType, km, "km"))
 }
 
 // writeMalformed emits records a robust importer must skip. All are still

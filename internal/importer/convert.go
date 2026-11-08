@@ -124,7 +124,7 @@ func sleepRow(a map[string]string) (sleepData, string) {
 // Factors that turn a workout unit into our fixed units (s, kcal, m).
 var (
 	toSeconds = map[string]float64{"s": 1, "sec": 1, "min": 60, "hr": 3600, "h": 3600}
-	toMetres  = map[string]float64{"m": 1, "km": 1000, "mi": 1609.344, "ft": 0.3048}
+	toMetres  = map[string]float64{"m": 1, "km": 1000, "mi": 1609.344, "ft": 0.3048, "yd": 0.9144}
 	toKcal    = map[string]float64{"kcal": 1, "cal": 1, "kj": 1 / 4.184}
 )
 
@@ -146,9 +146,32 @@ func optional(a map[string]string, key, unitKey string, factors map[string]float
 	return &out, true
 }
 
-// workoutRow converts a <Workout> element's own attributes. Child elements
-// (events, statistics) are ignored: the totals are already on the element.
-func workoutRow(a map[string]string) (workoutData, string) {
+// total returns the energy or distance of a workout. The attribute on the
+// <Workout> wins; only when it is absent do we look at the <WorkoutStatistics>
+// children (iOS 16+ exports often have no attribute). match picks the child
+// types that count, and the first one that has a sum is used.
+func total(a map[string]string, key, unitKey string, stats []map[string]string,
+	match func(typ string) bool, factors map[string]float64) (*float64, bool) {
+	if a[key] != "" {
+		return optional(a, key, unitKey, factors)
+	}
+	for _, s := range stats {
+		if match(s["type"]) && s["sum"] != "" {
+			return optional(s, "sum", "unit", factors)
+		}
+	}
+	return nil, true
+}
+
+func isActiveEnergy(typ string) bool { return typ == "HKQuantityTypeIdentifierActiveEnergyBurned" }
+
+// isDistance matches DistanceWalkingRunning, DistanceCycling, DistanceSwimming...
+func isDistance(typ string) bool { return strings.HasPrefix(typ, "HKQuantityTypeIdentifierDistance") }
+
+// workoutRow converts a <Workout> element. a holds its attributes, stats the
+// attributes of its <WorkoutStatistics> children. Other children (events,
+// metadata) are not needed.
+func workoutRow(a map[string]string, stats []map[string]string) (workoutData, string) {
 	activity := strings.TrimPrefix(a["workoutActivityType"], "HKWorkoutActivityType")
 	if activity == "" {
 		return workoutData{}, reasonBadWorkout
@@ -166,8 +189,8 @@ func workoutRow(a map[string]string) (workoutData, string) {
 		}
 		duration = *d
 	}
-	energy, ok1 := optional(a, "totalEnergyBurned", "totalEnergyBurnedUnit", toKcal)
-	distance, ok2 := optional(a, "totalDistance", "totalDistanceUnit", toMetres)
+	energy, ok1 := total(a, "totalEnergyBurned", "totalEnergyBurnedUnit", stats, isActiveEnergy, toKcal)
+	distance, ok2 := total(a, "totalDistance", "totalDistanceUnit", stats, isDistance, toMetres)
 	if !ok1 || !ok2 {
 		return workoutData{}, reasonBadWorkout
 	}

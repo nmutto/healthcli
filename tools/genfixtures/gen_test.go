@@ -36,6 +36,7 @@ func TestSmallIsWellFormedAndCoversTypes(t *testing.T) {
 	types := map[string]int{}
 	sleepValues := map[string]bool{}
 	workouts := map[string]bool{}
+	var modernWorkouts, legacyWorkouts, distanceStats int
 	sources := map[string]bool{}
 	offsets := map[string]bool{}
 	missingValue := 0
@@ -72,6 +73,15 @@ func TestSmallIsWellFormedAndCoversTypes(t *testing.T) {
 			}
 		case "Workout":
 			workouts[a["workoutActivityType"]] = true
+			if a["totalDistance"] == "" {
+				modernWorkouts++ // totals live in <WorkoutStatistics> children
+			} else {
+				legacyWorkouts++
+			}
+		case "WorkoutStatistics":
+			if strings.HasPrefix(a["type"], "HKQuantityTypeIdentifierDistance") {
+				distanceStats++
+			}
 		}
 	}
 
@@ -84,6 +94,9 @@ func TestSmallIsWellFormedAndCoversTypes(t *testing.T) {
 		if !sleepValues[v] {
 			t.Errorf("no sleep stage %s", v)
 		}
+	}
+	if modernWorkouts == 0 || legacyWorkouts == 0 || distanceStats != modernWorkouts+legacyWorkouts {
+		t.Errorf("workouts: %d legacy-style, %d statistics-style, %d distance statistics; want both styles", legacyWorkouts, modernWorkouts, distanceStats)
 	}
 	if len(workouts) != 3 {
 		t.Errorf("workout kinds = %v, want running/walking/cycling", workouts)

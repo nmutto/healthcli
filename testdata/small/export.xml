@@ -167,6 +167,7 @@
  <Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="59.5419" durationUnit="min" totalDistance="9.9237" totalDistanceUnit="km" totalEnergyBurned="645.0377" totalEnergyBurnedUnit="kcal" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-01 18:59:32 +0100" startDate="2024-12-01 18:00:00 +0100" endDate="2024-12-01 18:59:32 +0100">
   <MetadataEntry key="HKIndoorWorkout" value="0"/>
   <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2024-12-01 18:00:00 +0100" endDate="2024-12-01 18:59:32 +0100" sum="645.0377" unit="kcal"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierDistanceWalkingRunning" startDate="2024-12-01 18:00:00 +0100" endDate="2024-12-01 18:59:32 +0100" sum="9.9237" unit="km"/>
  </Workout>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-02 00:01:02 +0100" startDate="2024-12-02 00:00:00 +0100" endDate="2024-12-02 00:01:00 +0100" value="59"/>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-02 01:01:02 +0100" startDate="2024-12-02 01:00:00 +0100" endDate="2024-12-02 01:01:00 +0100" value="65"/>
@@ -349,9 +350,10 @@
  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-04 05:18:02 +0100" startDate="2024-12-04 04:24:00 +0100" endDate="2024-12-04 05:18:00 +0100" value="HKCategoryValueSleepAnalysisAsleepCore"/>
  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-04 05:50:02 +0100" startDate="2024-12-04 05:18:00 +0100" endDate="2024-12-04 05:50:00 +0100" value="HKCategoryValueSleepAnalysisAsleepDeep"/>
  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-04 06:20:02 +0100" startDate="2024-12-04 05:50:00 +0100" endDate="2024-12-04 06:20:00 +0100" value="HKCategoryValueSleepAnalysisAsleepCore"/>
- <Workout workoutActivityType="HKWorkoutActivityTypeWalking" duration="72.4942" durationUnit="min" totalDistance="6.0412" totalDistanceUnit="km" totalEnergyBurned="271.8531" totalEnergyBurnedUnit="kcal" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-03 19:12:29 +0100" startDate="2024-12-03 18:00:00 +0100" endDate="2024-12-03 19:12:29 +0100">
+ <Workout workoutActivityType="HKWorkoutActivityTypeWalking" duration="72.4942" durationUnit="min" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-03 19:12:29 +0100" startDate="2024-12-03 18:00:00 +0100" endDate="2024-12-03 19:12:29 +0100">
   <MetadataEntry key="HKIndoorWorkout" value="0"/>
   <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2024-12-03 18:00:00 +0100" endDate="2024-12-03 19:12:29 +0100" sum="271.8531" unit="kcal"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierDistanceWalkingRunning" startDate="2024-12-03 18:00:00 +0100" endDate="2024-12-03 19:12:29 +0100" sum="6.0412" unit="km"/>
  </Workout>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-03 14:01:00 +0100" startDate="2024-12-03 14:00:00 +0100" endDate="2024-12-03 14:01:00 +0100"/>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-04 00:01:02 +0100" startDate="2024-12-04 00:00:00 +0100" endDate="2024-12-04 00:01:00 +0100" value="61"/>
@@ -543,6 +545,7 @@
  <Workout workoutActivityType="HKWorkoutActivityTypeCycling" duration="40.1944" durationUnit="min" totalDistance="13.3981" totalDistanceUnit="km" totalEnergyBurned="401.9436" totalEnergyBurnedUnit="kcal" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-05 18:40:11 +0100" startDate="2024-12-05 18:00:00 +0100" endDate="2024-12-05 18:40:11 +0100">
   <MetadataEntry key="HKIndoorWorkout" value="0"/>
   <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2024-12-05 18:00:00 +0100" endDate="2024-12-05 18:40:11 +0100" sum="401.9436" unit="kcal"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierDistanceCycling" startDate="2024-12-05 18:00:00 +0100" endDate="2024-12-05 18:40:11 +0100" sum="13.3981" unit="km"/>
  </Workout>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-06 00:01:02 -0500" startDate="2024-12-06 00:00:00 -0500" endDate="2024-12-06 00:01:00 -0500" value="59"/>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-06 01:01:02 -0500" startDate="2024-12-06 01:00:00 -0500" endDate="2024-12-06 01:01:00 -0500" value="64"/>
@@ -716,9 +719,10 @@
  </Record>
  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Alex’s iPhone" sourceVersion="17.2" creationDate="2024-12-08 06:34:02 -0500" startDate="2024-12-07 23:00:00 -0500" endDate="2024-12-08 06:34:00 -0500" value="HKCategoryValueSleepAnalysisInBed"/>
  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Alex’s iPhone" sourceVersion="17.2" creationDate="2024-12-08 06:34:02 -0500" startDate="2024-12-07 23:10:00 -0500" endDate="2024-12-08 06:34:00 -0500" value="HKCategoryValueSleepAnalysisAsleepUnspecified"/>
- <Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="58.3807" durationUnit="min" totalDistance="9.7301" totalDistanceUnit="km" totalEnergyBurned="632.4572" totalEnergyBurnedUnit="kcal" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-07 18:58:22 -0500" startDate="2024-12-07 18:00:00 -0500" endDate="2024-12-07 18:58:22 -0500">
+ <Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="58.3807" durationUnit="min" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-07 18:58:22 -0500" startDate="2024-12-07 18:00:00 -0500" endDate="2024-12-07 18:58:22 -0500">
   <MetadataEntry key="HKIndoorWorkout" value="0"/>
   <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2024-12-07 18:00:00 -0500" endDate="2024-12-07 18:58:22 -0500" sum="632.4572" unit="kcal"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierDistanceWalkingRunning" startDate="2024-12-07 18:00:00 -0500" endDate="2024-12-07 18:58:22 -0500" sum="9.7301" unit="km"/>
  </Workout>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-08 00:01:02 -0500" startDate="2024-12-08 00:00:00 -0500" endDate="2024-12-08 00:01:00 -0500" value="58"/>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-08 01:01:02 -0500" startDate="2024-12-08 01:00:00 -0500" endDate="2024-12-08 01:01:00 -0500" value="62"/>
@@ -911,6 +915,7 @@
  <Workout workoutActivityType="HKWorkoutActivityTypeWalking" duration="27.6382" durationUnit="min" totalDistance="2.3032" totalDistanceUnit="km" totalEnergyBurned="103.6431" totalEnergyBurnedUnit="kcal" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-09 18:27:38 -0500" startDate="2024-12-09 18:00:00 -0500" endDate="2024-12-09 18:27:38 -0500">
   <MetadataEntry key="HKIndoorWorkout" value="0"/>
   <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2024-12-09 18:00:00 -0500" endDate="2024-12-09 18:27:38 -0500" sum="103.6431" unit="kcal"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierDistanceWalkingRunning" startDate="2024-12-09 18:00:00 -0500" endDate="2024-12-09 18:27:38 -0500" sum="2.3032" unit="km"/>
  </Workout>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-10 00:01:02 -0500" startDate="2024-12-10 00:00:00 -0500" endDate="2024-12-10 00:01:00 -0500" value="60"/>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-10 01:01:02 -0500" startDate="2024-12-10 01:00:00 -0500" endDate="2024-12-10 01:01:00 -0500" value="59"/>
@@ -1099,9 +1104,10 @@
  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-12 06:43:02 +0100" startDate="2024-12-12 06:09:00 +0100" endDate="2024-12-12 06:43:00 +0100" value="HKCategoryValueSleepAnalysisAsleepREM"/>
  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-12 06:50:02 +0100" startDate="2024-12-12 06:43:00 +0100" endDate="2024-12-12 06:50:00 +0100" value="HKCategoryValueSleepAnalysisAwake"/>
  <Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-12 06:59:02 +0100" startDate="2024-12-12 06:50:00 +0100" endDate="2024-12-12 06:59:00 +0100" value="HKCategoryValueSleepAnalysisAsleepCore"/>
- <Workout workoutActivityType="HKWorkoutActivityTypeCycling" duration="63.7539" durationUnit="min" totalDistance="21.2513" totalDistanceUnit="km" totalEnergyBurned="637.5395" totalEnergyBurnedUnit="kcal" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-11 19:03:45 +0100" startDate="2024-12-11 18:00:00 +0100" endDate="2024-12-11 19:03:45 +0100">
+ <Workout workoutActivityType="HKWorkoutActivityTypeCycling" duration="63.7539" durationUnit="min" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-11 19:03:45 +0100" startDate="2024-12-11 18:00:00 +0100" endDate="2024-12-11 19:03:45 +0100">
   <MetadataEntry key="HKIndoorWorkout" value="0"/>
   <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2024-12-11 18:00:00 +0100" endDate="2024-12-11 19:03:45 +0100" sum="637.5395" unit="kcal"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierDistanceCycling" startDate="2024-12-11 18:00:00 +0100" endDate="2024-12-11 19:03:45 +0100" sum="21.2513" unit="km"/>
  </Workout>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-12 00:01:02 +0100" startDate="2024-12-12 00:00:00 +0100" endDate="2024-12-12 00:01:00 +0100" value="62"/>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-12 01:01:02 +0100" startDate="2024-12-12 01:00:00 +0100" endDate="2024-12-12 01:01:00 +0100" value="65"/>
@@ -1290,6 +1296,7 @@
  <Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="50.8369" durationUnit="min" totalDistance="8.4728" totalDistanceUnit="km" totalEnergyBurned="550.7331" totalEnergyBurnedUnit="kcal" sourceName="Alex’s Apple Watch" sourceVersion="10.2" creationDate="2024-12-13 18:50:50 +0100" startDate="2024-12-13 18:00:00 +0100" endDate="2024-12-13 18:50:50 +0100">
   <MetadataEntry key="HKIndoorWorkout" value="0"/>
   <WorkoutStatistics type="HKQuantityTypeIdentifierActiveEnergyBurned" startDate="2024-12-13 18:00:00 +0100" endDate="2024-12-13 18:50:50 +0100" sum="550.7331" unit="kcal"/>
+  <WorkoutStatistics type="HKQuantityTypeIdentifierDistanceWalkingRunning" startDate="2024-12-13 18:00:00 +0100" endDate="2024-12-13 18:50:50 +0100" sum="8.4728" unit="km"/>
  </Workout>
  <Record type="HKQuantityTypeIdentifierSomethingFromTheFuture" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count" creationDate="2024-12-13 14:01:02 +0100" startDate="2024-12-13 14:00:00 +0100" endDate="2024-12-13 14:01:00 +0100" value="1"/>
  <Record type="HKQuantityTypeIdentifierHeartRate" sourceName="Alex’s Apple Watch" sourceVersion="10.2" unit="count/min" creationDate="2024-12-14 00:01:02 +0100" startDate="2024-12-14 00:00:00 +0100" endDate="2024-12-14 00:01:00 +0100" value="59"/>
