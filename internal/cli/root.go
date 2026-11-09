@@ -49,6 +49,7 @@ and lets you log, review and query your data. Nothing leaves your machine.`,
 		Example: `  healthcli import apple export.zip
   healthcli log weight 72.5
   healthcli today
+  healthcli overview
   healthcli trend steps --days 30
   healthcli query "SELECT * FROM samples LIMIT 5" --json`,
 		// We print errors in Execute, and usage on every error is just noise.
@@ -64,6 +65,7 @@ and lets you log, review and query your data. Nothing leaves your machine.`,
 		newLogCmd(opts),
 		newTodayCmd(opts),
 		newTrendCmd(opts),
+		newOverviewCmd(opts),
 		newQueryCmd(opts),
 		newImportCmd(opts),
 		newVersionCmd(opts),
