@@ -1,0 +1,11 @@
+ SLEEP  Wed 4 Nov | iPhone, no stages (unspecified asleep...
+ ----------------------------------------------------------
+ ----------------------------------------------------------
+ asleep 5h 55m   00:05 -> 06:00   midpoint 03:02  (stage...
+
+ STAT       LAST NIGHT  6 NIGHTS   VS USUAL
+ Asleep     5h 55m      6h 18m     need 7 nights (have 6)
+ Bedtime    00:05       00:00      need 7 nights (have 6)
+ Midpoint   03:03       03:09      need 7 nights (have 6)
+ Sleep debt 2h 05m short, 6 n: 10h 15m short (8h target)
+ not available: in bed, efficiency, awake, deep, REM

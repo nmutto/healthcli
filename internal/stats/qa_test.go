@@ -30,8 +30,8 @@ func TestSleepOverlappingRowsAreMerged(t *testing.T) {
 	if n.InBed != 8*time.Hour+10*time.Minute {
 		t.Errorf("in bed %v, want 8h10m (22:50..07:00)", n.InBed)
 	}
-	if n.Segments != 4 {
-		t.Errorf("segments %d, want 4 rows read", n.Segments)
+	if n.Rows != 4 {
+		t.Errorf("segments %d, want 4 rows read", n.Rows)
 	}
 }
 

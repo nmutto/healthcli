@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"math"
+	"reflect"
 	"testing"
 	"time"
 
@@ -360,11 +361,14 @@ func TestSleepCrossingMidnight(t *testing.T) {
 
 	n := nights[1]
 	want := SleepNight{
-		Night: "2024-12-02", Source: watch, Segments: 6,
+		Night: "2024-12-02", Source: watch, Rows: 6,
 		Core: 4*time.Hour + 30*time.Minute, Deep: time.Hour, REM: 90 * time.Minute, Awake: 20 * time.Minute,
 		Asleep: 7 * time.Hour, InBed: 8 * time.Hour, InBedSource: iphone,
 	}
-	if n != want {
+	// The timing fields are checked in sleep_summary_test.go.
+	want.Start, want.End, want.TZ, want.Segments = n.Start, n.End, n.TZ, n.Segments
+	want.InBedStart, want.InBedEnd, want.Awakenings, want.Latency = n.InBedStart, n.InBedEnd, n.Awakenings, n.Latency
+	if !reflect.DeepEqual(n, want) {
 		t.Errorf("got  %+v\nwant %+v", n, want)
 	}
 }
