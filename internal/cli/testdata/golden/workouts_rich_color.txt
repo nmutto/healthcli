@@ -1,5 +1,4 @@
- [1mWORKOUTS[0m ─────────────────────────────────────────────────────────────────────
- 28 d  16 sessions  16h 44m  6,820 kcal  187.5 km  active 16 of 28 days
+ [2m━━[0m [1mWORKOUTS[0m [2m━━[0m 16 sessions  16h 44m  6,820 kcal  187.5 km  active 16 of 28 d [2m━[0m
 
 [2m TYPE      N TIME       KCAL     KM SHARE[0m
  cycling   6 7h 57m    3,450  126.0 ██████████░░░░░░░░░░  48%
@@ -15,7 +14,7 @@
  Sat Oct 31 yoga        49m
 
 [2m WEEK OF TIME                                    N VS AVG[0m
- Sep 21  █████████████░░░░░░░░░░░ 3h 00m         3 [36m▲ +3%[0m
+ Sep 21  █████████████░░░░░░░░░░░ 3h 00m         3 [36m▼ -23%[0m
  Sep 28  ██████████████░░░░░░░░░░ 3h 13m         4 [36m▼ -12%[0m
  Oct 05  ████████████░░░░░░░░░░░░ 2h 50m         4 [36m▼ -24%[0m
  Oct 12  ████████████████████████ 5h 31m         5 [36m▲ +62%[0m
@@ -30,7 +29,7 @@
  furthest  cycling 21.0 km, Sep 03
  biggest   cycling 700 kcal, Sep 23
 
- workout minutes per day, 8 weeks to 2026-11-09, by type
+ [2m━━[0m [1mCALENDAR[0m [2m━━[0m workout minutes per day, by type, 8 weeks to 2026-11-09 [2m━━━━━━━[0m
        Oct     Nov
  Mon   [36mc[0m [34mr[0m [2m·[0m [2m·[0m [2m·[0m [36mC[0m [2m·[0m [1m◂[0m
  Tue   [2m·[0m [2m·[0m [36mC[0m [34mr[0m [32mw[0m [2m·[0m

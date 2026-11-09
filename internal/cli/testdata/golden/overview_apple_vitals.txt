@@ -1,6 +1,6 @@
  healthcli overview                              db: demo.db · imported 1 d ago
  ──────────────────────────────────────────────────────────────────────────────
- 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
+ 1 better, 1 worse, 1 changed, 4 typical vs your 28-day usual · Resting HR +6%
  VITALS 9 !1
 
    METRIC               LATEST          VS 28-DAY USUAL               AGE

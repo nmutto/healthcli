@@ -58,8 +58,23 @@ func renderHeatmap(h *stats.Heatmap, ti termInfo) []string {
 		return nil
 	}
 
+	// The first line is a band like every other section; the title gets
+	// shorter before it would be cut.
+	name := strings.ReplaceAll(heatTitle(h), "_", " ") + " per day"
+	total := ti.width - 1
+	title := name
+	for _, cand := range []string{
+		fmt.Sprintf("%s, %s to %s", name, plural(int64(len(weeks)), "week"), h.Today),
+		fmt.Sprintf("%s, %s", name, plural(int64(len(weeks)), "week")),
+		name,
+	} {
+		title = cand
+		if runeLen(cand) <= bandRoom("CALENDAR", total) {
+			break
+		}
+	}
 	lines := []string{
-		fmt.Sprintf("%s per day, %s to %s", strings.ReplaceAll(heatTitle(h), "_", " "), plural(int64(len(weeks)), "week"), h.Today),
+		bandLine("CALENDAR", title, total, g, st),
 		heatMonthLine(weeks),
 	}
 
@@ -125,29 +140,31 @@ func heatUnit(h *stats.Heatmap) string {
 	return unitLabel(h.Metric, h.Unit)
 }
 
-// restGlyph marks a rest day (a real zero), distinct from the gap glyph in
-// ASCII; in Unicode the gap is already a dot, so rest maps never draw gaps.
+// restGlyph marks a rest day (a real zero). In Unicode the gap is already a
+// dot (and rest maps never draw gaps). In ASCII the gap is '_' and the lowest
+// level is '.', so a rest day gets ':' to stay different from both.
 func restGlyph(g glyphSet) rune {
 	if g.gap == '_' {
-		return '.'
+		return ':'
 	}
 	return g.gap
 }
 
-// heatTail is the last legend line: what the other symbols mean.
-func heatTail(h *stats.Heatmap, ti termInfo, st style) string {
+// heatTail is the last legend line (or two on a narrow terminal): what the
+// other symbols mean.
+func heatTail(h *stats.Heatmap, ti termInfo, st style) []string {
 	g := glyphsFor(ti.unicode)
-	var tail string
+	var marks string
 	if h.ZeroIsRest {
-		tail = st.dim(string(restGlyph(g))) + " rest day   "
+		marks = st.dim(string(restGlyph(g))) + " rest day"
 	} else {
-		tail = st.dim(string(g.gap)) + " no data   "
+		marks = st.dim(string(g.gap)) + " no data"
 	}
-	tail += todayMark(ti.unicode) + " today   "
+	unit := "per day"
 	if u := heatUnit(h); u != "" {
-		tail += u + " "
+		unit = u + " per day"
 	}
-	return tail + "per day"
+	return wrapParts([]string{marks, todayMark(ti.unicode) + " today", unit}, "   ", ti.width)
 }
 
 // todayMark is the symbol shown after today's cell.
@@ -201,7 +218,8 @@ func heatMonthLine(weeks [][]stats.HeatDay) string {
 }
 
 // heatLegend lists each shade with the real upper bound of its level, then
-// what the other symbols mean.
+// what the other symbols mean. Lines wrap onto more lines when the terminal
+// is too narrow for them.
 func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
 	g := glyphsFor(ti.unicode)
 	le, gt := "≤", ">"
@@ -214,10 +232,9 @@ func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
 		if h.Thresholds[0] == 0 {
 			level = 1
 		}
-		return []string{
+		return append([]string{
 			st.wrap(heatColors[level-1], string(g.shade(level))) + " every day: " + heatFormat(h, h.Thresholds[0]),
-			heatTail(h, ti, st),
-		}
+		}, heatTail(h, ti, st)...)
 	}
 	var parts []string
 	for i := 1; i <= stats.HeatLevels; i++ {
@@ -228,10 +245,25 @@ func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
 			parts = append(parts, glyph+" "+gt+heatFormat(h, h.Thresholds[i-2]))
 		}
 	}
-	return []string{
-		strings.Join(parts, "  "),
-		heatTail(h, ti, st),
+	return append(wrapParts(parts, "  ", ti.width), heatTail(h, ti, st)...)
+}
+
+// wrapParts joins parts with sep, starting a new line before a part that
+// would run past width columns (colour codes do not count).
+func wrapParts(parts []string, sep string, width int) []string {
+	var lines []string
+	line := ""
+	for _, p := range parts {
+		if line != "" && runeLen(stripANSI(line))+len(sep)+runeLen(stripANSI(p)) > width {
+			lines = append(lines, line)
+			line = ""
+		}
+		if line != "" {
+			line += sep
+		}
+		line += p
 	}
+	return append(lines, line)
 }
 
 func newHeatmapCmd(opts *options) *cobra.Command {

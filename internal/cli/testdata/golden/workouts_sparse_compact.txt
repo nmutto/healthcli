@@ -1,5 +1,4 @@
- WORKOUTS ─────────────────────────────────────────────────────────────────────
- 28 d  2 sessions  1h 35m  7.0 km  active 2 of 28 days
+ ━━ WORKOUTS ━━ 2 sessions  1h 35m  7.0 km  active 2 of 28 d ━━━━━━━━━━━━━━━━━━
 
  TYPE      N TIME        KM SHARE
  running   1 50m        7.0 ███████████░░░░░░░░░  53%

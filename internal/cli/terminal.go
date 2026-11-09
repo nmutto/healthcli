@@ -19,7 +19,7 @@ type termInfo struct {
 }
 
 const (
-	minWidth     = 60
+	minWidth     = 50
 	maxWidth     = 100
 	defaultWidth = 80
 )

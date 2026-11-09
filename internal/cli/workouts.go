@@ -30,9 +30,11 @@ that need more sessions simply do not appear. The weekly deltas are not
 coloured green or red: more training is not automatically better.
 
 JSON output (--json):
-  today, days, count, duration_seconds, energy_kcal, distance_km (null = not
-  recorded), active_days, by_type[], weeks[] (start, duration_seconds, count,
-  partial, days, delta_pct), bests[] (kind, activity, day, ..., new), recent[]`,
+  today, days, count, duration_seconds, energy_kcal, distance_km (both left out
+  when never recorded), active_days, by_type[], weeks[] (start, duration_seconds,
+  count, partial, days, delta_pct), bests[] (kind, activity, day, ..., new),
+  recent[] (day, activity, start, end, duration_seconds, energy_kcal, distance_km)
+All durations are seconds and absent values are left out, never null.`,
 		Example: `  healthcli workouts
   healthcli workouts --days 90 --weeks 12
   healthcli workouts --by type`,

@@ -125,28 +125,26 @@ $ healthcli --db demo.db overview
    Walking steadiness          94%             stale                         6 d
  green better / red worse / cyan changed (no good direction)
 
- SLEEP  Sun 8 Nov · Watch stages, iPhone in bed
- ──────────────────────────────────────────────────────────────────────────────
+ ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
        23:12                                                              06:30
  awake                       ░░░                        ░░                     
  REM                    ▓▓▓▓▓                      ▓▓▓▓▓                     ▓▓
  core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒  
  deep          ████                     █████                      ████        
-              0         1         2         3         4         5         6
+              00        01        02        03        04        05        06
 
- STAT         LAST NIGHT      7 NIGHTS      VS 28-NIGHT USUAL
- Asleep       7h 01m          7h 08m        – typical
- In bed       7h 30m          7h 37m        – typical
- Efficiency   94%             94%           – typical
- Awake        17m 2x          20m 2x        – typical
- Deep         1h 27m 21%      1h 30m        – typical
- REM          1h 18m 19%      1h 17m        – typical
- Bedtime      23:12           23:12         – typical
- Midpoint     02:51           02:54         – typical
- Sleep debt   59m short last night, 7 n: 6h 05m short vs 8h target
+ STAT         LAST NIGHT          7 NIGHTS            VS 13-NIGHT USUAL
+ Asleep       7h 01m              7h 08m              – typical
+ In bed       7h 30m              7h 37m              – typical
+ Efficiency   94%                 94%                 – typical
+ Awake        17m / 2 awakenings  20m / 3 awakenings  – typical
+ Deep         1h 27m 21%          1h 30m              – typical
+ REM          1h 18m 19%          1h 17m              – typical
+ Bedtime      23:12               23:12               – typical
+ Midpoint     02:51               02:54               – typical
+ Sleep debt   59m short last night, 7 nights: 6h 05m short vs 8h target
 
- WORKOUTS ─────────────────────────────────────────────────────────────────────
- 28 d  7 sessions  6h 13m  3,243 kcal  71.1 km  active 7 of 28 days
+ ━━ WORKOUTS ━━ 7 sessions  6h 13m  3,243 kcal  71.1 km  active 7 of 28 d ━━━━━
 
  TYPE      N TIME       KCAL     KM SHARE
  running   3 2h 49m    1,828   28.1 █████████░░░░░░░░░░░  45%
@@ -158,7 +156,7 @@ $ healthcli --db demo.db overview
  Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
  Tue Nov 03 walking     28m  2.3 km 12:00 /km 104 kcal
 
- CALENDAR step count per day, 12 weeks to 2026-11-08
+ ━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━━━━━━
      Aug Sep     Oct     Nov
  Mon · · · · · · · · · · ▁ ▁
  Tue · · · · · · · · · · ▇ ▅
@@ -171,53 +169,51 @@ $ healthcli --db demo.db overview
  ▁ ≤17,731  ▃ ≤19,464  ▅ ≤20,972  ▇ ≤21,999  █ >21,999
  · no data   ◂ today   steps per day
 
- DATA     1,271 samples, 14 sleep nights
-          range: 2026-10-26 → 2026-11-08
-          sources: Watch 74%, iPhone 26%
-          last import: 1,468 added · 9 duplicates
-          skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
-          days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13
+ ━━ DATA ━━ 1,271 samples, 14 sleep nights ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ range: 2026-10-26 → 2026-11-08
+ sources: Watch 74%, iPhone 26%
+ last import: 1,468 added · 9 duplicates
+ skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
+ days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13
  not tracked in your data: 4 metrics
 ```
 
-This example is **synthetic**: it is the real output for the generated "small" fixture (a Watch and an iPhone), with dates shifted to look current. A device that records less gets fewer rows: metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`), and a database with no sleep or no workouts has no SLEEP or WORKOUTS section at all. Metrics are grouped in VITALS / ACTIVITY / BODY / MOBILITY bands; a `!` / `+` / `~` in the left gutter marks worse / better / changed rows, and the index line under the headline counts the worse ones. `--category vitals,sleep` shows only some sections, `--compact` drops the blank lines.
+This example is **synthetic**: it is the real output for the generated "small" fixture (a Watch and an iPhone), with dates shifted to look current. A device that records less gets fewer rows: metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`), and a database with no sleep or no workouts has no SLEEP or WORKOUTS section at all. Metrics are grouped in VITALS / ACTIVITY / BODY / MOBILITY bands; a `!` / `+` / `~` in the left gutter marks worse / better / changed rows, and the index line under the headline counts the worse ones. `--category vitals,sleep` shows only some sections, `--compact` drops the blank lines and keeps a one-character `!` / `+` / `~` flag in the margin. Every page fits from 50 to 100 columns.
 
 `overview --full` shows everything: the sleep table with every row, the weekly workout bars and personal bests, and a heatmap for sleep, workouts and activity. An excerpt (the middle of the page):
 
 ```console
 $ healthcli --db demo.db overview --full
- SLEEP  Sun 8 Nov · Watch stages, iPhone in bed
- ──────────────────────────────────────────────────────────────────────────────
+ ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
        23:12                                                              06:30
  awake                       ░░░                        ░░                     
  REM                    ▓▓▓▓▓                      ▓▓▓▓▓                     ▓▓
  core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒  
  deep          ████                     █████                      ████        
-              0         1         2         3         4         5         6
+              00        01        02        03        04        05        06
 
- STAT         LAST NIGHT      7 NIGHTS      VS 28-NIGHT USUAL
- Asleep       7h 01m          7h 08m        – typical
- In bed       7h 30m          7h 37m        – typical
- Efficiency   94%             94%           – typical
- Awake        17m 2x          20m 2x        – typical
- Latency      ~12m            12m           – typical
- Deep         1h 27m 21%      1h 30m        – typical
- REM          1h 18m 19%      1h 17m        – typical
- Core         4h 16m 61%      4h 18m        – typical
- Bedtime      23:12           23:12         – typical
- Wake         06:30           06:37         – typical
- Midpoint     02:51           02:54         – typical
- Regularity   ±1m bed ±8m mid (13 n)
- Sleep debt   59m short last night, 7 n: 6h 05m short vs 8h target
- green better / red worse / cyan neutral
+ STAT         LAST NIGHT          7 NIGHTS            VS 13-NIGHT USUAL
+ Asleep       7h 01m              7h 08m              – typical
+ In bed       7h 30m              7h 37m              – typical
+ Efficiency   94%                 94%                 – typical
+ Awake        17m / 2 awakenings  20m / 3 awakenings  – typical
+ Latency      ~12m                12m                 – typical
+ Deep         1h 27m 21%          1h 30m              – typical
+ REM          1h 18m 19%          1h 17m              – typical
+ Core         4h 16m 61%          4h 18m              – typical
+ Bedtime      23:12               23:12               – typical
+ Wake         06:30               06:37               – typical
+ Midpoint     02:51               02:54               – typical
+ Regularity   ±1m bed ±8m mid (13 nights)
+ Sleep debt   59m short last night, 7 nights: 6h 05m short vs 8h target
+ green better / red worse / cyan changed (no good direction)
 
- time asleep per night (a calendar needs 14 nights, have 13)
+ ━━ CALENDAR ━━ time asleep per day, last 13 nights ━━━━━━━━━━━━━━━━━━━━━━━━━━━
  Tue Wed Thu Fri Sat Sun Mon Tue Wed Thu Fri Sat Sun
  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h
  ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆
 
- WORKOUTS ─────────────────────────────────────────────────────────────────────
- 28 d  7 sessions  6h 13m  3,243 kcal  71.1 km  active 7 of 28 days
+ ━━ WORKOUTS ━━ 7 sessions  6h 13m  3,243 kcal  71.1 km  active 7 of 28 d ━━━━━
 
  TYPE      N TIME       KCAL     KM SHARE
  running   3 2h 49m    1,828   28.1 █████████░░░░░░░░░░░  45%
@@ -237,7 +233,7 @@ $ healthcli --db demo.db overview --full
  furthest  running 9.9 km, Oct 26 *new*
  biggest   running 645 kcal, Oct 26 *new*
 
- workout minutes per day, 12 weeks to 2026-11-08
+ ━━ CALENDAR ━━ workout minutes per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━
      Aug Sep     Oct     Nov
  Mon                     ▅ ·
  Tue                     · ▁
@@ -328,7 +324,7 @@ The output below is from a synthetic test database (made-up step counts), not re
 
 ```console
 $ healthcli heatmap
-step count per day, 12 weeks to 2026-11-04
+━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-04 ━━━━━━━━━━━━━━━━━━━━━
     Aug Sep     Oct     Nov
 Mon █ ▇ ▅ ▃ ▁ ▇ ▅ ▃ ▁ █ ▅ ▃
 Tue ▇ ▅ ▃ ▁ █ ▅ ▃ ▁ █ ▇ ▅ ▁
@@ -346,7 +342,7 @@ On a pipe or with `--ascii` the same chart uses plain characters:
 
 ```console
 $ healthcli heatmap --ascii
-step count per day, 12 weeks to 2026-11-04
+== CALENDAR == step count per day, 12 weeks to 2026-11-04 =====================
     Aug Sep     Oct     Nov
 Mon @ # + - . # + - . @ + -
 Tue # + - . @ + - . @ # + .
@@ -362,14 +358,13 @@ _ no data   < today   steps per day
 
 ### Workouts
 
-`healthcli workouts [--days N] [--weeks N] [--by type]` shows totals per activity type with a share bar, weekly training time (the current week is marked and gets no change figure), personal bests over 90 days (an activity needs 3 sessions), the newest sessions and a calendar of workout minutes per day, where empty days after your first workout are rest days. `--by type` draws each day's main activity as a letter. Columns with no data (no calories or distance recorded) disappear, and with no workouts you get one line, not an error. `--json` prints the report.
+`healthcli workouts [--days N] [--weeks N] [--by type]` shows totals per activity type with a share bar, weekly training time (the current week is marked and gets no change figure), personal bests over 90 days (an activity needs 3 sessions), the newest sessions and a calendar of workout minutes per day, where empty days after your first workout are rest days. `--by type` draws each day's main activity as a letter. Columns with no data (no calories or distance recorded) disappear, and with no workouts you get one line, not an error. `--json` prints the report (durations in seconds; values that are absent are left out, never `null`).
 
 Synthetic data, not real:
 
 ```console
 $ healthcli workouts
- WORKOUTS ─────────────────────────────────────────────────────────────────────
- 28 d  16 sessions  16h 44m  6,820 kcal  187.5 km  active 16 of 28 days
+ ━━ WORKOUTS ━━ 16 sessions  16h 44m  6,820 kcal  187.5 km  active 16 of 28 d ━
 
  TYPE      N TIME       KCAL     KM SHARE
  cycling   6 7h 57m    3,450  126.0 ██████████░░░░░░░░░░  48%
@@ -381,13 +376,37 @@ $ healthcli workouts
  Sat Nov 07 cycling  1h 07m 21.0 km 18.8 km/h 550 kcal
  Fri Nov 06 walking     33m  4.3 km 7:40 /km  210 kcal
  Wed Nov 04 running  1h 10m 11.0 km 6:22 /km  580 kcal
+ Mon Nov 02 cycling  1h 12m 21.0 km 17.5 km/h 500 kcal
+ Sat Oct 31 yoga        49m
+
+ WEEK OF TIME                                    N VS AVG
+ Sep 21  █████████████░░░░░░░░░░░ 3h 00m         3 ▼ -23%
+ Sep 28  ██████████████░░░░░░░░░░ 3h 13m         4 ▼ -12%
+ Oct 05  ████████████░░░░░░░░░░░░ 2h 50m         4 ▼ -24%
+ Oct 12  ████████████████████████ 5h 31m         5 ▲ +62%
+ Oct 19  ██████████████░░░░░░░░░░ 3h 17m         3 ▼ -10%
+ Oct 26  █████████████████░░░░░░░ 3h 54m         4 ▲ +5%
+ Nov 02  ██████████████████░░░░░░ 4h 02m         4 ▲ +4%
+ Nov 09  ░░░░░░░░░░░░░░░░░░░░░░░░ 0m (1 d)       0 – so far
 
  BESTS (90 d)
  longest   cycling 1h 32m, Oct 13 *new*
  fastest   running 3:11 /km, Sep 30
  furthest  cycling 21.0 km, Sep 03
  biggest   cycling 700 kcal, Sep 23
-...
+
+ ━━ CALENDAR ━━ workout minutes per day, 8 weeks to 2026-11-09 ━━━━━━━━━━━━━━━━
+       Oct     Nov
+ Mon   ▅ ▁ · · · █ · ◂
+ Tue   · · █ ▅ ▁ ·
+ Wed ▇ ▁ ▁ · · █ ▇
+ Thu · ▃ ▃ ▅ · · ·
+ Fri ▇ · · ▃ █ ▇ ▁
+ Sat · ▅ ▁ ▅ · ▃ ▇
+ Sun ▃ · · █ ▅ · ·
+
+ ▁ ≤45m  ▃ ≤49m  ▅ ≤1h 00m  ▇ ≤1h 10m  █ >1h 10m
+ · rest day   ◂ today   per day
 ```
 
 ### Where is my data?
@@ -407,32 +426,31 @@ Delete that file to start over.
 
 ```
 $ healthcli sleep
- SLEEP  Wed 4 Nov · Watch stages, iPhone in bed
- ──────────────────────────────────────────────────────────────────────────────
+ ━━ SLEEP ━━ Wed 4 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
        00:05                                                              06:00
  awake                                      ░                  ░               
  REM                                    ▓▓▓▓             ▓▓▓▓▓▓           ▓▓▓▓▓
  core  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒         ▒▒▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒▒     
  deep                █████████                                                 
-                  1           2           3           4           5
+                  01          02          03          04          05
 
- STAT         LAST NIGHT      7 NIGHTS      VS 28-NIGHT USUAL
- Asleep       5h 50m          6h 08m        ▼ -11% worse
- In bed       6h 03m          6h 29m        ▼ -12% changed
- Efficiency   96%             94%           – typical
- Awake        5m 0x           9m 1x         – typical
- Latency      ~8m             11m           – typical
- Deep         45m 13%         45m           – typical
- REM          1h 15m 21%      1h 14m        – typical
- Core         3h 50m 66%      4h 08m        ▼ -15% changed
- Bedtime      00:05           23:58         ▲ +49m later
- Wake         06:00           06:15         – typical
- Midpoint     03:03           03:07         ▲ +26m later
- Regularity   ±51m bed ±34m mid (14 n)   ▲ worse than usual 39m
- Sleep debt   2h 10m short last night, 7 n: 13h 07m short vs 8h target
- green better / red worse / cyan neutral
+ STAT         LAST NIGHT          7 NIGHTS            VS 28-NIGHT USUAL
+ Asleep       5h 50m              6h 08m              ▼ -11% worse
+ In bed       6h 03m              6h 29m              ▼ -12% changed
+ Efficiency   96%                 94%                 – typical
+ Awake        5m / 0 awakenings   9m / 1 awakening    – typical
+ Latency      ~8m                 11m                 – typical
+ Deep         45m 13%             45m                 – typical
+ REM          1h 15m 21%          1h 14m              – typical
+ Core         3h 50m 66%          4h 08m              ▼ -15% changed
+ Bedtime      00:05               23:58               ▲ +49m later
+ Wake         06:00               06:15               – typical
+ Midpoint     03:03               03:07               ▲ +26m later
+ Regularity   ±51m bed ±34m mid (14 nights)           ▲ worse than usual (±39m)
+ Sleep debt   2h 10m short last night, 7 nights: 13h 07m short vs 8h target
+ green better / red worse / cyan changed (no good direction)
 
- time asleep per day, 12 weeks to 2026-11-04
+ ━━ CALENDAR ━━ time asleep per day, 12 weeks to 2026-11-04 ━━━━━━━━━━━━━━━━━━━
      Aug Sep     Oct     Nov
  Mon · · · · · · ▁ ▅ ▇ ▅ ▇ ▁
  Tue · · · · · · ▇ ▃ ▇ ▃ ▇ ▁
@@ -450,21 +468,20 @@ With only "asleep" data (no stages, no in-bed):
 
 ```
 $ healthcli sleep
- SLEEP  Wed 4 Nov · iPhone, no stages (unspecified asleep only)
- ──────────────────────────────────────────────────────────────────────────────
+ ━━ SLEEP ━━ Wed 4 Nov · iPhone, no stages (unspecified asleep only) ━━━━━━━━━━
  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
- asleep 5h 55m   00:05 → 06:00   midpoint 03:02           (stages not recorded)
+ asleep 5h 55m   00:05 → 06:00   midpoint 03:03           (stages not recorded)
 
- STAT         LAST NIGHT      6 NIGHTS      VS USUAL
- Asleep       5h 55m          6h 18m        need 7 nights (have 6)
- Bedtime      00:05           00:00         need 7 nights (have 6)
- Wake         06:00           06:18         need 7 nights (have 6)
- Midpoint     03:03           03:09         need 7 nights (have 6)
- Regularity   ±19m bed ±13m mid (6 n)
- Sleep debt   2h 05m short last night, 6 n: 10h 15m short vs 8h target
+ STAT         LAST NIGHT          6 NIGHTS            VS USUAL
+ Asleep       5h 55m              6h 18m              need 7 nights (have 6)
+ Bedtime      00:05               00:00               need 7 nights (have 6)
+ Wake         06:00               06:18               need 7 nights (have 6)
+ Midpoint     03:03               03:09               need 7 nights (have 6)
+ Regularity   ±19m bed ±13m mid (6 nights)
+ Sleep debt   2h 05m short last night, 6 nights: 10h 15m short vs 8h target
  not available: in bed, efficiency, awake, latency, deep, REM, core
 
- time asleep per night (a calendar needs 14 nights, have 6)
+ ━━ CALENDAR ━━ time asleep per day, last 6 nights ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  Fri Sat Sun Mon Tue Wed
  6h  7h  7h  6h  6h  6h
  ▅▅▅ ▆▆▆ ▆▆▆ ▅▅▅ ▅▅▅ ▅▅▅

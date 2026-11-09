@@ -1,29 +1,28 @@
- SLEEP  Wed 4 Nov · Watch stages, iPhone in bed
- ──────────────────────────────────────────────────────────
+ ━━ SLEEP ━━ Wed 4 Nov · Watch stages, iPhone in bed ━━━━━━
        00:05                                          06:00
  awake                            ░            ░░          
  REM                           ▓▓▓         ▓▓▓▓        ▓▓▓▓
  core  ▒▒▒▒▒▒▒▒▒▒       ▒▒▒▒▒▒▒    ▒▒▒▒▒▒▒▒      ▒▒▒▒▒▒    
  deep            ███████                                   
-               1       2        3        4        5
+               01      02       03       04       05
 
- STAT       LAST NIGHT  7 NIGHTS   VS 28-NIGHT USUAL
- Asleep     5h 50m      6h 08m     ▼ -11% worse
- In bed     6h 03m      6h 29m     ▼ -12% changed
- Efficiency 96%         94%        – typical
- Awake      5m 0x       9m 1x      – typical
- Latency    ~8m         11m        – typical
- Deep       45m 13%     45m        – typical
- REM        1h 15m 21%  1h 14m     – typical
- Core       3h 50m 66%  4h 08m     ▼ -15% changed
- Bedtime    00:05       23:58      ▲ +49m later
- Wake       06:00       06:15      – typical
- Midpoint   03:03       03:07      ▲ +26m later
- Regularity ±51m bed ±34m mid   ▲ worse (usual ±39m)
- Sleep debt 2h 10m short, 7 n: 13h 07m short (8h target)
- green better / red worse / cyan neutral
+ STAT       LAST NIGHT  7 NIGHTS    VS 28-NIGHT USUAL
+ Asleep     5h 50m      6h 08m      ▼ -11% worse
+ In bed     6h 03m      6h 29m      ▼ -12% changed
+ Efficiency 96%         94%         – typical
+ Awake      5m 0 wakes  9m 1 wake   – typical
+ Latency    ~8m         11m         – typical
+ Deep       45m 13%     45m         – typical
+ REM        1h 15m 21%  1h 14m      – typical
+ Core       3h 50m 66%  4h 08m      ▼ -15% changed
+ Bedtime    00:05       23:58       ▲ +49m later
+ Wake       06:00       06:15       – typical
+ Midpoint   03:03       03:07       ▲ +26m later
+ Regularity ±51m bed ±34m mid       ▲ worse (usual ±39m)
+ Sleep debt 2h 10m short, 7 nights: 13h 07m short
+ green better red worse cyan changed
 
- time asleep per day, 12 weeks to 2026-11-04
+ ━━ CALENDAR ━━ time asleep per day, 12 weeks ━━━━━━━━━━━━━
      Aug Sep     Oct     Nov
  Mon · · · · · · ▁ ▅ ▇ ▅ ▇ ▁
  Tue · · · · · · ▇ ▃ ▇ ▃ ▇ ▁

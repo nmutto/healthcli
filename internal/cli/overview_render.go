@@ -45,9 +45,6 @@ const (
 	indent     = " "
 )
 
-// sectionLabelW pads SLEEP / WORKOUTS / DATA so their text lines up.
-const sectionLabelW = 8
-
 func renderOverview(o *stats.Overview, ti termInfo, v overviewView) string {
 	g := glyphsFor(ti.unicode)
 	st := style{color: ti.color}
@@ -61,7 +58,9 @@ func renderOverview(o *stats.Overview, ti termInfo, v overviewView) string {
 		return b.String()
 	}
 
-	b.WriteString(indent + headline(o, g, ti.width-2) + "\n")
+	if h := headline(o, v, g, ti.width-2); h != "" {
+		b.WriteString(indent + h + "\n")
+	}
 	if idx := indexLine(o, v, ti, g, st); idx != "" {
 		b.WriteString(indent + idx + "\n")
 	}
@@ -83,10 +82,13 @@ func overviewSections(o *stats.Overview, ti termInfo, g glyphSet, st style, v ov
 	filtered := len(v.categories) > 0
 	secs := []section{
 		{"metrics", func() string {
-			if len(o.Metrics) == 0 { // e.g. a database with only sleep has no table
+			// No rows (a database with only sleep, or --category sleep): no
+			// header, no legend.
+			table := metricTable(o, ti, g, st, v)
+			if table == "" {
 				return ""
 			}
-			return "\n" + metricTable(o, ti, g, st, v) + tableFooter(o, st, ti, g)
+			return "\n" + table + tableFooter(o, st, ti, g)
 		}},
 	}
 	// A single section picked with --category gets its full version.
@@ -205,14 +207,21 @@ func agoText(now, then time.Time) string {
 
 // headline is the one-sentence summary at the top. Metrics with a good
 // direction are counted as better / worse; the others, when beyond usual, as
-// "changed".
-func headline(o *stats.Overview, g glyphSet, width int) string {
+// "changed". With --category it only counts the categories shown, and says
+// nothing about metrics when none are shown; it returns "" for no sentence.
+func headline(o *stats.Overview, v overviewView, g glyphSet, width int) string {
 	counts := map[string]int{}
 	var mover *stats.MetricRow // the differing metric with the largest |z|
 	waiting := false           // some metric still lacks history for a baseline
 	newest := -1               // age of the freshest reading, -1 = none
+	scoped := len(v.categories) > 0
+	shown := 0 // metric rows in scope
 	for i := range o.Metrics {
 		r := &o.Metrics[i]
+		if !v.wants(r.Category) {
+			continue
+		}
+		shown++
 		switch r.State {
 		case stats.StateOK:
 			counts[r.Verdict]++
@@ -231,12 +240,13 @@ func headline(o *stats.Overview, g glyphSet, width int) string {
 
 	var parts []string
 	var counted []string
-	for _, v := range []string{stats.VerdictBetter, stats.VerdictWorse, stats.VerdictChanged, stats.VerdictTypical} {
-		if counts[v] > 0 {
-			counted = append(counted, fmt.Sprintf("%d %s", counts[v], v))
+	for _, verdict := range []string{stats.VerdictBetter, stats.VerdictWorse, stats.VerdictChanged, stats.VerdictTypical} {
+		if counts[verdict] > 0 {
+			counted = append(counted, fmt.Sprintf("%d %s", counts[verdict], verdict))
 		}
 	}
 	switch {
+	case scoped && shown == 0: // only sleep / workouts asked for: no metric sentence
 	case len(counted) > 0:
 		text := fmt.Sprintf("%s vs your %d-day usual", strings.Join(counted, ", "), stats.DefaultBaselineDays)
 		if runeLen(text) > width { // narrow terminal: say it shorter instead of cutting it
@@ -253,8 +263,14 @@ func headline(o *stats.Overview, g glyphSet, width int) string {
 	if mover != nil {
 		parts = append(parts, fmt.Sprintf("%s %s", mover.Label, pctText(*mover.DeltaPct)))
 	}
-	if s := o.Sleep; s.State == stats.StateOK && s.AsleepSecs > 0 {
+	if s := o.Sleep; v.wants(sleepName) && s.State == stats.StateOK && s.AsleepSecs > 0 {
 		parts = append(parts, "slept "+formatDuration(sec(s.AsleepSecs)))
+	}
+	if w := o.Workouts; scoped && v.wants(workoutsName) && w.Count > 0 {
+		parts = append(parts, fmt.Sprintf("%s in %d d", plural(int64(w.Count), "workout"), w.Days))
+	}
+	if len(parts) == 0 {
+		return ""
 	}
 	return joinFit(parts, width, g)
 }
@@ -370,8 +386,8 @@ func heatmapBlock(h *stats.Heatmap, ti termInfo, st style) string {
 		return ""
 	}
 	var b strings.Builder
-	b.WriteString("\n" + indent + st.bold("CALENDAR") + " " + lines[0] + "\n")
-	for _, l := range lines[1:] {
+	b.WriteString("\n")
+	for _, l := range lines {
 		// A very wide legend (huge numbers) loses its colours rather than
 		// running past the terminal.
 		if plain := stripANSI(l); runeLen(plain) > inner.width {
@@ -409,16 +425,16 @@ func ageText(r stats.MetricRow) string {
 	return fmt.Sprintf("%d d", r.AgeDays)
 }
 
-// dataBlock is the "how complete is this data" footer.
+// dataBlock is the "how complete is this data" footer: a band with the sample
+// count, then one indented line per fact.
 func dataBlock(d stats.DataHealth, ti termInfo, g glyphSet, st style, v overviewView) string {
-	label := indent + st.bold(padRight("DATA", sectionLabelW)) + " "
-	cont := strings.Repeat(" ", len(indent)+sectionLabelW+1) // lines after the first
-	room := ti.width - len(cont) - 1
+	room := ti.width - len(indent) - 1
 
-	lines := []string{plural(d.Samples, "sample")}
+	head := plural(d.Samples, "sample")
 	if d.SleepNights > 0 {
-		lines[0] += ", " + plural(d.SleepNights, "sleep night")
+		head += ", " + plural(d.SleepNights, "sleep night")
 	}
+	var lines []string
 	if d.Samples > 0 {
 		lines = append(lines, "range: "+d.FirstDay+" "+g.arrow+" "+d.LastDay, "sources: "+sourcesText(d.SourceCount))
 	}
@@ -430,12 +446,9 @@ func dataBlock(d stats.DataHealth, ti termInfo, g glyphSet, st style, v overview
 	}
 
 	var b strings.Builder
-	for i, l := range lines {
-		prefix := cont
-		if i == 0 {
-			prefix = label
-		}
-		b.WriteString(prefix + fit(l, room, g) + "\n")
+	b.WriteString(indent + bandLine("DATA", head, room, g, st) + "\n")
+	for _, l := range lines {
+		b.WriteString(indent + fit(l, room, g) + "\n")
 	}
 	return b.String()
 }

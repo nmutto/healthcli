@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -141,8 +143,8 @@ func TestWorkoutsCommand(t *testing.T) {
 		t.Errorf("text: %v\n%s", err, out)
 	}
 	out, _, err = run(t, "--db", path, "workouts", "--json")
-	if err != nil || !strings.Contains(out, `"energy_kcal": null`) {
-		t.Errorf("json: %v\n%s", err, out)
+	if err != nil || strings.Contains(out, "null") || strings.Contains(out, "energy_kcal") {
+		t.Errorf("json must leave absent values out, not null: %v\n%s", err, out)
 	}
 	for _, args := range [][]string{{"--days", "0"}, {"--weeks", "99"}, {"--by", "colour"}} {
 		if _, _, err := run(t, append([]string{"--db", path, "workouts"}, args...)...); err == nil {
@@ -153,5 +155,76 @@ func TestWorkoutsCommand(t *testing.T) {
 	out, _, err = run(t, "--db", empty, "workouts")
 	if err != nil || !strings.Contains(out, "none in the last 28 days") {
 		t.Errorf("empty: %v\n%s", err, out)
+	}
+}
+
+// jsonNullsAndKeys walks decoded JSON and reports every null (except inside
+// the arrays named in skip) and every key that is not snake_case.
+func jsonNullsAndKeys(v any, path string, skip map[string]bool, bad *[]string) {
+	switch x := v.(type) {
+	case nil:
+		*bad = append(*bad, path+" is null")
+	case map[string]any:
+		for k, child := range x {
+			if k != strings.ToLower(k) || strings.ContainsAny(k, "- ") {
+				*bad = append(*bad, path+"."+k+" is not snake_case")
+			}
+			if skip[k] {
+				continue
+			}
+			jsonNullsAndKeys(child, path+"."+k, skip, bad)
+		}
+	case []any:
+		for i, child := range x {
+			jsonNullsAndKeys(child, fmt.Sprintf("%s[%d]", path, i), skip, bad)
+		}
+	}
+}
+
+// --json: snake_case keys only, durations in seconds (not nanoseconds), no
+// null anywhere, and a zero-duration session does not exist.
+func TestWorkoutsJSONShape(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return workoutsNow }
+	defer func() { nowFunc = old }()
+	path := tempDB(t)
+	conn, err := db.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	add := func(back int, activity string, secs int, kcal, metres any) {
+		start := workoutsNow.AddDate(0, 0, -back).Unix()
+		if _, err := conn.Exec(`INSERT INTO workouts (activity, start_ts, end_ts, duration_s, energy_kcal, distance_m, tz_offset, source)
+			VALUES (?, ?, ?, ?, ?, ?, 0, 'Test')`, activity, start, start+int64(secs), secs, kcal, metres); err != nil {
+			t.Fatal(err)
+		}
+	}
+	add(1, "yoga", 2700, nil, nil)
+	add(2, "running", 1800, 300.0, 5000.0)
+	add(3, "walking", 0, nil, nil) // zero duration: ignored everywhere
+	conn.Close()
+
+	out, _, err := run(t, "--db", path, "workouts", "--json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal([]byte(out), &doc); err != nil {
+		t.Fatal(err)
+	}
+	var bad []string
+	jsonNullsAndKeys(doc, "$", nil, &bad)
+	if len(bad) > 0 {
+		t.Errorf("json problems: %v\n%s", bad, out)
+	}
+	if doc["count"].(float64) != 2 {
+		t.Errorf("the zero-duration workout must be ignored, count = %v", doc["count"])
+	}
+	recent := doc["recent"].([]any)[0].(map[string]any)
+	if recent["duration_seconds"].(float64) != 2700 {
+		t.Errorf("duration must be seconds: %v", recent)
+	}
+	if strings.Contains(out, "walking") {
+		t.Errorf("zero-duration workout leaked into the report:\n%s", out)
 	}
 }

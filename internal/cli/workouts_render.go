@@ -34,10 +34,6 @@ const (
 func renderWorkoutsSection(r *stats.WorkoutsReport, ti termInfo, width int, opts workoutsOpts) []string {
 	g := glyphsFor(ti.unicode)
 	st := style{color: ti.color}
-	rule := func(title string) string {
-		return indent + st.bold(title) + " " + strings.Repeat(string(g.rule), max(width-3-len(title), 0))
-	}
-
 	if r == nil || r.Count == 0 {
 		days := 28
 		if r != nil {
@@ -47,10 +43,11 @@ func renderWorkoutsSection(r *stats.WorkoutsReport, ti termInfo, width int, opts
 		if r != nil && r.Last != "" {
 			text = fmt.Sprintf("none in %d d (last: %s)", days, dayText(r.Last, "Jan 02"))
 		}
-		return []string{indent + st.bold(padRight("WORKOUTS", sectionLabelW)) + " " + st.dim(text)}
+		return []string{indent + bandLine("WORKOUTS", text, width-len(indent)-1, g, st)}
 	}
 
-	lines := []string{rule("WORKOUTS"), indent + wkSummary(r, width-2), ""}
+	total := width - len(indent) - 1
+	lines := []string{indent + bandLine("WORKOUTS", wkSummary(r, bandRoom("WORKOUTS", total)), total, g, st), ""}
 	lines = append(lines, wkTypeTable(r, g, st, width)...)
 	lines = append(lines, "")
 	lines = append(lines, wkRecent(r, g, st, width, opts.Full)...)
@@ -83,17 +80,17 @@ func renderWorkoutsSection(r *stats.WorkoutsReport, ti termInfo, width int, opts
 		if shown {
 			note = "(the heatmap needs more sessions)"
 		}
-		lines = append(lines, "", indent+st.dim(note))
+		lines = append(lines, "")
+		lines = append(lines, wrapDim(note, width, st)...)
 	}
 	return lines
 }
 
-// wkSummary is the one-line total: "28 d  14 sessions  12h 40m  8,420 kcal ...".
-// Parts that do not fit are dropped from the end; kcal and km only appear
-// when something recorded them.
+// wkSummary is the total in the section band: "14 sessions  12h 40m  8,420 kcal ...
+// active 12 of 28 d". Parts that do not fit are dropped from the middle; kcal
+// and km only appear when something recorded them.
 func wkSummary(r *stats.WorkoutsReport, room int) string {
 	parts := []string{
-		fmt.Sprintf("%d d", r.Days),
 		plural(int64(r.Count), "session"),
 		formatDuration(wkDur(r.DurationSeconds)),
 	}
@@ -103,10 +100,10 @@ func wkSummary(r *stats.WorkoutsReport, room int) string {
 	if r.DistanceKM != nil {
 		parts = append(parts, fmt.Sprintf("%.1f km", *r.DistanceKM))
 	}
-	parts = append(parts, fmt.Sprintf("active %d of %d days", r.ActiveDays, r.Days))
-	for len(parts) > 3 && runeLen(strings.Join(parts, "  ")) > room {
+	parts = append(parts, fmt.Sprintf("active %d of %d d", r.ActiveDays, r.Days))
+	for len(parts) > 2 && runeLen(strings.Join(parts, "  ")) > room {
 		parts = append(parts[:len(parts)-2], parts[len(parts)-1]) // drop the one before "active"
-		if runeLen(strings.Join(parts, "  ")) > room && len(parts) > 3 {
+		if runeLen(strings.Join(parts, "  ")) > room && len(parts) > 2 {
 			parts = parts[:len(parts)-1] // still too long: drop "active" too
 		}
 	}
@@ -465,8 +462,17 @@ func renderTypeHeatmap(h *stats.Heatmap, r *stats.WorkoutsReport, ti termInfo) [
 		colorOf[a] = typeColors[i%len(typeColors)]
 	}
 
+	name := heatTitle(h) + " per day, by type"
+	total := ti.width - 1
+	title := name
+	for _, cand := range []string{fmt.Sprintf("%s, %s to %s", name, plural(int64(len(weeks)), "week"), h.Today), name} {
+		title = cand
+		if runeLen(cand) <= bandRoom("CALENDAR", total) {
+			break
+		}
+	}
 	lines := []string{
-		fmt.Sprintf("%s per day, %s to %s, by type", heatTitle(h), plural(int64(len(weeks)), "week"), h.Today),
+		bandLine("CALENDAR", title, total, g, st),
 		heatMonthLine(weeks),
 	}
 	for d := 0; d < 7; d++ {
@@ -513,8 +519,9 @@ func renderTypeHeatmap(h *stats.Heatmap, r *stats.WorkoutsReport, ti termInfo) [
 			legend = append(legend, st.wrap(colorOf[a], string(letters[a]))+" "+a)
 		}
 	}
-	lines = append(lines, "", fit(strings.Join(legend, "  "), ti.width, g),
-		st.dim(string(restGlyph(g)))+" rest day   "+todayMark(ti.unicode)+" today   UPPERCASE = longer days")
+	lines = append(lines, "")
+	lines = append(lines, wrapParts(legend, "  ", ti.width)...)
+	lines = append(lines, wrapParts([]string{st.dim(string(restGlyph(g))) + " rest day", todayMark(ti.unicode) + " today", "UPPERCASE = longer days"}, "   ", ti.width)...)
 	return lines
 }
 

@@ -337,7 +337,7 @@ func TestOverviewHandBuiltStates(t *testing.T) {
 			t.Errorf("missing %q in:\n%s", want, got)
 		}
 	}
-	if !strings.Contains(got, "DATA     3 samples") {
+	if !strings.Contains(got, "DATA == 3 samples") {
 		t.Errorf("want plural samples:\n%s", got)
 	}
 	o.Data.Samples, o.Data.SleepNights = 1, 1
@@ -663,5 +663,53 @@ func TestOverviewJSONRichSections(t *testing.T) {
 	}
 	if !strings.Contains(out, `"heatmaps"`) || strings.Contains(out, ": null,\n  \"sleep") {
 		t.Errorf("heatmaps map expected:\n%s", out)
+	}
+}
+
+// Every mode fits the narrowest supported terminal (50 columns) and the
+// ones above it: no line wider than the terminal, nothing cut mid-word.
+func TestOverviewFitsEveryWidthAndMode(t *testing.T) {
+	views := map[string]overviewView{
+		"default": {}, "compact": {compact: true}, "full": {full: true},
+		"heatmaps": {heatmaps: []string{"workouts", "sleep"}},
+		"sleep":    {categories: []string{"sleep"}}, "workouts": {categories: []string{"workouts"}},
+	}
+	for _, scenario := range []string{"full", "import:small", "sleep-only", "steps-long"} {
+		o := overviewReport(t, scenario)
+		for name, view := range views {
+			for _, width := range []int{50, 60, 80, 100} {
+				for _, uni := range []bool{true, false} {
+					got := renderOverview(o, termInfo{width: width, unicode: uni}, withDB(view, "demo.db", overviewNow))
+					for _, line := range strings.Split(got, "\n") {
+						if n := runeLen(line); n > width {
+							t.Errorf("%s/%s width %d unicode %v: %d wide: %q", scenario, name, width, uni, n, line)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// Absent values are left out of the JSON, never null (the spark arrays are the
+// one place where a missing day is a null inside a list).
+func TestJSONHasNoNulls(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return overviewNow }
+	defer func() { nowFunc = old }()
+	for _, args := range [][]string{{"overview", "--heatmap", "steps"}, {"heatmap"}, {"heatmap", "workouts"}, {"sleep"}} {
+		out, _, err := run(t, append([]string{"--db", seedOverview(t, "full"), "--json"}, args...)...)
+		if err != nil {
+			t.Fatalf("%v: %v", args, err)
+		}
+		var doc any
+		if err := json.Unmarshal([]byte(out), &doc); err != nil {
+			t.Fatal(err)
+		}
+		var bad []string
+		jsonNullsAndKeys(doc, "$", map[string]bool{"spark": true}, &bad)
+		if len(bad) > 0 {
+			t.Errorf("%v: %v", args, bad)
+		}
 	}
 }

@@ -53,7 +53,7 @@ categories and counts the worse rows ("!1"); categories your data has nothing
 for are named once as "not tracked". The AGE column shows only readings 2 or
 more days old. --category vitals,sleep shows only those (vitals, activity,
 body, mobility, other, sleep, workouts); --compact drops the blank lines and
-the gutter for small terminal panes; --full shows every section.
+shrinks the gutter to a one-character flag for small terminal panes; --full shows every section.
 
 SLEEP shows last night's hypnogram and the core rows of the sleep table (last
 night, 7 nights, vs your 28-night usual); WORKOUTS shows the totals, a table per
@@ -66,7 +66,7 @@ weekly bars, bests, their heatmaps) and the activity heatmap. A single
 --category sleep or --category workouts also shows the full section, the same as
 "healthcli sleep" and "healthcli workouts".
 
-The output is 60-100 columns wide ($COLUMNS or the terminal width). On a pipe,
+The output is 50-100 columns wide ($COLUMNS or the terminal width). On a pipe,
 or with --ascii, only plain ASCII characters are used. NO_COLOR and --no-color
 switch colours off; FORCE_COLOR switches them on even for a pipe. Samples dated
 more than a day in the future are ignored.
@@ -85,7 +85,7 @@ JSON output (--json) is the same report:
   workouts_report  the full workouts report (see "healthcli workouts --help"); left out without workouts
   heatmaps   calendars for the metrics named in --heatmap, by metric name
   not_tracked[]  metrics with no data at all
-  heatmap    the activity grid (see "healthcli heatmap --help"), null if none
+  heatmap    the activity grid (see "healthcli heatmap --help"), left out if none
   data       samples, first_day, last_day, source_samples, last_import, gaps[]`,
 		Example: `  healthcli overview
   healthcli overview --category vitals,activity
@@ -132,10 +132,10 @@ JSON output (--json) is the same report:
 	}
 	cmd.Flags().BoolVar(&noColor, "no-color", false, "never use colours")
 	cmd.Flags().BoolVar(&ascii, "ascii", false, "use plain ASCII characters only")
-	cmd.Flags().IntVar(&heatWeeks, "weeks", defaultHeatWeeks, "weeks of activity heatmap (0 hides it)")
-	cmd.Flags().StringSliceVar(&heatmapArg, "heatmap", nil, "heatmaps to show, comma list of steps|sleep|workouts|<metric> (default: steps, else exercise time, else active energy)")
+	cmd.Flags().IntVar(&heatWeeks, "weeks", defaultHeatWeeks, "weeks of every heatmap (0 hides them)")
+	cmd.Flags().StringSliceVar(&heatmapArg, "heatmap", nil, "heatmaps to show, comma list of steps|sleep|workouts|<metric>\n(default: steps, else exercise time, else active energy)")
 	cmd.Flags().StringSliceVar(&categoryArg, "category", nil, "only these categories, comma list (vitals, activity, body, mobility, other, sleep, workouts)")
-	cmd.Flags().BoolVar(&compact, "compact", false, "dense table: no blank lines between categories, no gutter marker")
+	cmd.Flags().BoolVar(&compact, "compact", false, "dense page: no blank lines between sections, one-character ! + ~ flag")
 	cmd.Flags().BoolVar(&full, "full", false, "show every section and heatmap")
 	return cmd
 }

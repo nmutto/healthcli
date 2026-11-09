@@ -282,9 +282,31 @@ func TestRegularityWording(t *testing.T) {
 		{20, 20, "same as usual (±20m)"}, {50, 30, "worse than usual (±30m)"}, {10, 30, "better than usual (±30m)"},
 	} {
 		r := &stats.SleepReport{Regularity: &stats.SleepRegularity{Nights: 14, BedtimeMin: c.now, MidpointMin: 5, UsualBedtimeMin: c.usual}}
-		line := regularityLine(r, g, style{}, 80, 11)[0]
+		line := regularityLine(r, g, style{}, 80, 11, 40)[0]
 		if !strings.Contains(line, c.want) || strings.Contains(line, "same than") {
 			t.Errorf("want %q in %q", c.want, line)
+		}
+	}
+}
+
+// The standalone commands also fit 50 columns, heatmap --weeks 26 included.
+func TestStandaloneCommandsFit50(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return heatNow }
+	defer func() { nowFunc = old }()
+	t.Setenv("COLUMNS", "50")
+	t.Setenv("FORCE_COLOR", "")
+	path := seedSleep(t, "rich")
+	for _, args := range [][]string{{"sleep"}, {"sleep", "--weeks", "26"}, {"heatmap", "sleep", "--weeks", "26"},
+		{"heatmap", "workouts", "--weeks", "26"}, {"workouts"}, {"overview", "--full"}} {
+		out, _, err := run(t, append([]string{"--db", path}, args...)...)
+		if err != nil {
+			t.Fatalf("%v: %v", args, err)
+		}
+		for _, line := range strings.Split(out, "\n") {
+			if n := runeLen(line); n > 50 {
+				t.Errorf("%v: %d wide: %q", args, n, line)
+			}
 		}
 	}
 }

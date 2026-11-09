@@ -30,12 +30,12 @@ type WorkoutsReport struct {
 	Days            int          `json:"days"`
 	Count           int          `json:"count"`
 	DurationSeconds float64      `json:"duration_seconds"`
-	EnergyKcal      *float64     `json:"energy_kcal"`
-	DistanceKM      *float64     `json:"distance_km"`
+	EnergyKcal      *float64     `json:"energy_kcal,omitempty"`
+	DistanceKM      *float64     `json:"distance_km,omitempty"`
 	ActiveDays      int          `json:"active_days"`
 	ByType          []TypeTotal  `json:"by_type"`
 	Weeks           []WeekVolume `json:"weeks"`
-	Bests           []Best       `json:"bests"`
+	Bests           []Best       `json:"bests,omitempty"`
 	Recent          []Workout    `json:"recent"`
 	// Last is the newest day with any workout ever read, set only when the
 	// window itself is empty ("none in 28 d (last: Sep 02)").
@@ -52,8 +52,8 @@ type TypeTotal struct {
 	Activity        string   `json:"activity"`
 	Count           int      `json:"count"`
 	DurationSeconds float64  `json:"duration_seconds"`
-	EnergyKcal      *float64 `json:"energy_kcal"`
-	DistanceKM      *float64 `json:"distance_km"`
+	EnergyKcal      *float64 `json:"energy_kcal,omitempty"`
+	DistanceKM      *float64 `json:"distance_km,omitempty"`
 }
 
 // WeekVolume is one Monday-to-Sunday week of training.
@@ -67,7 +67,7 @@ type WeekVolume struct {
 	Days    int  `json:"days"`
 	// DeltaPct compares with the average of the up to 4 full weeks before it;
 	// nil when fewer than 2 such weeks exist or the average is 0.
-	DeltaPct *float64 `json:"delta_pct"`
+	DeltaPct *float64 `json:"delta_pct,omitempty"`
 }
 
 // Best is one personal best. Kind is longest, furthest, biggest or fastest.
@@ -76,8 +76,8 @@ type Best struct {
 	Activity        string   `json:"activity"`
 	Day             string   `json:"day"`
 	DurationSeconds float64  `json:"duration_seconds"`
-	DistanceKM      *float64 `json:"distance_km"`
-	EnergyKcal      *float64 `json:"energy_kcal"`
+	DistanceKM      *float64 `json:"distance_km,omitempty"`
+	EnergyKcal      *float64 `json:"energy_kcal,omitempty"`
 	PaceSecPerKM    float64  `json:"pace_sec_per_km,omitempty"` // fastest running/walking
 	SpeedKMH        float64  `json:"speed_kmh,omitempty"`       // fastest cycling
 	New             bool     `json:"new,omitempty"`             // set inside the report window
@@ -214,8 +214,9 @@ func mondayOf(day string) string {
 }
 
 // weeklyVolume returns the last `weeks` weeks ending with the week of today.
-// Weeks without a session are kept (a zero week is information). The deltas
-// look at weeks before the first shown one too, which is why all is longer.
+// Weeks without a session are kept (a zero week is information) once the
+// first workout has happened. The deltas look at weeks before the first shown
+// one too, which is why all is longer.
 func weeklyVolume(all []Workout, today string, weeks int) []WeekVolume {
 	byWeek := map[string]*WeekVolume{}
 	for _, w := range all {
@@ -246,6 +247,15 @@ func weeklyVolume(all []Workout, today string, weeks int) []WeekVolume {
 		}
 		out = append(out, v)
 	}
+	// Weeks before the first workout are not "zero weeks": they are not part
+	// of the average, and a week needs 3 weeks since the first workout to get
+	// a delta at all.
+	first := ""
+	for start := range byWeek {
+		if first == "" || start < first {
+			first = start
+		}
+	}
 	for i := range out {
 		if out[i].Partial {
 			continue
@@ -253,10 +263,13 @@ func weeklyVolume(all []Workout, today string, weeks int) []WeekVolume {
 		var sum float64
 		n := 0
 		for j := max(i-4, 0); j < i; j++ {
+			if out[j].Start < first {
+				continue
+			}
 			sum += out[j].DurationSeconds
 			n++
 		}
-		if n >= 2 && sum > 0 {
+		if n >= 3 && sum > 0 {
 			d := (out[i].DurationSeconds/(sum/float64(n)) - 1) * 100
 			out[i].DeltaPct = &d
 		}

@@ -15,7 +15,7 @@
    Weight          83.6 kg       ^ +1%
  green better red worse cyan changed
 
- CALENDAR step count per day, 12 weeks to 2026-11-08
+ == CALENDAR == step count per day, 12 weeks to 2026-11-08
      Aug Sep     Oct     Nov
  Mon _ _ _ _ _ _ _ _ . # - .
  Tue _ _ _ _ _ _ _ _ # @ - @
@@ -28,9 +28,9 @@
  . <=16,838  - <=18,863  + <=19,498  # <=21,359  @ >21,359
  _ no data   < today   steps per day
 
- DATA     1,802 samples
-          range: 2026-10-12 -> 2026-11-08
-          sources: other 100%
-          last import: 1,802 added | 0 duplicates
-          days missing: Weight 18 of 28
+ == DATA == 1,802 samples =================================
+ range: 2026-10-12 -> 2026-11-08
+ sources: other 100%
+ last import: 1,802 added | 0 duplicates
+ days missing: Weight 18 of 28
  not tracked in your data: 27 metrics

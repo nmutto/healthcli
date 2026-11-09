@@ -345,7 +345,8 @@ func TestSleepCrossingMidnight(t *testing.T) {
 	addSleep(t, conn, "asleep_unspecified", "2024-12-01 23:30 +0100", "2024-12-02 06:30 +0100", iphone)
 	// An afternoon nap ending before 18:00 counts for the night that ended that morning.
 	addSleep(t, conn, "asleep_unspecified", "2024-12-01 15:00 +0100", "2024-12-01 17:59 +0100", "Other App")
-	// Ending at 18:00 already belongs to the coming night (where the Watch wins).
+	// Ending at 18:00 already belongs to the coming night. The Watch wins the
+	// stages, but this hour is more than 3 h from its sleep: a nap, kept in the total.
 	addSleep(t, conn, "asleep_unspecified", "2024-12-01 17:00 +0100", "2024-12-01 18:00 +0100", "Other App")
 
 	nights, err := SleepNights(context.Background(), conn, "2024-12-01", "2024-12-02")
@@ -363,10 +364,11 @@ func TestSleepCrossingMidnight(t *testing.T) {
 	want := SleepNight{
 		Night: "2024-12-02", Source: watch, Rows: 6,
 		Core: 4*time.Hour + 30*time.Minute, Deep: time.Hour, REM: 90 * time.Minute, Awake: 20 * time.Minute,
-		Asleep: 7 * time.Hour, InBed: 8 * time.Hour, InBedSource: iphone,
+		Asleep: 8 * time.Hour, Nap: time.Hour, InBed: 8 * time.Hour, InBedSource: iphone,
 	}
 	// The timing fields are checked in sleep_summary_test.go.
 	want.Start, want.End, want.TZ, want.Segments = n.Start, n.End, n.TZ, n.Segments
+	want.StartTZ, want.EndTZ, want.InBedStartTZ, want.InBedEndTZ = n.StartTZ, n.EndTZ, n.InBedStartTZ, n.InBedEndTZ
 	want.InBedStart, want.InBedEnd, want.Awakenings, want.Latency = n.InBedStart, n.InBedEnd, n.Awakenings, n.Latency
 	if !reflect.DeepEqual(n, want) {
 		t.Errorf("got  %+v\nwant %+v", n, want)

@@ -60,7 +60,8 @@ func parseCategories(args []string) ([]string, error) {
 //	VITALS 9 !1 · ACTIVITY 9 · SLEEP  (not tracked: BODY, MOBILITY, WORKOUTS)
 //
 // "!n" counts the rows that are worse. Empty categories are named once, in the
-// "not tracked" tail. It returns "" when there is nothing to list.
+// "not tracked" tail. A line that is too long continues on the next one. It
+// returns "" when there is nothing to list.
 func indexLine(o *stats.Overview, v overviewView, ti termInfo, g glyphSet, st style) string {
 	var parts, missing []string
 	have := map[string]bool{}
@@ -96,18 +97,27 @@ func indexLine(o *stats.Overview, v overviewView, ti termInfo, g glyphSet, st st
 			missing = append(missing, "WORKOUTS")
 		}
 	}
-	line := strings.Join(parts, " "+g.dot+" ")
-	if len(missing) > 0 {
-		if line != "" {
-			line += "  "
-		}
-		tail := "(not tracked: " + strings.Join(missing, ", ") + ")"
-		if runeLen(line+tail) > ti.width-2 { // narrow pane: count them instead
-			tail = fmt.Sprintf("(%d not tracked)", len(missing))
-		}
-		line += tail
+	room := ti.width - 2
+	var lines []string
+	if len(parts) > 0 {
+		lines = wrapParts(parts, " "+g.dot+" ", room) // too long: continue on the next line, never cut
 	}
-	return fit(line, ti.width-2, g)
+	if len(missing) > 0 {
+		tail := "(not tracked: " + strings.Join(missing, ", ") + ")"
+		last := ""
+		if n := len(lines); n > 0 {
+			last = lines[n-1]
+		}
+		if last != "" && runeLen(last+"  "+tail) > room {
+			tail = fmt.Sprintf("(%d not tracked)", len(missing)) // narrow pane: count them instead
+		}
+		if last != "" && runeLen(last+"  "+tail) <= room {
+			lines[len(lines)-1] = last + "  " + tail
+		} else {
+			lines = append(lines, fit(tail, room, g))
+		}
+	}
+	return strings.Join(lines, "\n"+indent)
 }
 
 // tableCols is everything the rows of one table share: which columns are
@@ -166,7 +176,7 @@ func metricTable(o *stats.Overview, ti termInfo, g glyphSet, st style, v overvie
 // planColumns decides which columns exist and how wide they are.
 func planColumns(rows []stats.MetricRow, ti termInfo, g glyphSet, compact bool) tableCols {
 	var c tableCols
-	if !compact {
+	if !compact { // compact keeps a one-character flag in the margin column
 		c.gutter = gutterW
 	}
 	c.foldAge = ti.width < narrowAge
@@ -265,6 +275,8 @@ func metricRow(r stats.MetricRow, c tableCols, ti termInfo, g glyphSet, st style
 	line := indent
 	if c.gutter > 0 {
 		line += gutterMark(r, st)
+	} else if flag := strings.TrimRight(gutterMark(r, st), " "); flag != "" {
+		line = flag // compact: the flag takes the place of the margin
 	}
 	line += padRight(fit(r.Label, c.labelW, g), c.labelW) + "  " + latestCell(r, c.latestW, ti, g, st) + "  "
 	line += deltaArea(r, g, st, c.band, c.areaW, c.foldAge)
@@ -323,18 +335,17 @@ func bandSummary(c *stats.CategorySummary, g glyphSet, short bool) string {
 	return strings.Join(parts, " "+g.dot+" ")
 }
 
-// categoryBand is one full-width line: "━━ VITALS ━━ 9 metrics · 1 worse ━━━━".
-// The rule is dim, the name bold; colour is kept for verdicts.
-func categoryBand(name string, c *stats.CategorySummary, ti termInfo, g glyphSet, st style) string {
+// bandLine is the one rule/band style of every section:
+//
+//	━━ NAME ━━ summary ━━━━━━━━━━━━
+//
+// exactly `total` columns wide, without a left margin. The rule is dim, the
+// name bold; colour is kept for verdicts. The summary is cut to what fits.
+func bandLine(title, summary string, total int, g glyphSet, st style) string {
 	rule := string(g.bandRule)
-	title := strings.ToUpper(name)
-	total := ti.width - len(indent) - 1 // same right edge as the title rule
-	// Visible width of everything but the summary and the closing rule:
-	// "━━ NAME ━━ ", plus a space before the closing rule.
-	room := total - (2 + 1 + runeLen(title) + 1 + 2 + 1) - 1
-	summary := fit(bandSummary(c, g, ti.width < shortBand), room, g)
+	summary = fit(summary, bandRoom(title, total), g)
 
-	b := indent + st.dim(strings.Repeat(rule, 2)) + " " + st.bold(title) + " " + st.dim(strings.Repeat(rule, 2))
+	b := st.dim(strings.Repeat(rule, 2)) + " " + st.bold(title) + " " + st.dim(strings.Repeat(rule, 2))
 	used := 2 + 1 + runeLen(title) + 1 + 2
 	if summary != "" {
 		b += " " + summary
@@ -343,16 +354,34 @@ func categoryBand(name string, c *stats.CategorySummary, ti termInfo, g glyphSet
 	if fill := total - used - 1; fill > 0 {
 		b += " " + st.dim(strings.Repeat(rule, fill))
 	}
-	return b + "\n"
+	return b
 }
 
-// tableFooter explains the colours and the gutter. It is plain text, so it
-// also helps when colour is off (the words in the rows are the same either way).
-func tableFooter(o *stats.Overview, st style, ti termInfo, g glyphSet) string {
-	if ti.width-2 < 60 { // too wide for a narrow pane: say it shorter
-		return indent + st.green("green") + st.dim(" better ") + st.red("red") + st.dim(" worse ") + st.cyan("cyan") + st.dim(" changed") + "\n"
+// bandRoom is how many columns a band of `total` columns leaves for the
+// summary: everything but "━━ NAME ━━ " and the space before the closing rule.
+func bandRoom(title string, total int) int {
+	return total - (2 + 1 + runeLen(title) + 1 + 2 + 1) - 1
+}
+
+// categoryBand is the band of one metric category, ended by a newline.
+func categoryBand(name string, c *stats.CategorySummary, ti termInfo, g glyphSet, st style) string {
+	total := ti.width - len(indent) - 1 // same right edge as the title rule
+	return indent + bandLine(strings.ToUpper(name), bandSummary(c, g, ti.width < shortBand), total, g, st) + "\n"
+}
+
+// colorLegend explains the colours; the words in the rows say the same, so it
+// also helps with colour off. It is the one legend of the page (metric table
+// and sleep table), shorter on a narrow pane.
+func colorLegend(st style, width int) string {
+	if width < 60 {
+		return st.green("green") + st.dim(" better ") + st.red("red") + st.dim(" worse ") + st.cyan("cyan") + st.dim(" changed")
 	}
 	sep := st.dim(" / ")
-	return indent + st.green("green") + st.dim(" better") + sep + st.red("red") + st.dim(" worse") + sep +
-		st.cyan("cyan") + st.dim(" changed (no good direction)") + "\n"
+	return st.green("green") + st.dim(" better") + sep + st.red("red") + st.dim(" worse") + sep +
+		st.cyan("cyan") + st.dim(" changed (no good direction)")
+}
+
+// tableFooter is the legend under the metric table.
+func tableFooter(o *stats.Overview, st style, ti termInfo, g glyphSet) string {
+	return indent + colorLegend(st, ti.width-2) + "\n"
 }

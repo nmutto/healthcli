@@ -106,6 +106,7 @@ type SleepNightView struct {
 	Source       string    `json:"source,omitempty"`
 	InBedSource  string    `json:"in_bed_source,omitempty"`
 	AsleepSecs   int64     `json:"asleep_seconds"`
+	NapSecs      int64     `json:"nap_seconds,omitempty"`
 	CoreSecs     int64     `json:"core_seconds"`
 	DeepSecs     int64     `json:"deep_seconds"`
 	REMSecs      int64     `json:"rem_seconds"`
@@ -148,11 +149,12 @@ func (n SleepNight) Efficiency() (pct float64, clamped, ok bool) {
 	case n.InBed > 0:
 		denom = n.InBed
 	case n.Awake > 0:
-		denom = n.Asleep + n.Awake
+		denom = n.Asleep - n.Nap + n.Awake
 	default:
 		return 0, false, false
 	}
-	pct = float64(n.Asleep) / float64(denom) * 100
+	// Naps are outside the main night, so they do not count against time in bed.
+	pct = float64(n.Asleep-n.Nap) / float64(denom) * 100
 	if pct > 100 {
 		return 100, true, true
 	}
@@ -174,21 +176,21 @@ func (n SleepNight) BedtimeMin() (float64, bool) {
 	if n.Start == 0 {
 		return 0, false
 	}
-	return clockMin(n.Start, n.TZ), true
+	return clockMin(n.Start, n.StartTZ), true
 }
 
 func (n SleepNight) WakeMin() (float64, bool) {
 	if n.Start == 0 {
 		return 0, false
 	}
-	return clockMin(n.End, n.TZ), true
+	return clockMin(n.End, n.EndTZ), true
 }
 
 func (n SleepNight) MidpointMin() (float64, bool) {
 	if n.Start == 0 {
 		return 0, false
 	}
-	return math.Mod(clockMin(n.Start, n.TZ)+float64(n.End-n.Start)/120, 24*60), true
+	return math.Mod(clockMin(n.Start, n.StartTZ)+float64(n.End-n.Start)/120, 24*60), true
 }
 
 // ClockText writes minutes since 18:00 as a clock time: 312 -> "23:12".
@@ -204,7 +206,7 @@ func (n SleepNight) View() *SleepNightView {
 		Night: n.Night, Source: n.Source, InBedSource: n.InBedSource,
 		AsleepSecs: secs(n.Asleep), CoreSecs: secs(n.Core), DeepSecs: secs(n.Deep),
 		REMSecs: secs(n.REM), UnspecSecs: secs(n.Unspecified), AwakeSecs: secs(n.Awake),
-		InBedSecs: secs(n.InBed), Awakenings: n.Awakenings,
+		InBedSecs: secs(n.InBed), Awakenings: n.Awakenings, NapSecs: secs(n.Nap),
 	}
 	if pct, _, ok := n.Efficiency(); ok {
 		v.Efficiency = &pct
@@ -223,8 +225,8 @@ func (n SleepNight) View() *SleepNightView {
 	for _, s := range n.Segments {
 		v.StagesSource = append(v.StagesSource, SegView{
 			Stage: s.Stage,
-			Start: localTime(s.Start, n.TZ).Format(time.RFC3339),
-			End:   localTime(s.End, n.TZ).Format(time.RFC3339),
+			Start: localTime(s.Start, s.TZ).Format(time.RFC3339),
+			End:   localTime(s.End, s.TZ).Format(time.RFC3339),
 		})
 	}
 	return v

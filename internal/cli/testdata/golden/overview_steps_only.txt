@@ -9,7 +9,7 @@
  ! Steps   5,000 steps  ▼ -33% worse      ··●░░░░···  ······▇▁▃▅▆█▂▄▅▇▁▃▅▆█▂▄▅▇▁
  green better / red worse / cyan changed (no good direction)
 
- CALENDAR step count per day, 12 weeks to 2026-11-08
+ ━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━━━━━━
      Aug Sep     Oct     Nov
  Mon · · · · · · · · · · ▁ ▇
  Tue · · · · · · · · · ▇ ▃ █
@@ -22,7 +22,7 @@
  ▁ ≤5,600  ▃ ≤6,800  ▅ ≤8,000  ▇ ≤9,200  █ >9,200
  · no data   ◂ today   steps per day
 
- DATA     20 samples
-          range: 2026-10-20 → 2026-11-08
-          sources: other 100%
+ ━━ DATA ━━ 20 samples ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ range: 2026-10-20 → 2026-11-08
+ sources: other 100%
  not tracked in your data: 29 metrics

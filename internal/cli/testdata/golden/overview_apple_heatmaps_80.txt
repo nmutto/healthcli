@@ -1,6 +1,6 @@
  healthcli overview                              db: demo.db · imported 1 d ago
  ──────────────────────────────────────────────────────────────────────────────
- 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
+ 1 better, 1 worse, 1 changed, 4 typical vs your 28-day usual · Resting HR +6%
  VITALS 9 !1
 
    METRIC               LATEST          VS 28-DAY USUAL               AGE
@@ -17,7 +17,7 @@
    Heart rate recovery  26 bpm          need 7d (have 6)
  green better / red worse / cyan changed (no good direction)
 
- workout minutes per day, 12 weeks to 2026-11-08
+ ━━ CALENDAR ━━ workout minutes per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━
      Aug Sep     Oct     Nov
  Mon                     ▅ ·
  Tue                     · ▁
@@ -30,7 +30,7 @@
  ▁ ≤40m  ▃ ≤51m  ▅ ≤1h 00m  ▇ ≤1h 04m  █ >1h 04m
  · rest day   ◂ today   per day
 
- time asleep per night (a calendar needs 14 nights, have 13)
+ ━━ CALENDAR ━━ time asleep per day, last 13 nights ━━━━━━━━━━━━━━━━━━━━━━━━━━━
  Tue Wed Thu Fri Sat Sun Mon Tue Wed Thu Fri Sat Sun
  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h
  ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆

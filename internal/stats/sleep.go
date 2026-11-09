@@ -21,15 +21,20 @@ type SleepNight struct {
 	Source string
 	Rows   int // how many stage rows of Source were used
 
-	// Start and End are the first and last moment of ASLEEP time (Unix
-	// seconds), 0 when the night has no asleep time. TZ is the UTC offset in
-	// seconds the night was recorded in, so Start and End can be shown as the
-	// clock on the wall.
-	Start, End int64
-	TZ         int
+	// Start and End are the first and last moment of the MAIN sleep block
+	// (Unix seconds), 0 when the night has no asleep time. Naps are not part
+	// of it, see mainBlock. TZ is the UTC offset in seconds of the first row;
+	// StartTZ and EndTZ are the offsets of the rows Start and End belong to
+	// (they differ when the clocks changed during the night), so each can be
+	// shown as the clock on the wall it was recorded on.
+	Start, End     int64
+	TZ             int
+	StartTZ, EndTZ int
 
-	// InBedStart and InBedEnd are the first and last in_bed moments (0 = none).
-	InBedStart, InBedEnd int64
+	// InBedStart and InBedEnd are the first and last in_bed moments (0 = none),
+	// with the offsets of their rows.
+	InBedStart, InBedEnd     int64
+	InBedStartTZ, InBedEndTZ int
 
 	// Awakenings counts awake periods of 5 minutes or more between Start and
 	// End; shorter blips are ignored. Latency is how long falling asleep took
@@ -45,7 +50,10 @@ type SleepNight struct {
 
 	// Asleep is the UNION of the core, deep, REM and unspecified intervals
 	// (so two stage rows that overlap count once). Awake and InBed are not sleep.
+	//
+	// Asleep includes naps; Nap is the part of it outside the main block.
 	Asleep      time.Duration
+	Nap         time.Duration
 	Core        time.Duration
 	Deep        time.Duration
 	REM         time.Duration
@@ -71,14 +79,20 @@ type SleepNight struct {
 const nightShift = 6 * 60 * 60
 
 // Seg is one stage row of a night: Stage is core, deep, rem, awake or
-// asleep_unspecified; Start and End are Unix seconds.
+// asleep_unspecified; Start and End are Unix seconds; TZ is the row's offset.
 type Seg struct {
 	Stage      string
 	Start, End int64
+	TZ         int
 }
 
-// interval is a stage row's [start, end) in Unix seconds.
-type interval struct{ start, end int64 }
+// interval is a stage row's [start, end) in Unix seconds. startTZ is the UTC
+// offset of the row that starts it, endTZ of the row that ends it (after a
+// merge these can be different rows).
+type interval struct {
+	start, end     int64
+	startTZ, endTZ int
+}
 
 // merge sorts the intervals and joins the ones that overlap or touch. Rows
 // that end before they start are dropped.
@@ -91,7 +105,9 @@ func merge(ivs []interval) []interval {
 			continue
 		}
 		if n := len(out); n > 0 && iv.start <= out[n-1].end {
-			out[n-1].end = max(out[n-1].end, iv.end)
+			if iv.end > out[n-1].end {
+				out[n-1].end, out[n-1].endTZ = iv.end, iv.endTZ
+			}
 			continue
 		}
 		out = append(out, iv)
@@ -185,7 +201,7 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 			group[night][source] = t
 		}
 		t.rows++
-		t.byStage[stage] = append(t.byStage[stage], interval{start, end})
+		t.byStage[stage] = append(t.byStage[stage], interval{start, end, tz, tz})
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("stats: read sleep: %w", err)
@@ -209,22 +225,24 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 		if source, t := bestSleepSource(stages[night]); t != nil {
 			n.Source = source
 			n.Rows = t.rows
-			n.TZ = t.tz
+			n.TZ, n.StartTZ, n.EndTZ = t.tz, t.tz, t.tz
 			n.Core = t.total("core")
 			n.Deep = t.total("deep")
 			n.REM = t.total("rem")
 			n.Unspecified = t.total("asleep_unspecified")
 			n.Awake = t.total("awake")
 			fillAsleepTimes(&n, t)
+			addOtherSourceNaps(&n, t, stages[night])
 		}
 		if source, t := bestSleepSource(inBed[night]); t != nil {
 			n.InBedSource = source
 			n.InBed = t.total("in_bed")
 			if m := merge(t.byStage["in_bed"]); len(m) > 0 {
 				n.InBedStart, n.InBedEnd = m[0].start, m[len(m)-1].end
+				n.InBedStartTZ, n.InBedEndTZ = m[0].startTZ, m[len(m)-1].endTZ
 			}
 			if n.TZ == 0 {
-				n.TZ = t.tz
+				n.TZ, n.StartTZ, n.EndTZ = t.tz, t.tz, t.tz
 			}
 		}
 		// Falling-asleep time only makes sense when in bed began first, and
@@ -253,13 +271,56 @@ func bestSleepSource(bySource map[string]*sleepTotals) (string, *sleepTotals) {
 // minAwakening is the shortest awake period that counts as an awakening.
 const minAwakening = 5 * time.Minute
 
-// fillAsleepTimes sets Asleep, Start, End, Awakenings and Segments of n from
-// the stage rows of one source.
+// napGap is how far apart two pieces of sleep must be to be separate blocks.
+const napGap = 3 * time.Hour
+
+// block is a run of asleep intervals with gaps of at most napGap between them.
+type block struct {
+	start, end     int64
+	startTZ, endTZ int
+	asleep         time.Duration // asleep time inside the block
+}
+
+// sleepBlocks groups merged asleep intervals into blocks.
+func sleepBlocks(asleep []interval) []block {
+	var out []block
+	for _, iv := range asleep {
+		if n := len(out); n > 0 && time.Duration(iv.start-out[n-1].end)*time.Second <= napGap {
+			out[n-1].end, out[n-1].endTZ = iv.end, iv.endTZ
+			out[n-1].asleep += time.Duration(iv.end-iv.start) * time.Second
+			continue
+		}
+		out = append(out, block{iv.start, iv.end, iv.startTZ, iv.endTZ, time.Duration(iv.end-iv.start) * time.Second})
+	}
+	return out
+}
+
+// Nap rule. The MAIN sleep block of a night is the block of asleep time with
+// the most sleep in it (the first one on a tie); asleep pieces more than 3
+// hours away from it are naps. Bedtime, wake, midpoint, awakenings and the
+// hypnogram use the main block only, so a nap cannot stretch the night or move
+// its midpoint. Naps stay in Asleep (total time asleep) and are also reported
+// as Nap. A nap written by another source than the night's best source is not
+// dropped: see addOtherSourceNaps.
+func mainBlock(blocks []block) block {
+	best := blocks[0]
+	for _, b := range blocks[1:] {
+		if b.asleep > best.asleep {
+			best = b
+		}
+	}
+	return best
+}
+
+// fillAsleepTimes sets Asleep, Nap, Start, End, Awakenings and Segments of n
+// from the stage rows of one source.
 func fillAsleepTimes(n *SleepNight, t *sleepTotals) {
 	asleep := t.asleepUnion()
 	n.Asleep = length(asleep)
 	if len(asleep) > 0 {
-		n.Start, n.End = asleep[0].start, asleep[len(asleep)-1].end
+		main := mainBlock(sleepBlocks(asleep))
+		n.Start, n.End, n.StartTZ, n.EndTZ = main.start, main.end, main.startTZ, main.endTZ
+		n.Nap = n.Asleep - main.asleep
 	}
 	for _, iv := range merge(t.byStage["awake"]) {
 		if iv.start >= n.Start && iv.end <= n.End && time.Duration(iv.end-iv.start)*time.Second >= minAwakening {
@@ -271,8 +332,9 @@ func fillAsleepTimes(n *SleepNight, t *sleepTotals) {
 			continue
 		}
 		for _, iv := range ivs {
-			if iv.end > iv.start {
-				n.Segments = append(n.Segments, Seg{Stage: stage, Start: iv.start, End: iv.end})
+			// Only rows that touch the main block are drawn (no nap rows).
+			if iv.end > iv.start && iv.end > n.Start && iv.start < n.End {
+				n.Segments = append(n.Segments, Seg{Stage: stage, Start: iv.start, End: iv.end, TZ: iv.startTZ})
 			}
 		}
 	}
@@ -288,4 +350,35 @@ func fillAsleepTimes(n *SleepNight, t *sleepTotals) {
 		}
 		return a.Stage < b.Stage
 	})
+}
+
+// addOtherSourceNaps adds sleep that only another source recorded and that is
+// a nap by the rule above (more than 3 hours from every asleep interval of the
+// night's best source). The best-source rule keeps one source per night for
+// the stage numbers, which would silently lose such a nap; here it counts
+// toward Asleep and Nap only (no stage totals). Asleep time of other sources
+// near the best source's sleep is the same sleep seen twice and stays ignored.
+func addOtherSourceNaps(n *SleepNight, best *sleepTotals, bySource map[string]*sleepTotals) {
+	own := best.asleepUnion()
+	var extra []interval
+	for _, t := range bySource {
+		if t == best {
+			continue
+		}
+		for _, iv := range t.asleepUnion() {
+			far := true
+			for _, o := range own {
+				if time.Duration(max(iv.start-o.end, o.start-iv.end))*time.Second <= napGap {
+					far = false
+					break
+				}
+			}
+			if far {
+				extra = append(extra, iv)
+			}
+		}
+	}
+	d := length(merge(extra))
+	n.Asleep += d
+	n.Nap += d
 }

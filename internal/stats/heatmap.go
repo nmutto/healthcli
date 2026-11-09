@@ -20,8 +20,8 @@ const HeatLevels = 5
 // HeatDay is one calendar cell.
 type HeatDay struct {
 	Day    string   `json:"day"`
-	Value  *float64 `json:"value"` // null: no data that day (a gap) or a future day
-	Level  int      `json:"level"` // 1..5 (5 = highest fifth); 0 = no level: gap, future, or a rest day (Value is 0)
+	Value  *float64 `json:"value,omitempty"` // left out: no data that day (a gap) or a future day
+	Level  int      `json:"level"`           // 1..5 (5 = highest fifth); 0 = no level: gap, future, or a rest day (Value is 0)
 	Future bool     `json:"future,omitempty"`
 }
 

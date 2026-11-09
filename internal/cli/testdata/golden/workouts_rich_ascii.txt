@@ -1,5 +1,4 @@
- WORKOUTS ---------------------------------------------------------------------
- 28 d  16 sessions  16h 44m  6,820 kcal  187.5 km  active 16 of 28 days
+ == WORKOUTS == 16 sessions  16h 44m  6,820 kcal  187.5 km  active 16 of 28 d =
 
  TYPE      N TIME       KCAL     KM SHARE
  cycling   6 7h 57m    3,450  126.0 ##########..........  48%
@@ -15,7 +14,7 @@
  Sat Oct 31 yoga        49m
 
  WEEK OF TIME                                    N VS AVG
- Sep 21  #############........... 3h 00m         3 ^ +3%
+ Sep 21  #############........... 3h 00m         3 v -23%
  Sep 28  ##############.......... 3h 13m         4 v -12%
  Oct 05  ############............ 2h 50m         4 v -24%
  Oct 12  ######################## 5h 31m         5 ^ +62%
@@ -30,15 +29,15 @@
  furthest  cycling 21.0 km, Sep 03
  biggest   cycling 700 kcal, Sep 23
 
- workout minutes per day, 8 weeks to 2026-11-09
+ == CALENDAR == workout minutes per day, 8 weeks to 2026-11-09 ================
        Oct     Nov
- Mon   + . . . . @ . <
- Tue   . . @ + . .
- Wed # . . . . @ #
- Thu . - - + . . .
- Fri # . . - @ # .
- Sat . + . + . - #
- Sun - . . @ + . .
+ Mon   + . : : : @ : <
+ Tue   : : @ + . :
+ Wed # . . : : @ #
+ Thu : - - + : : :
+ Fri # : : - @ # .
+ Sat : + . + : - #
+ Sun - : : @ + : :
 
  . <=45m  - <=49m  + <=1h 00m  # <=1h 10m  @ >1h 10m
- . rest day   < today   per day
+ : rest day   < today   per day

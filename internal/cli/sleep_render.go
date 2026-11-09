@@ -44,14 +44,14 @@ func renderSleepSection(r *stats.SleepReport, ti termInfo, width int, opts sleep
 	var lines []string
 
 	if !opts.NoHeader {
-		lines = append(lines, sleepHeader(r, g, width, st), sleepIndent+strings.Repeat(string(g.rule), width-2))
+		lines = append(lines, sleepHeader(r, g, width, st))
 	}
 
 	// In bed only: no sleep, so no stages, stats or heatmap.
 	if r.Kind == "in_bed" {
 		lines = append(lines, sleepIndent+"in bed "+formatDuration(last.InBed)+", no sleep stages")
 		if last.InBedStart > 0 {
-			in, out := localClock(last.InBedStart, last.TZ), localClock(last.InBedEnd, last.TZ)
+			in, out := localClock(last.InBedStart, last.InBedStartTZ), localClock(last.InBedEnd, last.InBedEndTZ)
 			lines = append(lines, sleepIndent+"in bed "+in+" "+g.arrow+" "+out)
 		}
 		return lines
@@ -85,15 +85,43 @@ func renderSleepSection(r *stats.SleepReport, ti termInfo, width int, opts sleep
 	return lines
 }
 
-// sleepHeader is "SLEEP  Mon 9 Nov · Watch stages, iPhone in bed".
+// sleepHeader is the section band: "━━ SLEEP ━━ Mon 9 Nov · Watch stages, iPhone in bed ━━".
+// The subtitle is never cut with an ellipsis: when it does not fit, the
+// "(N days ago)" goes first, then the long source text, then the sources.
 func sleepHeader(r *stats.SleepReport, g glyphSet, width int, st style) string {
 	t, _ := time.Parse(stats.DayLayout, r.Last.Night)
 	day := t.Format("Mon 2 Jan")
+	ago := ""
 	if r.AgeDays > 0 {
-		day += " (" + plural(int64(r.AgeDays), "day") + " ago)"
+		ago = " (" + plural(int64(r.AgeDays), "day") + " ago)"
 	}
-	rest := fit("  "+day+" "+g.dot+" "+sleepSources(r.Last, r.Kind), width-len(sleepIndent)-len("SLEEP"), g)
-	return sleepIndent + st.bold("SLEEP") + rest
+	total := width - len(sleepIndent) - 1
+	room := bandRoom("SLEEP", total)
+	short := sleepSourcesShort(r.Last, r.Kind)
+	var subtitle string
+	for _, cand := range []string{
+		day + ago + " " + g.dot + " " + sleepSources(r.Last, r.Kind),
+		day + " " + g.dot + " " + sleepSources(r.Last, r.Kind),
+		day + " " + g.dot + " " + short,
+		day,
+	} {
+		subtitle = cand
+		if runeLen(cand) <= room {
+			break
+		}
+	}
+	return sleepIndent + bandLine("SLEEP", subtitle, total, g, st)
+}
+
+// sleepSourcesShort is the source text in few characters: "Watch, iPhone".
+func sleepSourcesShort(n stats.SleepNight, kind string) string {
+	switch {
+	case kind == "in_bed":
+		return sourceLabel(n.InBedSource) + " in bed"
+	case n.InBedSource != "" && n.InBedSource != n.Source:
+		return sourceLabel(n.Source) + ", " + sourceLabel(n.InBedSource)
+	}
+	return sourceLabel(n.Source)
 }
 
 // sleepSources says where the numbers came from: "Watch stages, iPhone in bed".
@@ -196,7 +224,7 @@ func hypnogram(n stats.SleepNight, cells int, g glyphSet, st style) []string {
 	}
 
 	// Time ruler: first and last clock on top, hour ticks below.
-	startL, endL := localClock(from, n.TZ), localClock(to, n.TZ)
+	startL, endL := localClock(from, n.StartTZ), localClock(to, n.EndTZ)
 	top := sleepIndent + strings.Repeat(" ", 6) + startL +
 		strings.Repeat(" ", max(cells-len(startL)-len(endL), 1)) + endL
 	lines := []string{st.dim(top)}
@@ -209,11 +237,11 @@ func hypnogram(n stats.SleepNight, cells int, g glyphSet, st style) []string {
 		}
 		lines = append(lines, sleepIndent+row.label+cellsText)
 	}
-	lines = append(lines, st.dim(sleepIndent+strings.Repeat(" ", 6)+hourTicks(from, to, n.TZ, cells)))
+	lines = append(lines, st.dim(sleepIndent+strings.Repeat(" ", 6)+hourTicks(from, to, n.StartTZ, cells)))
 	return lines
 }
 
-// hourTicks writes the hour number under the column where each full hour
+// hourTicks writes the clock hour (00 01 02 ...) under the column where each full hour
 // starts, skipping a label that would touch the previous one.
 func hourTicks(from, to int64, tz, cells int) string {
 	line := []rune(strings.Repeat(" ", cells))
@@ -225,7 +253,7 @@ func hourTicks(from, to int64, tz, cells int) string {
 	}
 	for t := first; t < to; t += 3600 {
 		col := int((t - from) * int64(cells) / (to - from))
-		label := []rune(fmt.Sprint(time.Unix(t, 0).In(time.FixedZone("", tz)).Hour()))
+		label := []rune(fmt.Sprintf("%02d", time.Unix(t, 0).In(time.FixedZone("", tz)).Hour()))
 		if col < end || col+len(label) > cells {
 			continue
 		}
@@ -242,9 +270,22 @@ func sleepBar(r *stats.SleepReport, width int, g glyphSet, st style) []string {
 	cells := width - 2
 	if r.Kind == "unspecified" {
 		bar := g.stackedBar([]segment{{"unspecified", 1}}, cells)
-		info := fmt.Sprintf("asleep %s   %s %s %s   midpoint %s", formatDuration(n.Asleep),
-			localClock(n.Start, n.TZ), g.arrow, localClock(n.End, n.TZ), localClock(n.Start+(n.End-n.Start)/2, n.TZ))
+		mid, _ := n.MidpointMin() // the same number as the table's Midpoint row
 		note := "(stages not recorded)"
+		span := localClock(n.Start, n.StartTZ) + " " + g.arrow + " " + localClock(n.End, n.EndTZ)
+		// Everything, then without the midpoint, then without the times: the
+		// note is never cut.
+		info := ""
+		for _, parts := range [][]string{
+			{"asleep " + formatDuration(n.Asleep), span, "midpoint " + stats.ClockText(mid)},
+			{"asleep " + formatDuration(n.Asleep), span},
+			{"asleep " + formatDuration(n.Asleep)},
+		} {
+			info = strings.Join(parts, "   ")
+			if runeLen(info)+2+runeLen(note) <= cells {
+				break
+			}
+		}
 		if pad := cells - runeLen(info) - runeLen(note); pad >= 2 {
 			info += strings.Repeat(" ", pad) + st.dim(note)
 		} else {
@@ -295,10 +336,10 @@ type sleepStat struct {
 	polarity int     // +1 higher is better, -1 lower is better, 0 no good direction
 	minDelta float64 // smaller changes are "typical": percent, points or minutes
 	// last formats last night's value ("" = missing), week its average.
-	last func(n stats.SleepNight) string
+	last func(n stats.SleepNight, wide bool) string
 	val  func(a *stats.SleepAgg) *float64
 	// weekText overrides the average column text (default: from val).
-	weekText func(a *stats.SleepAgg) string
+	weekText func(a *stats.SleepAgg, wide bool) string
 }
 
 func secsText(s float64) string { return formatDuration(time.Duration(s * float64(time.Second))) }
@@ -311,8 +352,22 @@ func stagePct(part, total time.Duration) string {
 	return fmt.Sprintf(" %.0f%%", float64(part)/float64(total)*100)
 }
 
-func clockCell(f func(stats.SleepNight) (float64, bool)) func(stats.SleepNight) string {
-	return func(n stats.SleepNight) string {
+// awakenings is the count after the awake time: " / 2 awakenings" with room,
+// " 2 wakes" without.
+func awakenings(n int, wide bool) string {
+	switch {
+	case wide && n == 1:
+		return " / 1 awakening"
+	case wide:
+		return fmt.Sprintf(" / %d awakenings", n)
+	case n == 1:
+		return " 1 wake"
+	}
+	return fmt.Sprintf(" %d wakes", n)
+}
+
+func clockCell(f func(stats.SleepNight) (float64, bool)) func(stats.SleepNight, bool) string {
+	return func(n stats.SleepNight, _ bool) string {
 		if v, ok := f(n); ok {
 			return stats.ClockText(v)
 		}
@@ -322,13 +377,13 @@ func clockCell(f func(stats.SleepNight) (float64, bool)) func(stats.SleepNight) 
 
 var sleepStats = []sleepStat{
 	{name: "Asleep", compact: true, kind: kindDuration, polarity: +1, minDelta: 5,
-		last: func(n stats.SleepNight) string { return ifThen(n.Asleep > 0, formatDuration(n.Asleep)) },
+		last: func(n stats.SleepNight, _ bool) string { return ifThen(n.Asleep > 0, formatDuration(n.Asleep)) },
 		val:  func(a *stats.SleepAgg) *float64 { return a.AsleepSecs }},
 	{name: "In bed", compact: true, kind: kindDuration, polarity: 0, minDelta: 5,
-		last: func(n stats.SleepNight) string { return ifThen(n.InBed > 0, formatDuration(n.InBed)) },
+		last: func(n stats.SleepNight, _ bool) string { return ifThen(n.InBed > 0, formatDuration(n.InBed)) },
 		val:  func(a *stats.SleepAgg) *float64 { return a.InBedSecs }},
 	{name: "Efficiency", compact: true, kind: kindPercent, polarity: +1, minDelta: 2,
-		last: func(n stats.SleepNight) string {
+		last: func(n stats.SleepNight, _ bool) string {
 			if p, _, ok := n.Efficiency(); ok {
 				return fmt.Sprintf("%.0f%%", p)
 			}
@@ -336,31 +391,31 @@ var sleepStats = []sleepStat{
 		},
 		val: func(a *stats.SleepAgg) *float64 { return a.Efficiency }},
 	{name: "Awake", compact: true, kind: kindDuration, polarity: -1, minDelta: 10,
-		last: func(n stats.SleepNight) string {
-			return ifThen(n.HasStages(), formatDuration(n.Awake)+fmt.Sprintf(" %dx", n.Awakenings))
+		last: func(n stats.SleepNight, wide bool) string {
+			return ifThen(n.HasStages(), formatDuration(n.Awake)+awakenings(n.Awakenings, wide))
 		},
 		val: func(a *stats.SleepAgg) *float64 { return a.AwakeSecs },
-		weekText: func(a *stats.SleepAgg) string {
+		weekText: func(a *stats.SleepAgg, wide bool) string {
 			if a.AwakeSecs == nil || a.Awakenings == nil {
 				return ""
 			}
-			return secsText(*a.AwakeSecs) + fmt.Sprintf(" %.0fx", *a.Awakenings)
+			return secsText(*a.AwakeSecs) + awakenings(int(math.Round(*a.Awakenings)), wide)
 		}},
 	{name: "Latency", kind: kindDuration, polarity: -1, minDelta: 10,
-		last: func(n stats.SleepNight) string { return ifThen(n.Latency > 0, "~"+formatDuration(n.Latency)) },
+		last: func(n stats.SleepNight, _ bool) string { return ifThen(n.Latency > 0, "~"+formatDuration(n.Latency)) },
 		val:  func(a *stats.SleepAgg) *float64 { return a.LatencySecs }},
 	{name: "Deep", compact: true, kind: kindDuration, polarity: +1, minDelta: 5,
-		last: func(n stats.SleepNight) string {
+		last: func(n stats.SleepNight, _ bool) string {
 			return ifThen(n.HasStages(), formatDuration(n.Deep)+stagePct(n.Deep, n.Asleep))
 		},
 		val: func(a *stats.SleepAgg) *float64 { return a.DeepSecs }},
 	{name: "REM", compact: true, kind: kindDuration, polarity: +1, minDelta: 5,
-		last: func(n stats.SleepNight) string {
+		last: func(n stats.SleepNight, _ bool) string {
 			return ifThen(n.HasStages(), formatDuration(n.REM)+stagePct(n.REM, n.Asleep))
 		},
 		val: func(a *stats.SleepAgg) *float64 { return a.REMSecs }},
 	{name: "Core", kind: kindDuration, polarity: 0, minDelta: 5,
-		last: func(n stats.SleepNight) string {
+		last: func(n stats.SleepNight, _ bool) string {
 			return ifThen(n.HasStages(), formatDuration(n.Core)+stagePct(n.Core, n.Asleep))
 		},
 		val: func(a *stats.SleepAgg) *float64 { return a.CoreSecs }},
@@ -397,6 +452,9 @@ func compareSleep(s sleepStat, week, usual *float64, g glyphSet) (sleepVerdict, 
 	switch s.kind {
 	case kindDuration:
 		if *usual == 0 {
+			if *week == 0 { // 0 against 0 (no awake time at all) is as typical as any other row
+				return sleepVerdict{text: g.flat + " typical", verdict: "typical"}, true
+			}
 			return sleepVerdict{}, false
 		}
 		delta = (*week - *usual) / *usual * 100
@@ -457,9 +515,15 @@ func sleepStatTable(r *stats.SleepReport, ti termInfo, width int, opts sleepOpts
 	st := style{color: ti.color}
 	last := r.Last
 
-	nameW, lastW, weekW := 11, 12, 11
-	if width >= 80 {
-		nameW, lastW, weekW = 13, 16, 14
+	// Column widths by terminal width. "wide" has room for the awake row as
+	// "17m / 2 awakenings"; narrower tables say "17m 2 wakes".
+	nameW, lastW, weekW := 13, 20, 20
+	wide := width >= 80
+	switch {
+	case width < 60:
+		nameW, lastW, weekW = 10, 12, 12
+	case width < 80:
+		nameW, lastW, weekW = 11, 12, 12
 	}
 	needed := stats.MinSleepNights
 	haveUsual := r.Usual != nil && r.Usual.Nights >= needed
@@ -470,7 +534,7 @@ func sleepStatTable(r *stats.SleepReport, ti termInfo, width int, opts sleepOpts
 	}
 	usualHead := "VS USUAL"
 	if width >= 60 && haveUsual {
-		usualHead = fmt.Sprintf("VS %d-NIGHT USUAL", r.UsualNights)
+		usualHead = fmt.Sprintf("VS %d-NIGHT USUAL", r.Usual.Nights) // the nights really there
 	}
 	lines := []string{st.dim(sleepIndent + padRight("STAT", nameW) + padRight("LAST NIGHT", lastW) + padRight(weekHead, weekW) + usualHead)}
 
@@ -479,10 +543,10 @@ func sleepStatTable(r *stats.SleepReport, ti termInfo, width int, opts sleepOpts
 		if !opts.Full && !s.compact {
 			continue
 		}
-		lastText := s.last(last)
+		lastText := s.last(last, wide)
 		weekText := ""
 		if s.weekText != nil {
-			weekText = s.weekText(r.Week)
+			weekText = s.weekText(r.Week, wide)
 		} else if v := s.val(r.Week); v != nil {
 			weekText = formatSleepValue(s, *v)
 		}
@@ -493,7 +557,11 @@ func sleepStatTable(r *stats.SleepReport, ti termInfo, width int, opts sleepOpts
 		var vs string
 		if !haveUsual {
 			if lastText != "" || weekText != "" {
-				vs = st.dim(fmt.Sprintf("need %d nights (have %d)", needed, r.Usual.Nights))
+				need := fmt.Sprintf("need %d nights (have %d)", needed, r.Usual.Nights)
+				if width < 60 {
+					need = fmt.Sprintf("needs %d nights", needed)
+				}
+				vs = st.dim(need)
 			}
 		} else if v, ok := compareSleep(s, s.val(r.Week), s.val(r.Usual), g); ok {
 			vs = st.verdict(v.verdict, v.text)
@@ -506,21 +574,45 @@ func sleepStatTable(r *stats.SleepReport, ti termInfo, width int, opts sleepOpts
 	}
 
 	if opts.Full {
-		lines = append(lines, regularityLine(r, g, st, width, nameW)...)
+		lines = append(lines, regularityLine(r, g, st, width, nameW, lastW+weekW)...)
 	}
 	if line := debtLine(r, target, nameW, width); line != "" {
 		lines = append(lines, line)
 	}
+	if opts.Full && last.Nap > 0 {
+		lines = append(lines, st.dim(sleepIndent+"nap "+formatDuration(last.Nap)+", counted in asleep"))
+	}
 	if len(missing) > 0 {
-		lines = append(lines, st.dim(sleepIndent+"not available: "+strings.ReplaceAll(strings.Join(missing, ", "), "rem", "REM")))
+		names := strings.ReplaceAll(strings.Join(missing, ", "), "rem", "REM")
+		lines = append(lines, wrapDim("not available: "+names, width, st)...)
 	}
 	if _, clamped, _ := last.Efficiency(); clamped {
-		lines = append(lines, st.dim(sleepIndent+"efficiency capped at 100%: sleep and in-bed sources differ"))
+		lines = append(lines, wrapDim("efficiency capped at 100%: sleep and in-bed sources differ", width, st)...)
 	}
 	if opts.Full && haveUsual {
-		lines = append(lines, st.dim(sleepIndent+"green better / red worse / cyan neutral"))
+		lines = append(lines, sleepIndent+colorLegend(st, width-2))
 	}
 	return lines
+}
+
+// wrapDim writes a dim note, wrapped at word boundaries (never cut with an
+// ellipsis) onto lines no wider than width.
+func wrapDim(text string, width int, st style) []string {
+	var lines []string
+	line := ""
+	for _, word := range strings.Fields(text) {
+		if line != "" && len(sleepIndent)+runeLen(line)+1+runeLen(word) > width {
+			lines = append(lines, st.dim(sleepIndent+line))
+			line = "  " + word // continuation lines are indented
+			continue
+		}
+		if line == "" {
+			line = word
+		} else {
+			line += " " + word
+		}
+	}
+	return append(lines, st.dim(sleepIndent+line))
 }
 
 // formatSleepValue writes an average in the row's own unit.
@@ -534,59 +626,83 @@ func formatSleepValue(s sleepStat, v float64) string {
 	return secsText(v)
 }
 
-// regularityLine is "Regularity ±38m bed · ±31m mid (14 n)  ▼ better than usual (±52m)".
-func regularityLine(r *stats.SleepReport, g glyphSet, st style, width, nameW int) []string {
+// regularityLine is "Regularity  ±38m bed ±31m mid (14 nights)  ▼ better than usual (±52m)".
+// The numbers start under LAST NIGHT and the verdict under VS USUAL, so the row
+// lines up with the table above it (cols is the width of those two columns).
+func regularityLine(r *stats.SleepReport, g glyphSet, st style, width, nameW, cols int) []string {
 	reg := r.Regularity
 	if reg == nil {
 		return nil
 	}
 	pm := map[bool]string{true: "±", false: "+/-"}[g.dot == "·"]
-	line := fmt.Sprintf("%s%s%s%.0fm bed %s%.0fm mid", sleepIndent, padRight("Regularity", nameW), pm, reg.BedtimeMin, pm, reg.MidpointMin)
-	if width >= 70 {
-		line += fmt.Sprintf(" (%d n)", reg.Nights)
-	}
+	text := fmt.Sprintf("%s%.0fm bed %s%.0fm mid", pm, reg.BedtimeMin, pm, reg.MidpointMin)
+	withNights := text + fmt.Sprintf(" (%d nights)", reg.Nights)
+
+	verdict, wide, short := "", "", ""
 	if reg.UsualBedtimeMin > 0 {
 		diff := reg.BedtimeMin - reg.UsualBedtimeMin
-		word, verdict, arrow := "same", "typical", g.flat
+		word, v, arrow := "same", "typical", g.flat
 		switch {
 		case diff <= -5:
-			word, verdict, arrow = "better", "better", g.down
+			word, v, arrow = "better", "better", g.down
 		case diff >= 5:
-			word, verdict, arrow = "worse", "worse", g.up
+			word, v, arrow = "worse", "worse", g.up
 		}
 		// "worse than usual (±39m)", "same as usual (±39m)"; shorter when narrow.
 		than := "than"
-		if verdict == "typical" {
+		if v == "typical" {
 			than = "as"
 		}
-		usual := fmt.Sprintf("%s %s %s usual (%s%.0fm)", arrow, word, than, pm, reg.UsualBedtimeMin)
-		if width < 70 {
-			usual = fmt.Sprintf("%s %s (usual %s%.0fm)", arrow, word, pm, reg.UsualBedtimeMin)
-		}
-		line += "   " + st.verdict(verdict, usual)
+		verdict = v
+		wide = fmt.Sprintf("%s %s %s usual (%s%.0fm)", arrow, word, than, pm, reg.UsualBedtimeMin)
+		short = fmt.Sprintf("%s %s (usual %s%.0fm)", arrow, word, pm, reg.UsualBedtimeMin)
 	}
-	return []string{line}
+
+	room := width - len(sleepIndent) - nameW // what is left for the two columns
+	for _, c := range []struct{ numbers, vs string }{
+		{withNights, wide}, {text, wide}, {text, short}, {text, ""},
+	} {
+		cell := c.numbers
+		if c.vs != "" {
+			cell = padRight(c.numbers, cols)
+		}
+		if runeLen(cell)+runeLen(c.vs) <= room {
+			line := sleepIndent + padRight("Regularity", nameW) + cell
+			if c.vs != "" {
+				line += st.verdict(verdict, c.vs)
+			}
+			return []string{line}
+		}
+	}
+	return []string{sleepIndent + padRight("Regularity", nameW) + fit(text, room, g)}
 }
 
-// debtLine compares sleep with the target: "59m short last night, 7 n: 4h 20m short vs 8h target".
+// debtLine compares sleep with the target: "59m short last night, 7 nights: 4h 20m short vs 8h target".
+// It uses the longest wording that fits the width.
 func debtLine(r *stats.SleepReport, target time.Duration, nameW, width int) string {
 	d := r.Debt
 	if d == nil {
 		return ""
 	}
-	text := debtWords(d.LastSecs)
-	if width >= 70 {
-		text += " last night"
-	}
+	tgt := strings.Replace(formatDuration(target), " 00m", "", 1)
+	last := debtWords(d.LastSecs)
+	window := ""
 	if d.Nights > 1 {
-		text += fmt.Sprintf(", %d n: %s", d.Nights, debtWords(d.WindowSecs))
+		window = fmt.Sprintf(", %s: %s", plural(int64(d.Nights), "night"), debtWords(d.WindowSecs))
 	}
-	tgt := formatDuration(target)
-	tgt = strings.Replace(tgt, " 00m", "", 1)
-	if width >= 70 {
-		text += " vs " + tgt + " target"
-	} else {
-		text += " (" + tgt + " target)"
+	room := width - len(sleepIndent) - nameW
+	cands := []string{
+		last + " last night" + window + " vs " + tgt + " target",
+		last + window + " (" + tgt + " target)",
+		last + window,
+		last,
+	}
+	text := cands[len(cands)-1]
+	for _, c := range cands {
+		if runeLen(c) <= room {
+			text = c
+			break
+		}
 	}
 	return sleepIndent + padRight("Sleep debt", nameW) + text
 }
@@ -653,7 +769,7 @@ func nightBars(r *stats.SleepReport, ti termInfo, width int) []string {
 	perRow := max((width-2)/4, 1)
 	nights = nights[max(len(nights)-min(perRow, 14), 0):]
 	lines := []string{
-		fmt.Sprintf("time asleep per night (a calendar needs %d nights, have %d)", stats.MinHeatmapNights, len(nights)),
+		bandLine("CALENDAR", fmt.Sprintf("time asleep per day, last %s", plural(int64(len(nights)), "night")), width-1, g, st),
 	}
 	var days, hours, bars strings.Builder
 	for _, n := range nights {

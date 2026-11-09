@@ -3,6 +3,7 @@ package stats
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"sort"
 	"time"
@@ -20,6 +21,24 @@ type Workout struct {
 	EnergyKcal *float64
 	DistanceM  *float64
 	Source     string
+}
+
+// MarshalJSON writes a workout with snake_case keys and the duration in
+// seconds (a time.Duration would print as nanoseconds). Energy and distance
+// are left out when the workout did not record them.
+func (w Workout) MarshalJSON() ([]byte, error) {
+	v := struct {
+		Day             string   `json:"day"`
+		Activity        string   `json:"activity"`
+		Start           string   `json:"start"`
+		End             string   `json:"end"`
+		DurationSeconds float64  `json:"duration_seconds"`
+		EnergyKcal      *float64 `json:"energy_kcal,omitempty"`
+		DistanceKM      *float64 `json:"distance_km,omitempty"`
+		Source          string   `json:"source,omitempty"`
+	}{w.Day, w.Activity, w.Start.Format(time.RFC3339), w.End.Format(time.RFC3339),
+		w.Duration.Seconds(), w.EnergyKcal, kmPtr(w.DistanceM), w.Source}
+	return json.Marshal(v)
 }
 
 // Workouts returns the workouts that started on fromDay..toDay (local days,
@@ -122,6 +141,9 @@ func readWorkouts(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]W
 		var tz int
 		if err := rows.Scan(&w.Activity, &start, &end, &seconds, &energy, &distance, &tz, &w.Source); err != nil {
 			return nil, fmt.Errorf("stats: read workouts: %w", err)
+		}
+		if seconds <= 0 { // a session with no duration is noise: ignored everywhere
+			continue
 		}
 		w.Start = localTime(start, tz)
 		w.End = localTime(end, tz)

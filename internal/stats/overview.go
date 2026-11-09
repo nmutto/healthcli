@@ -60,9 +60,9 @@ type Overview struct {
 	NotTracked []string        `json:"not_tracked"`
 	Sleep      OverviewSleep   `json:"sleep"`
 	Workouts   WorkoutsSummary `json:"workouts"`
-	// Heatmap is the activity calendar, or null when there is no activity
+	// Heatmap is the activity calendar, left out when there is no activity
 	// metric with data (or the caller asked for 0 weeks).
-	Heatmap *Heatmap   `json:"heatmap"`
+	Heatmap *Heatmap   `json:"heatmap,omitempty"`
 	Data    DataHealth `json:"data"`
 
 	// The rich reports behind the SLEEP and WORKOUTS sections. They are left
@@ -158,17 +158,17 @@ type MetricRow struct {
 	State     string   `json:"state"`
 	LatestDay string   `json:"latest_day,omitempty"` // empty for no_data
 	AgeDays   int      `json:"age_days"`             // today minus LatestDay
-	Value     *float64 `json:"value"`                // daily value of LatestDay
+	Value     *float64 `json:"value,omitempty"`      // daily value of LatestDay
 	Source    string   `json:"source,omitempty"`
 
 	// Baseline fields: DaysWithData is always set (for "needs 7 days"),
 	// Mean and Stddev only when the baseline is usable.
 	BaselineDays int      `json:"baseline_days_with_data"`
-	Mean         *float64 `json:"baseline_mean"`
-	Stddev       *float64 `json:"baseline_stddev"`
-	DeltaPct     *float64 `json:"delta_pct"`
-	Z            *float64 `json:"z"`
-	Comparison   *string  `json:"comparison"` // above, below or typical
+	Mean         *float64 `json:"baseline_mean,omitempty"`
+	Stddev       *float64 `json:"baseline_stddev,omitempty"`
+	DeltaPct     *float64 `json:"delta_pct,omitempty"`
+	Z            *float64 `json:"z,omitempty"`
+	Comparison   *string  `json:"comparison,omitempty"` // above, below or typical
 	// Verdict is Comparison seen through Polarity: better, worse, changed
 	// (beyond usual, but the metric has no good direction) or typical.
 	// Empty unless State is ok. See Verdict for the caveat.
@@ -206,7 +206,7 @@ type WorkoutsSummary struct {
 	Count           int            `json:"count"`
 	DurationSeconds int64          `json:"duration_seconds"`
 	EnergyKcal      float64        `json:"energy_kcal"`
-	Latest          *LatestWorkout `json:"latest"` // null when there are none
+	Latest          *LatestWorkout `json:"latest,omitempty"` // left out when there are none
 }
 
 // LatestWorkout is the newest workout in the window.
@@ -214,7 +214,7 @@ type LatestWorkout struct {
 	Activity  string   `json:"activity"`
 	Day       string   `json:"day"`
 	AgeDays   int      `json:"age_days"`
-	DistanceM *float64 `json:"distance_m"`
+	DistanceM *float64 `json:"distance_m,omitempty"`
 }
 
 // DataHealth says how much data there is and how complete it looks.
@@ -223,8 +223,8 @@ type DataHealth struct {
 	SleepNights int64            `json:"sleep_nights"` // distinct nights with sleep rows
 	FirstDay    string           `json:"first_day,omitempty"`
 	LastDay     string           `json:"last_day,omitempty"`
-	SourceCount map[string]int64 `json:"source_samples"` // by source class: watch, iphone, manual, other
-	LastImport  *ImportInfo      `json:"last_import"`    // null if nothing was imported yet
+	SourceCount map[string]int64 `json:"source_samples"`        // by source class: watch, iphone, manual, other
+	LastImport  *ImportInfo      `json:"last_import,omitempty"` // left out if nothing was imported yet
 	Gaps        []Gap            `json:"gaps"`
 }
 
