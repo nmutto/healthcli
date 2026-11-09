@@ -256,27 +256,64 @@ Each metric is compared with its own 28-day usual and shows its own newest day a
 
 The calendar at the end shows daily steps (else exercise time, else active energy); `--weeks N` sets its length (default 12, `0` hides all calendars) and `--heatmap steps,sleep,workouts,METRIC` draws exactly the calendars you name, in that order. On a pipe, or with `--ascii`, the output is plain ASCII; `--no-color` and `NO_COLOR` turn colour off, and `--json` prints the same report as JSON, including each metric's polarity and verdict, `not_tracked` and the heatmap grid.
 
-A day's summary against your recent baseline:
+A day's summary against your recent baseline: `today` is a one-day slice of the overview (same bands, gutter markers, colours and widths), with a USUAL column (your 28-day usual before that day) instead of the trend line:
 
 ```console
-$ healthcli --db demo.db today --date 2024-12-13
-2024-12-13 (Friday)
+$ healthcli --db demo.db today --date 2026-11-08
+ Sunday 2026-11-08 (yesterday)
+ ──────────────────────────────────────────────────────────────────────────────
+ 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
 
-Steps               22,019 steps  baseline 19,784             +2,236 (+11.3%)  above
-Active energy       881 kcal      baseline 791                +89 (+11.3%)     above
-Avg heart rate      76 bpm        baseline 75                 +1 (+0.8%)       typical
-Resting heart rate  59 bpm        baseline 57                 +2 (+4.3%)       above
-HRV                 62 ms         baseline 47                 +16 (+33.2%)     above
-Weight              78.5 kg       baseline n/a (need 7 days)
+   METRIC                     LATEST        USUAL   VS USUAL
 
-Sleep
-  Asleep 6h 48m  (core 4h 14m, deep 1h 36m, REM 58m, awake 16m, in bed 7h 16m)
+ ━━ VITALS ━━ 7 metrics · 1 better · 1 worse · 1 changed ━━━━━━━━━━━━━━━━━━━━━━
+   Avg heart rate             76 bpm        75      ▲ +2%             ···░░░●···
+ ! Resting HR                 60 bpm        57      ▲ +6% worse       ···░░░░●··
+   HRV                        46 ms         48      ▼ -4%             ···░●░░···
+ ~ Respiratory rate           15.6/min      14.3    ▲ +9% changed     ···░░░░●··
+   Wrist temperature          36.0 °C       35.9    – 0%              ···░░●░···
+   Blood oxygen               97%           97      – 0%              ···░░●░···
+ + Walking heart rate         90 bpm        94      ▼ -4% better      ···●░░░···
 
-Workouts
-  Running  18:00  51m  8.5 km  551 kcal
+ ━━ ACTIVITY ━━ 8 metrics · 2 better ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ + Steps                      21,999 steps  19,955  ▲ +10% better     ···░░░●···
+ + Active energy              880 kcal      798     ▲ +10% better     ···░░░●···
+   Resting energy             1,730 kcal    1,701   ▲ +2%             ···░░░●···
+   Exercise time              43 min        37      ▲ +16%            ···░░●░···
+   Stand time                 364 min       411     ▼ -12%            ···░●░░···
+   Flights climbed            8 flights     13      ▼ -39%            ···●░░░···
+   Walking + running distan…  6.5 km        6.5     – 0%              ···░░●░···
+   Time in daylight           53 min        47      ▲ +14%            ···░░●░···
+
+ ━━ MOBILITY ━━ 4 metrics · 2 worse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Walking speed              5.5 km/h      5.4     ▲ +2%             ···░░●░···
+   Step length                73 cm         72      ▲ +2%             ···░░░●···
+ ! Walking asymmetry          4.9%          3.5     ▲ +38% worse      ···░░░░●··
+ ! Double support time        30.7%         28.6    ▲ +7% worse       ···░░░░●··
+ green better / red worse / cyan changed (no good direction)
+ 7 tracked metrics have no reading on this day
+
+ ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
+       23:12                                                              06:30
+ awake                       ░░░                        ░░
+ REM                    ▓▓▓▓▓                      ▓▓▓▓▓                     ▓▓
+ core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒
+ deep          ████                     █████                      ████
+              00        01        02        03        04        05        06
+
+ STAT         LAST NIGHT          7 NIGHTS            VS 13-NIGHT USUAL
+ Asleep       7h 01m              7h 08m              – typical
+ In bed       7h 30m              7h 37m              – typical
+ Efficiency   94%                 94%                 – typical
+ Awake        17m / 2 awakenings  20m / 3 awakenings  – typical
+ Deep         1h 27m 21%          1h 30m              – typical
+ REM          1h 18m 19%          1h 17m              – typical
+ Bedtime      23:12               23:12               – typical
+ Midpoint     02:51               02:54               – typical
+ Sleep debt   59m short last night, 7 nights: 6h 05m short vs 8h target
 ```
 
-Without `--date`, `today` uses today's date.
+This example is **synthetic**: the real output for the generated "small" fixture, with dates shifted to look current. Only metrics with a reading on that day get a row; one dim line counts the tracked metrics with none ("7 tracked metrics have no reading on this day"), and a day with no workouts has no WORKOUTS section. Without `--date`, `today` shows today; if that day has no data at all, the latest day with data is shown instead, with one dim line saying so (`No data for 2026-11-09; showing 2026-11-08, the latest day with data`). A future date is an error. It takes `--category`, `--compact`, `--ascii`, `--no-color` like `overview`, and `--json` keeps its documented fields (see `healthcli today --help`) with the category, polarity, verdict, usual, `categories`, `tracked_without_reading` and `sleep_summary` added.
 
 A metric over time:
 

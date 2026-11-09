@@ -1,0 +1,51 @@
+ Sunday 2026-11-08 (yesterday)
+ ──────────────────────────────────────────────────────────
+ 3 better, 3 worse, 1 changed, 12 typical vs usual
+
+   METRIC                LATEST        USUAL   VS USUAL
+
+ ━━ VITALS ━━ 7 · 1 better · 1 worse · 1 changed ━━━━━━━━━━
+   Avg heart rate        76 bpm        75      ▲ +2%
+ ! Resting HR            60 bpm        57      ▲ +6% worse
+   HRV                   46 ms         48      ▼ -4%
+ ~ Respiratory rate      15.6/min      14.3    ▲ +9% changed
+   Wrist temperature     36.0 °C       35.9    – 0%
+   Blood oxygen          97%           97      – 0%
+ + Walking heart rate    90 bpm        94      ▼ -4% better
+
+ ━━ ACTIVITY ━━ 8 · 2 better ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ + Steps                 21,999 steps  19,955  ▲ +10% better
+ + Active energy         880 kcal      798     ▲ +10% better
+   Resting energy        1,730 kcal    1,701   ▲ +2%
+   Exercise time         43 min        37      ▲ +16%
+   Stand time            364 min       411     ▼ -12%
+   Flights climbed       8 flights     13      ▼ -39%
+   Walking + running d…  6.5 km        6.5     – 0%
+   Time in daylight      53 min        47      ▲ +14%
+
+ ━━ MOBILITY ━━ 4 · 2 worse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Walking speed         5.5 km/h      5.4     ▲ +2%
+   Step length           73 cm         72      ▲ +2%
+ ! Walking asymmetry     4.9%          3.5     ▲ +38% worse
+ ! Double support time   30.7%         28.6    ▲ +7% worse
+ green better red worse cyan changed
+ 7 tracked metrics have no reading on this day
+
+ ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━
+       23:12                                          06:30
+ awake                 ░░                 ░░               
+ REM               ▓▓▓▓                ▓▓▓                ▓
+ core  ▒▒▒▒▒▒   ▒▒▒      ▒▒▒▒▒▒    ▒▒▒▒     ▒▒▒▒▒▒   ▒▒▒▒▒ 
+ deep        ███               ████               ███      
+            00     01     02      03     04     05     06
+
+ STAT       LAST NIGHT  7 NIGHTS    VS 13-NIGHT USUAL
+ Asleep     7h 01m      7h 08m      – typical
+ In bed     7h 30m      7h 37m      – typical
+ Efficiency 94%         94%         – typical
+ Awake      17m 2 wakes 20m 3 wakes – typical
+ Deep       1h 27m 21%  1h 30m      – typical
+ REM        1h 18m 19%  1h 17m      – typical
+ Bedtime    23:12       23:12       – typical
+ Midpoint   02:51       02:54       – typical
+ Sleep debt 59m short, 7 nights: 6h 05m short (8h target)

@@ -50,7 +50,7 @@ defer conn.Close()
 
 ## Read side (`internal/stats`)
 
-Built for `today` and `trend`. Days are `"YYYY-MM-DD"` strings, ranges are inclusive, days with no data are left out (the caller fills gaps).
+Built for `today` and `trend` (`today` now goes through `stats.BuildDay`, see below). Days are `"YYYY-MM-DD"` strings, ranges are inclusive, days with no data are left out (the caller fills gaps).
 
 ```go
 stats.DailySeries(ctx, conn, metric, fromDay, toDay string) ([]stats.DayValue, error) // {Day, Value, Source, Samples}
@@ -100,3 +100,7 @@ Order: title, headline, index line, category tables, SLEEP, WORKOUTS, heatmaps, 
 ## Overview colours
 
 Colour in `overview` follows `metrics.Metric.Polarity`: beyond usual (|z| >= 1 and a change of at least 2%, or the metric's `MinDelta`) and in the healthy direction is green ("better"), the other way red ("worse"); neutral metrics are cyan ("changed"); anything smaller is typical (plain); stale is yellow. Each beyond-usual row prints its word, so colour is never the only signal. This replaces the earlier "never green/red" rule. Words and arrows always repeat the colour, and the code says polarity is a general guide, not medical advice. Rows are only metrics that have samples (the rest are counted as `not_tracked`).
+
+## `today` as a one-day overview
+
+`healthcli today` is a one-day slice of `overview`, not a separate layout. `stats.BuildDay(ctx, conn, day)` returns a `DayReport`: a `MetricRow` (the overview's own row type) for every metric with a reading ON `day`, anchored on that day with the same `fillComparison` as the overview (28 days before, 7 needed, the "too small to matter" rule, polarity verdict); the tracked metrics without a reading (`NoReading`); the sleep report of the night that ended on `day` (nil otherwise) and the day's workouts. The CLI reuses the overview renderers: headline, `categoryBand`, `gutterMark`/`rowPrefix`, `deltaArea`, `latestCell`, `renderSleepSection`, and `wkSessionRows` (shared with the workouts section). Only `dayTable` (USUAL column instead of the trend and age) and the one-day workouts band are new. Fallback to the latest day with data applies to the whole page, and `--date` in the future is an error. `--json` keeps the original fields of `todayReport` and only adds fields (see `healthcli today --help`).

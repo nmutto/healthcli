@@ -1,0 +1,8 @@
+ Sunday 2026-11-08 (yesterday)
+ ----------------------------------------------------------
+
+ +------------------------------------------------+
+ | No data yet. Two ways to start:                |
+ |   import:  healthcli import apple <export.zip> |
+ |   log:     healthcli log weight 72.5           |
+ +------------------------------------------------+

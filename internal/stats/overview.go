@@ -471,11 +471,7 @@ func buildRow(ctx context.Context, conn *sql.DB, name, today string, maxStart in
 	if err != nil {
 		return MetricRow{}, err
 	}
-	label := labels[m.Name]
-	if label == "" {
-		label = m.Label
-	}
-	row := MetricRow{Metric: m.Name, Label: label, Category: string(m.Category), Polarity: string(m.Polarity), Unit: m.Unit, State: StateNoData, Spark: []*float64{}}
+	row := newRow(m)
 
 	latest, err := latestSampleUpTo(ctx, conn, m.Name, maxStart)
 	if errors.Is(err, ErrNoData) {
@@ -513,18 +509,37 @@ func buildRow(ctx context.Context, conn *sql.DB, name, today string, maxStart in
 		row.State = StateStale
 		return row, nil
 	}
-	b, err := BaselineFor(ctx, conn, m.Name, latest.Day, DefaultBaselineDays)
+	if err := fillComparison(ctx, conn, &row, m, latest.Day, v); err != nil {
+		return MetricRow{}, err
+	}
+	return row, nil
+}
+
+// newRow is an empty row of metric m (state no_data), with its table label.
+func newRow(m metrics.Metric) MetricRow {
+	label := labels[m.Name]
+	if label == "" {
+		label = m.Label
+	}
+	return MetricRow{Metric: m.Name, Label: label, Category: string(m.Category), Polarity: string(m.Polarity), Unit: m.Unit, State: StateNoData, Spark: []*float64{}}
+}
+
+// fillComparison sets the baseline fields, state, comparison and verdict of
+// row: the daily value v of `day` set against the 28 days before it. The
+// overview anchors it on each metric's newest day, "today" on the day shown.
+func fillComparison(ctx context.Context, conn *sql.DB, row *MetricRow, m metrics.Metric, day string, v float64) error {
+	b, err := BaselineFor(ctx, conn, m.Name, day, DefaultBaselineDays)
 	row.BaselineDays = b.N
 	if errors.Is(err, ErrNotEnoughData) {
 		row.State = StateNoBaseline
-		return row, nil
+		return nil
 	}
 	if err != nil {
-		return MetricRow{}, err
+		return err
 	}
 	if !isFinite(b.Mean, b.Stddev) { // the baseline overflowed: cannot compare
 		row.State = StateNoBaseline
-		return row, nil
+		return nil
 	}
 	c := Compare(v, b)
 	lab := c.Label
@@ -535,7 +550,7 @@ func buildRow(ctx context.Context, conn *sql.DB, name, today string, maxStart in
 	row.Mean, row.Stddev = &b.Mean, &b.Stddev
 	row.DeltaPct, row.Z, row.Comparison = &c.DeltaPct, &c.Z, &lab
 	row.Verdict = Verdict(m.Polarity, lab)
-	return row, nil
+	return nil
 }
 
 // sparkValues returns SparkDays values ending on the later of today and the

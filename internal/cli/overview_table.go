@@ -271,18 +271,22 @@ func gutterMark(r stats.MetricRow, st style) string {
 	return "  "
 }
 
+// rowPrefix is the margin and gutter marker in front of a row. In compact mode
+// (gutter narrower than gutterW) the flag takes the margin's place.
+func rowPrefix(r stats.MetricRow, gutter int, st style) string {
+	if gutter == gutterW {
+		return indent + gutterMark(r, st)
+	}
+	flag := strings.TrimRight(gutterMark(r, st), " ")
+	if flag == "" {
+		flag = " "
+	}
+	return flag + " "
+}
+
 // metricRow draws one metric.
 func metricRow(r stats.MetricRow, c tableCols, ti termInfo, g glyphSet, st style) string {
-	line := indent
-	if c.gutter == gutterW {
-		line += gutterMark(r, st)
-	} else { // compact: the flag takes the margin's place, then one space
-		flag := strings.TrimRight(gutterMark(r, st), " ")
-		if flag == "" {
-			flag = " "
-		}
-		line = flag + " "
-	}
+	line := rowPrefix(r, c.gutter, st)
 	line += padRight(fit(r.Label, c.labelW, g), c.labelW) + "  " + latestCell(r, c.latestW, ti, g, st) + "  "
 	line += deltaArea(r, g, st, c.band, c.areaW, c.foldAge)
 	if c.sparkW > 0 {

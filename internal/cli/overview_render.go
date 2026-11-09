@@ -26,6 +26,7 @@ type overviewView struct {
 	full       bool     // --full: every section and heatmap
 	heatWeeks  int      // weeks of every heatmap; 0 = the default (12)
 	noHeat     bool     // --weeks 0: no heatmaps at all
+	oneDay     bool     // "healthcli today": the page is one day, not the latest readings
 }
 
 // section is one named block of the overview. renderOverview builds the list
@@ -258,13 +259,17 @@ func headline(o *stats.Overview, v overviewView, g glyphSet, width int) string {
 	case newest > 0:
 		parts = append(parts, fmt.Sprintf("No recent readings: the newest is %d d old", newest))
 	default:
-		parts = append(parts, "No metric readings yet")
+		text := "No metric readings yet"
+		if v.oneDay {
+			text = "No metric readings on this day"
+		}
+		parts = append(parts, text)
 	}
 	if mover != nil {
 		parts = append(parts, fmt.Sprintf("%s %s", mover.Label, pctText(*mover.DeltaPct)))
 	}
 	if s := o.Sleep; v.wants(sleepName) && s.State == stats.StateOK && s.AsleepSecs > 0 {
-		parts = append(parts, "slept "+formatDuration(sec(s.AsleepSecs)))
+		parts = append(parts, "slept "+formatDuration(time.Duration(s.AsleepSecs)*time.Second))
 	}
 	if w := o.Workouts; scoped && v.wants(workoutsName) && w.Count > 0 {
 		parts = append(parts, fmt.Sprintf("%s in %d d", plural(int64(w.Count), "workout"), w.Days))

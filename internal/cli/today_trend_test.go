@@ -105,6 +105,7 @@ func seedDB(t *testing.T) string {
 }
 
 func TestTodayGoldenText(t *testing.T) {
+	fixClock(t, time.Date(2026, 11, 9, 9, 0, 0, 0, time.UTC))
 	out, _, err := run(t, "--db", seedDB(t), "today", "--date", "2026-11-08")
 	if err != nil {
 		t.Fatal(err)
@@ -113,6 +114,7 @@ func TestTodayGoldenText(t *testing.T) {
 }
 
 func TestTodayGoldenJSON(t *testing.T) {
+	fixClock(t, time.Date(2026, 11, 9, 9, 0, 0, 0, time.UTC))
 	out, _, err := run(t, "--db", seedDB(t), "today", "--date", "2026-11-08", "--json")
 	if err != nil {
 		t.Fatal(err)
@@ -121,11 +123,12 @@ func TestTodayGoldenJSON(t *testing.T) {
 }
 
 func TestTodayFallsBackToLatestDay(t *testing.T) {
+	fixClock(t, time.Date(2026, 12, 5, 9, 0, 0, 0, time.UTC))
 	out, _, err := run(t, "--db", seedDB(t), "today", "--date", "2026-12-01")
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"No data for 2026-12-01; showing latest day with data: 2026-11-08", "2026-11-08 (Sunday)"} {
+	for _, want := range []string{"No data for 2026-12-01; showing 2026-11-08, the latest day with data", "Sunday 2026-11-08"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q in:\n%s", want, out)
 		}
@@ -154,11 +157,14 @@ func TestTodayDefaultsToTodayAndRejectsBadDate(t *testing.T) {
 	defer func() { nowFunc = old }()
 
 	out, _, err := run(t, "--db", seedDB(t), "today")
-	if err != nil || !strings.HasPrefix(out, "2026-11-08 (Sunday)") {
+	if err != nil || !strings.HasPrefix(out, " Sunday 2026-11-08\n") {
 		t.Errorf("default date: %q, %v", out, err)
 	}
 	if _, _, err := run(t, "--db", tempDB(t), "today", "--date", "11/08/2026"); err == nil {
 		t.Error("expected an error for a malformed date")
+	}
+	if _, _, err := run(t, "--db", tempDB(t), "today", "--date", "2026-11-09"); err == nil || !strings.Contains(err.Error(), "in the future") {
+		t.Errorf("expected a friendly future-date error, got %v", err)
 	}
 }
 
@@ -277,34 +283,5 @@ func TestFormatting(t *testing.T) {
 	}
 	if got := formatSigned(-0.04, "body_mass"); got != "0.0" {
 		t.Errorf("formatSigned tiny = %q", got)
-	}
-}
-
-func TestColorOnlyWhenEnabled(t *testing.T) {
-	r := &todayReport{Status: statusOK, Date: "2026-11-08", RequestedDate: "2026-11-08"}
-	if strings.Contains(renderToday(r, style{}), "\x1b[") {
-		t.Error("plain style must not emit escape codes")
-	}
-	if !strings.Contains(renderToday(r, style{color: true}), "\x1b[") {
-		t.Error("color style should emit escape codes")
-	}
-	var buf strings.Builder
-	if colorFor(&buf) {
-		t.Error("a non-terminal writer must never get color")
-	}
-	t.Setenv("NO_COLOR", "1")
-	if colorFor(os.Stdout) {
-		t.Error("NO_COLOR must disable color")
-	}
-}
-
-func TestBaselineNotAvailableText(t *testing.T) {
-	v := 59.0
-	r := &todayReport{Status: statusOK, Date: "2026-11-08", Metrics: []todayMetric{{
-		Metric: "resting_heart_rate", Label: "Resting heart rate", Unit: "bpm", Value: &v,
-		Baseline: &baselineInfo{DaysWithData: 2, DaysNeeded: 7},
-	}}}
-	if out := renderToday(r, style{}); !strings.Contains(out, "baseline n/a (need 7 days)") {
-		t.Errorf("missing n/a text:\n%s", out)
 	}
 }

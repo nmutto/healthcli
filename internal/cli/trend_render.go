@@ -89,9 +89,27 @@ func padLeft(s string, n int) string {
 	return s
 }
 
+// trendLabels are the headings of the metrics people ask "trend" about most.
+var trendLabels = []struct{ name, label string }{
+	{"step_count", "Steps"},
+	{"active_energy", "Active energy"},
+	{"heart_rate", "Avg heart rate"},
+	{"resting_heart_rate", "Resting heart rate"},
+	{"hrv_sdnn", "HRV"},
+	{"body_mass", "Weight"},
+}
+
+// titleCase upper-cases the first letter: "running" -> "Running".
+func titleCase(s string) string {
+	if s == "" {
+		return s
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
+}
+
 // trendTitle is the heading word for a metric: "step_count" -> "Steps".
 func trendTitle(metric string) string {
-	for _, tm := range todayMetrics {
+	for _, tm := range trendLabels {
 		if tm.name == metric {
 			return tm.label
 		}

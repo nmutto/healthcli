@@ -1,14 +1,40 @@
-2026-11-08 (Sunday)
+ Sunday 2026-11-08 (yesterday)
+ ------------------------------------------------------------------------------
+ 1 better, 1 changed vs your 28-day usual | Steps +64% | slept 7h 00m
 
-Steps               12,345 steps  baseline 7,537              +4,808 (+63.8%)  above
-Active energy       -
-Avg heart rate      64 bpm        baseline 62                 +2 (+3.2%)       above
-Resting heart rate  58 bpm        baseline n/a (need 7 days)
-HRV                 -
-Weight              72.5 kg       baseline n/a (need 7 days)
+   METRIC          LATEST        USUAL  VS USUAL
 
-Sleep
-  Asleep 7h 00m  (core 4h 30m, deep 1h 30m, REM 1h 00m, awake 15m)
+ == VITALS == 2 metrics | 1 changed ===========================================
+ ~ Avg heart rate  64 bpm        62     ^ +3% changed     ...====*..
+   Resting HR      58 bpm        -      need 7d (have 2)
 
-Workouts
-  Running  18:00  45m  6.2 km  412 kcal
+ == ACTIVITY == 1 metric | 1 better ===========================================
+ + Steps           12,345 steps  7,537  ^ +64% better     ...====..*
+
+ == BODY == 1 metric | not enough data ========================================
+   Weight          72.5 kg       -      need 7d (have 0)
+ green better / red worse / cyan changed (no good direction)
+
+ == SLEEP == Sun 8 Nov | Watch stages =========================================
+       23:00                                                              06:00
+ awake                                                                         
+ REM                                                                 ++++++++++
+ core  ::::::::::::::::::::::::::::::::::::::::::::::                          
+ deep                                                ################          
+       23        00        01        02         03        04        05
+
+ STAT         LAST NIGHT          1 NIGHT             VS USUAL
+ Asleep       7h 00m              7h 00m              need 7 nights (have 1)
+ Efficiency   97%                 97%                 need 7 nights (have 1)
+ Awake        15m / 0 awakenings  15m / 0 awakenings  need 7 nights (have 1)
+ Deep         1h 30m 21%          1h 30m              need 7 nights (have 1)
+ REM          1h 00m 14%          1h 00m              need 7 nights (have 1)
+ Bedtime      23:00               23:00               need 7 nights (have 1)
+ Midpoint     02:30               02:30               need 7 nights (have 1)
+ Sleep debt   1h 00m short last night vs 8h target
+ not available: in bed
+
+ == WORKOUTS == 1 session | 45m | 412 kcal | 6.2 km ===========================
+
+ SESSIONS
+ 18:00 running     45m  6.2 km 7:15 /km  412 kcal

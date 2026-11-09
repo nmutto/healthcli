@@ -1,0 +1,15 @@
+ Sunday 2026-11-08 (yesterday)
+ ──────────────────────────────────────────────────────────────────────────────
+ 1 worse, 1 changed vs your 28-day usual · Steps -33%
+
+   METRIC          LATEST       USUAL  VS USUAL
+
+ ━━ VITALS ━━ 1 metric · 1 changed ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ~ Avg heart rate  68 bpm       70     ▼ -3% changed     ··●░░░░···
+
+ ━━ ACTIVITY ━━ 1 metric · 1 worse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ! Steps           5,000 steps  7,495  ▼ -33% worse      ··●░░░░···
+
+ ━━ BODY ━━ 1 metric · not enough data ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Weight          71.8 kg      -      need 7d (have 4)
+ green better / red worse / cyan changed (no good direction)
