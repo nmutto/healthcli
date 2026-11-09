@@ -33,7 +33,7 @@ var heatDayNames = [7]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
 var (
 	heatOrange = [stats.HeatLevels]string{"38;5;94", "38;5;130", "38;5;166", "38;5;208", "38;5;214"} // steps and other activity
 	heatGreen  = [stats.HeatLevels]string{"38;5;22", "38;5;28", "38;5;34", "38;5;40", "38;5;46"}     // workouts
-	heatBlue   = [stats.HeatLevels]string{"38;5;18", "38;5;25", "38;5;33", "38;5;39", "38;5;45"}     // sleep
+	heatBlue   = [stats.HeatLevels]string{"38;5;24", "38;5;26", "38;5;33", "38;5;75", "38;5;117"}    // sleep: one azure hue, smoothly dark to light (not the stage colours)
 	heatRed    = [stats.HeatLevels]string{"38;5;52", "38;5;88", "38;5;124", "38;5;160", "38;5;196"}  // heart rate
 	heatCyan   = [stats.HeatLevels]string{"38;5;23", "38;5;30", "38;5;37", "38;5;44", "38;5;51"}     // respiratory rate
 	heatPurple = [stats.HeatLevels]string{"38;5;54", "38;5;91", "38;5;128", "38;5;165", "38;5;201"}  // wrist temperature
