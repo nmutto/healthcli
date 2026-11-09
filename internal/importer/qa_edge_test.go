@@ -275,7 +275,7 @@ func TestImportIgnoresMachineTimeZone(t *testing.T) {
 
 // ---- idempotence ----------------------------------------------------------
 
-// dump renders every health row (ids included, import timestamp excluded) as
+// dump renders every health row (ids included, import timestamp and summary excluded) as
 // text so two databases can be compared with ==.
 func dump(t *testing.T, conn *sql.DB) string {
 	t.Helper()
@@ -284,7 +284,7 @@ func dump(t *testing.T, conn *sql.DB) string {
 		"SELECT * FROM samples ORDER BY id",
 		"SELECT * FROM sleep_stages ORDER BY id",
 		"SELECT * FROM workouts ORDER BY id",
-		"SELECT * FROM meta WHERE key != 'last_import_ts' ORDER BY key",
+		"SELECT * FROM meta WHERE key NOT LIKE 'last_import_%' ORDER BY key",
 	} {
 		rows, err := conn.Query(q)
 		if err != nil {
