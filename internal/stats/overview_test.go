@@ -3,10 +3,12 @@ package stats
 import (
 	"context"
 	"fmt"
+	"slices"
 	"testing"
 	"time"
 
 	"github.com/nmutto/healthcli/internal/importer"
+	"github.com/nmutto/healthcli/internal/metrics"
 )
 
 var overviewNow = time.Date(2026, 11, 8, 15, 0, 0, 0, time.UTC)
@@ -35,9 +37,9 @@ func TestOverviewRowStates(t *testing.T) {
 	}
 	// weight: one reading 9 days ago -> stale
 	addSample(t, conn, "body_mass", "2026-10-30 08:00 +0000", 72.4, "manual")
-	// hrv: nothing -> no_data
+	// hrv: nothing -> not shown at all, listed in NotTracked
 
-	o, err := BuildOverview(context.Background(), conn, overviewNow)
+	o, err := BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,13 +50,20 @@ func TestOverviewRowStates(t *testing.T) {
 		{"step_count", StateOK, 0},
 		{"resting_heart_rate", StateNoBaseline, 0},
 		{"body_mass", StateStale, 9},
-		{"hrv_sdnn", StateNoData, 0},
 	}
 	for _, c := range cases {
 		r := rowFor(t, o, c.metric)
 		if r.State != c.state || r.AgeDays != c.age {
 			t.Errorf("%s: state %s age %d, want %s age %d", c.metric, r.State, r.AgeDays, c.state, c.age)
 		}
+	}
+	for _, r := range o.Metrics {
+		if r.State == StateNoData {
+			t.Errorf("%s: a no_data row must not be listed", r.Metric)
+		}
+	}
+	if !slices.Contains(o.NotTracked, "hrv_sdnn") || slices.Contains(o.NotTracked, "step_count") {
+		t.Errorf("not_tracked = %v", o.NotTracked)
 	}
 	if s := rowFor(t, o, "step_count"); !s.Differs() || *s.Comparison != Above {
 		t.Errorf("steps should be above usual: %+v", s)
@@ -71,17 +80,75 @@ func TestOverviewRowStates(t *testing.T) {
 }
 
 func TestOverviewEmptyDatabase(t *testing.T) {
-	o, err := BuildOverview(context.Background(), newDB(t), overviewNow)
+	o, err := BuildOverview(context.Background(), newDB(t), overviewNow, DefaultOverviewOptions())
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !o.Empty || o.Sleep.State != StateNoData || o.Data.LastImport != nil {
 		t.Errorf("unexpected: %+v", o)
 	}
-	for _, r := range o.Metrics {
-		if r.State != StateNoData {
-			t.Errorf("%s: state %s, want no_data", r.Metric, r.State)
+	if len(o.Metrics) != 0 || len(o.NotTracked) != len(metrics.Names()) || o.Heatmap != nil {
+		t.Errorf("empty database: %d rows, %d not tracked, heatmap %v", len(o.Metrics), len(o.NotTracked), o.Heatmap)
+	}
+}
+
+// The verdict is the comparison seen through the metric's polarity.
+func TestVerdict(t *testing.T) {
+	cases := []struct {
+		p          metrics.Polarity
+		comparison string
+		want       string
+	}{
+		{metrics.HigherBetter, Above, VerdictBetter},
+		{metrics.HigherBetter, Below, VerdictWorse},
+		{metrics.HigherBetter, Typical, VerdictTypical},
+		{metrics.LowerBetter, Below, VerdictBetter},
+		{metrics.LowerBetter, Above, VerdictWorse},
+		{metrics.LowerBetter, Typical, VerdictTypical},
+		{metrics.Neutral, Above, VerdictChanged},
+		{metrics.Neutral, Below, VerdictChanged},
+		{metrics.Neutral, Typical, VerdictTypical},
+	}
+	for _, c := range cases {
+		if got := Verdict(c.p, c.comparison); got != c.want {
+			t.Errorf("Verdict(%s, %s) = %s, want %s", c.p, c.comparison, got, c.want)
 		}
+	}
+}
+
+// Rows come in category order, registry order inside a category, and the
+// heatmap picks steps, then exercise time, then active energy.
+func TestOverviewOrderAndAutoHeatmap(t *testing.T) {
+	conn := newDB(t)
+	addSample(t, conn, "body_mass", "2026-11-08 08:00 +0000", 72, "manual")
+	addSample(t, conn, "active_energy", "2026-11-08 12:00 +0000", 500, watch)
+	addSample(t, conn, "heart_rate", "2026-11-08 09:00 +0000", 66, watch)
+	o, err := BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	var got []string
+	for _, r := range o.Metrics {
+		got = append(got, r.Metric)
+	}
+	if want := []string{"heart_rate", "active_energy", "body_mass"}; !slices.Equal(got, want) {
+		t.Errorf("order = %v, want %v", got, want)
+	}
+	if o.Heatmap == nil || o.Heatmap.Metric != "active_energy" {
+		t.Errorf("heatmap = %+v, want active_energy", o.Heatmap)
+	}
+	opts := DefaultOverviewOptions()
+	opts.HeatWeeks = 0
+	if o, _ = BuildOverview(context.Background(), conn, overviewNow, opts); o.Heatmap != nil {
+		t.Error("0 weeks must hide the heatmap")
+	}
+	addSample(t, conn, "step_count", "2026-11-08 12:00 +0000", 9000, watch)
+	if o, _ = BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions()); o.Heatmap == nil || o.Heatmap.Metric != "step_count" {
+		t.Errorf("steps should win: %+v", o.Heatmap)
+	}
+	opts = OverviewOptions{HeatWeeks: 4, HeatMetric: "heart_rate"}
+	if o, _ = BuildOverview(context.Background(), conn, overviewNow, opts); o.Heatmap == nil || o.Heatmap.Metric != "heart_rate" || len(o.Heatmap.Weeks) != 4 {
+		t.Errorf("override ignored: %+v", o.Heatmap)
 	}
 }
 
@@ -92,7 +159,7 @@ func TestOverviewGapsAndSources(t *testing.T) {
 		addSample(t, conn, "hrv_sdnn", "2026-11-"+d+" 07:00 +0000", 60, watch)
 	}
 	addSample(t, conn, "step_count", "2026-11-05 07:00 +0000", 100, iphone)
-	o, err := BuildOverview(context.Background(), conn, overviewNow)
+	o, err := BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,7 +178,7 @@ func TestOverviewSleepOnly(t *testing.T) {
 	conn := newDB(t)
 	addSleep(t, conn, "core", "2026-11-07 23:00 +0000", "2026-11-08 05:00 +0000", watch)
 	addSleep(t, conn, "in_bed", "2026-11-07 22:50 +0000", "2026-11-08 06:00 +0000", iphone)
-	o, err := BuildOverview(context.Background(), conn, overviewNow)
+	o, err := BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -128,7 +195,7 @@ func TestOverviewLastImportSummary(t *testing.T) {
 	if _, err := importer.Import(conn, "../../testdata/small/export.xml", importer.Options{}); err != nil {
 		t.Fatal(err)
 	}
-	o, err := BuildOverview(context.Background(), conn, overviewNow)
+	o, err := BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,7 +207,7 @@ func TestOverviewLastImportSummary(t *testing.T) {
 	if _, err := importer.Import(conn, "../../testdata/small/export.xml", importer.Options{}); err != nil {
 		t.Fatal(err)
 	}
-	o, _ = BuildOverview(context.Background(), conn, overviewNow)
+	o, _ = BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
 	if o.Data.LastImport.Inserted != 0 || o.Data.LastImport.Duplicates < li.Inserted {
 		t.Errorf("second import = %+v, first inserted %d", o.Data.LastImport, li.Inserted)
 	}

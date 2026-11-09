@@ -1,0 +1,35 @@
+ healthcli overview          db: demo.db | imported 1 d ago
+ ----------------------------------------------------------
+ 1 changed, 2 typical vs your 28-day usual | Weight +1%
+
+ METRIC          LATEST        VS 28-DAY USUAL  AGE
+ VITALS
+ Avg heart rate  79 bpm        v -1%            today
+ ACTIVITY
+ Steps           19,415 steps  ^ +2%            today
+ BODY
+ Weight          83.6 kg       ^ +1%            today
+ green better / red worse / cyan changed (no good direction)
+
+ SLEEP    no sleep recorded in the last 30 days
+ WORKOUTS none in the last 30 days
+
+ CALENDAR step count per day, 12 weeks to 2026-11-08
+     Aug Sep     Oct     Nov
+ Mon _ _ _ _ _ _ _ _ . # - .
+ Tue _ _ _ _ _ _ _ _ # @ - @
+ Wed _ _ _ _ _ _ _ _ - + . .
+ Thu _ _ _ _ _ _ _ _ # - - #
+ Fri _ _ _ _ _ _ _ _ # @ + .
+ Sat _ _ _ _ _ _ _ _ . # + @
+ Sun _ _ _ _ _ _ _ _ - + @ + <
+
+ . <=16,838  - <=18,863  + <=19,498  # <=21,359  @ >21,359
+ _ no data   < today   steps per day
+
+ DATA     1,802 samples
+          range: 2026-10-12 -> 2026-11-08
+          sources: other 100%
+          last import: 1,802 added | 0 duplicates
+          days missing: Weight 18 of 28
+ not tracked in your data: 27 metrics

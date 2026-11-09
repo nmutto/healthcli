@@ -84,3 +84,7 @@ stats.AddDays(day string, n int) (string, error); stats.SourceClass(name) string
 ## Data safety
 
 Synthetic data only in this repo. `.gitignore` blocks `*.db` and Apple export files.
+
+## Overview colours
+
+Colour in `overview` follows `metrics.Metric.Polarity`: beyond usual (|z| >= 1) and in the healthy direction is green ("better"), the other way red ("worse"); neutral metrics are cyan ("changed"); stale is yellow. This replaces the earlier "never green/red" rule. Words and arrows always repeat the colour, and the code says polarity is a general guide, not medical advice. Rows are only metrics that have samples (the rest are counted as `not_tracked`).

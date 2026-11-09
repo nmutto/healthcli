@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/nmutto/healthcli/internal/db"
+	"github.com/nmutto/healthcli/internal/importer"
+	"github.com/nmutto/healthcli/internal/metrics"
 	"github.com/nmutto/healthcli/internal/stats"
 )
 
@@ -20,6 +22,8 @@ var overviewNow = time.Date(2026, 11, 8, 17, 0, 0, 0, time.UTC)
 //	stale      the same data, but nothing newer than 12 days ago
 //	sleep-only one night of sleep and nothing else
 //	empty      nothing
+//	steps-only one device that records only steps
+//	import:X   the synthetic export testdata/X, dates moved to be recent
 func seedOverview(t *testing.T, scenario string) string {
 	t.Helper()
 	path := tempDB(t)
@@ -30,6 +34,10 @@ func seedOverview(t *testing.T, scenario string) string {
 	defer conn.Close()
 	if scenario == "empty" {
 		return path
+	}
+	if strings.HasPrefix(scenario, "import:") {
+		conn.Close()
+		return seedFromFixture(t, path, strings.TrimPrefix(scenario, "import:"))
 	}
 
 	exec := func(q string, args ...any) {
@@ -55,6 +63,13 @@ func seedOverview(t *testing.T, scenario string) string {
 	}
 	midnight := time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC)
 	dayAt := func(back int) time.Time { return midnight.AddDate(0, 0, -(back + shift)) }
+
+	if scenario == "steps-only" {
+		for back := 0; back < 20; back++ {
+			sample("step_count", dayAt(back), 12, 5000+float64((back*7)%9)*600, "Test Phone")
+		}
+		return path
+	}
 
 	if scenario != "sleep-only" {
 		for back := 0; back < 40; back++ {
@@ -111,6 +126,42 @@ func seedOverview(t *testing.T, scenario string) string {
 	return path
 }
 
+// seedFromFixture imports a synthetic export from testdata and moves every
+// timestamp forward by whole days so the newest data is on overviewNow's day
+// (the fixtures are dated 2024). Same trick as the importer's other tests.
+func seedFromFixture(t *testing.T, path, fixture string) string {
+	t.Helper()
+	conn, err := db.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	if _, err := importer.Import(conn, "../../testdata/"+fixture+"/export.xml", importer.Options{}); err != nil {
+		t.Fatal(err)
+	}
+	var newest int64
+	if err := conn.QueryRow(`SELECT max(end_ts + tz_offset) FROM samples`).Scan(&newest); err != nil {
+		t.Fatal(err)
+	}
+	const day = 86400
+	shift := (overviewNow.Unix()/day - newest/day) * day
+	for _, q := range []string{
+		`UPDATE samples SET start_ts = start_ts + ?1, end_ts = end_ts + ?1`,
+		`UPDATE sleep_stages SET start_ts = start_ts + ?1, end_ts = end_ts + ?1`,
+		`UPDATE workouts SET start_ts = start_ts + ?1, end_ts = end_ts + ?1`,
+	} {
+		if _, err := conn.Exec(q, shift); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// The import time is "now" for real; pin it to a day before overviewNow.
+	if _, err := conn.Exec(`UPDATE meta SET value = json_set(value, '$.at', ?) WHERE key = 'last_import_summary'`,
+		overviewNow.AddDate(0, 0, -1).Unix()); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
+
 func overviewReport(t *testing.T, scenario string) *stats.Overview {
 	t.Helper()
 	conn, err := db.Open(seedOverview(t, scenario))
@@ -118,7 +169,7 @@ func overviewReport(t *testing.T, scenario string) *stats.Overview {
 		t.Fatal(err)
 	}
 	defer conn.Close()
-	o, err := stats.BuildOverview(t.Context(), conn, overviewNow)
+	o, err := stats.BuildOverview(t.Context(), conn, overviewNow, stats.DefaultOverviewOptions())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -141,6 +192,13 @@ func TestOverviewGoldens(t *testing.T) {
 		{"overview_empty_60_ascii.txt", "empty", termInfo{width: 60}},
 		{"overview_sleep_only.txt", "sleep-only", termInfo{width: 80, unicode: true}},
 		{"overview_stale.txt", "stale", termInfo{width: 80, unicode: true}},
+		{"overview_apple_80.txt", "import:small", termInfo{width: 80, unicode: true}},
+		{"overview_apple_color.txt", "import:small", termInfo{width: 80, unicode: true, color: true}},
+		{"overview_apple_ascii.txt", "import:small", termInfo{width: 80}},
+		{"overview_apple_60.txt", "import:small", termInfo{width: 60, unicode: true}},
+		{"overview_sparse_80.txt", "import:sparse", termInfo{width: 80, unicode: true}},
+		{"overview_sparse_60_ascii.txt", "import:sparse", termInfo{width: 60}},
+		{"overview_steps_only.txt", "steps-only", termInfo{width: 80, unicode: true}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -276,5 +334,107 @@ func TestOverviewHandBuiltStates(t *testing.T) {
 	}
 	if strings.Contains(got, "0m asleep") {
 		t.Errorf("an in-bed-only night must not say '0m asleep':\n%s", got)
+	}
+}
+
+// The colour decision: polarity x direction x typical. The verdict word is
+// the same in plain output, so colour is never the only signal.
+func TestVerdictColourTable(t *testing.T) {
+	st := style{color: true}
+	cases := []struct {
+		polarity   metrics.Polarity
+		comparison string
+		code, word string // "" = no colour / no word
+	}{
+		{metrics.HigherBetter, stats.Above, ansiGreen, "better"},
+		{metrics.HigherBetter, stats.Below, ansiRed, "worse"},
+		{metrics.HigherBetter, stats.Typical, "", ""},
+		{metrics.LowerBetter, stats.Below, ansiGreen, "better"},
+		{metrics.LowerBetter, stats.Above, ansiRed, "worse"},
+		{metrics.LowerBetter, stats.Typical, "", ""},
+		{metrics.Neutral, stats.Above, ansiCyan, ""},
+		{metrics.Neutral, stats.Below, ansiCyan, ""},
+		{metrics.Neutral, stats.Typical, "", ""},
+	}
+	for _, c := range cases {
+		v := stats.Verdict(c.polarity, c.comparison)
+		got := verdictPaint(st, v)("x")
+		want := "x"
+		if c.code != "" {
+			want = "\x1b[" + c.code + "mx\x1b[0m"
+		}
+		if got != want {
+			t.Errorf("%s/%s: painted %q, want %q", c.polarity, c.comparison, got, want)
+		}
+		if w := verdictWord(v); w != c.word {
+			t.Errorf("%s/%s: word %q, want %q", c.polarity, c.comparison, w, c.word)
+		}
+	}
+}
+
+// Colour paints the arrow+delta+word and the band marker, not the row.
+func TestOverviewColourIsLocal(t *testing.T) {
+	got := renderOverview(overviewReport(t, "full"), termInfo{width: 80, unicode: true, color: true}, testView)
+	var worse string
+	for _, l := range strings.Split(got, "\n") {
+		if strings.Contains(l, "Resting HR") {
+			worse = l
+		}
+	}
+	if !strings.Contains(worse, "\x1b[31m▲ +9% worse\x1b[0m") || !strings.Contains(worse, "\x1b[31m●\x1b[0m") {
+		t.Errorf("worse row should be red on delta and marker: %q", worse)
+	}
+	if strings.HasPrefix(strings.TrimSpace(worse), "\x1b") {
+		t.Errorf("the label must not be coloured: %q", worse)
+	}
+	if !strings.Contains(got, "\x1b[32m▲ +52% better\x1b[0m") {
+		t.Errorf("steps should be green and say better:\n%s", got)
+	}
+}
+
+func TestOverviewHeatmapFlags(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return overviewNow }
+	defer func() { nowFunc = old }()
+	path := seedOverview(t, "full")
+
+	out, _, err := run(t, "--db", path, "overview", "--weeks", "0")
+	if err != nil || strings.Contains(out, "CALENDAR") {
+		t.Errorf("--weeks 0 should hide the heatmap: %v\n%s", err, out)
+	}
+	out, _, err = run(t, "--db", path, "overview", "--heatmap", "active_energy", "--weeks", "4")
+	if err != nil || !strings.Contains(out, "active energy per day, 4 weeks") {
+		t.Errorf("--heatmap override: %v\n%s", err, out)
+	}
+	if _, _, err = run(t, "--db", path, "overview", "--heatmap", "nonsense"); err == nil {
+		t.Error("an unknown heatmap metric should fail")
+	}
+	if _, _, err = run(t, "--db", path, "overview", "--weeks", "99"); err == nil {
+		t.Error("--weeks 99 should fail")
+	}
+
+	var rep stats.Overview
+	out, _, _ = run(t, "--db", path, "overview", "--json")
+	if err := json.Unmarshal([]byte(out), &rep); err != nil {
+		t.Fatal(err)
+	}
+	if rep.Heatmap == nil || len(rep.Heatmap.Weeks) != 12 || len(rep.NotTracked) == 0 {
+		t.Errorf("json should carry heatmap and not_tracked: %+v", rep.Heatmap)
+	}
+	if v := rep.Metrics[1]; v.Metric != "resting_heart_rate" || v.Verdict != stats.VerdictWorse || v.Polarity != "lower_better" {
+		t.Errorf("json verdict: %+v", v)
+	}
+}
+
+// A device that tracks little must render cleanly: no empty rows.
+func TestOverviewStepsOnlyHasNoEmptyRows(t *testing.T) {
+	got := renderOverview(overviewReport(t, "steps-only"), termInfo{width: 80}, testView)
+	for _, bad := range []string{"stale", "HRV", "VITALS", "BODY"} {
+		if strings.Contains(got, bad) {
+			t.Errorf("unexpected %q in:\n%s", bad, got)
+		}
+	}
+	if !strings.Contains(got, "not tracked in your data: 29 metrics") {
+		t.Errorf("missing not-tracked footer:\n%s", got)
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/nmutto/healthcli/internal/metrics"
@@ -33,8 +34,9 @@ const (
 	StateNoData     = "no_data"     // this metric has never been recorded
 )
 
-// labels are the short names shown in the table. A metric missing here falls
-// back to its stored name, so adding a metric never breaks the overview.
+// labels are short table names that override the registry label where the
+// registry one is too long for a narrow table. A metric missing here uses its
+// registry label (metrics.Metric.Label).
 var labels = map[string]string{
 	"step_count":         "Steps",
 	"active_energy":      "Active energy",
@@ -46,19 +48,39 @@ var labels = map[string]string{
 
 // Overview is the whole report. The json tags are the documented --json shape.
 type Overview struct {
-	Today    string          `json:"today"` // the local day the report is relative to
-	Empty    bool            `json:"empty"` // true when the database holds no data at all
-	Metrics  []MetricRow     `json:"metrics"`
-	Sleep    OverviewSleep   `json:"sleep"`
-	Workouts WorkoutsSummary `json:"workouts"`
-	Data     DataHealth      `json:"data"`
+	Today   string      `json:"today"`   // the local day the report is relative to
+	Empty   bool        `json:"empty"`   // true when the database holds no data at all
+	Metrics []MetricRow `json:"metrics"` // only metrics that have samples
+	// NotTracked lists the registry metrics with no samples at all. The text
+	// output prints just their count.
+	NotTracked []string        `json:"not_tracked"`
+	Sleep      OverviewSleep   `json:"sleep"`
+	Workouts   WorkoutsSummary `json:"workouts"`
+	// Heatmap is the activity calendar, or null when there is no activity
+	// metric with data (or the caller asked for 0 weeks).
+	Heatmap *Heatmap   `json:"heatmap"`
+	Data    DataHealth `json:"data"`
 }
+
+// OverviewOptions are the knobs of BuildOverview.
+type OverviewOptions struct {
+	HeatWeeks  int    // weeks of heatmap; 0 leaves the heatmap out
+	HeatMetric string // metric for the heatmap; "" picks one automatically
+}
+
+// DefaultOverviewOptions is what "healthcli overview" does without flags.
+func DefaultOverviewOptions() OverviewOptions { return OverviewOptions{HeatWeeks: 12} }
+
+// autoHeatmapMetrics are tried in this order when no heatmap metric is given.
+var autoHeatmapMetrics = []string{"step_count", "apple_exercise_time", "active_energy"}
 
 // MetricRow is one metric, anchored on its OWN newest day (not on "today"),
 // so a metric that was not recorded today still shows its last value.
 type MetricRow struct {
 	Metric    string   `json:"metric"`
 	Label     string   `json:"label"`
+	Category  string   `json:"category"`
+	Polarity  string   `json:"polarity"` // higher_better, lower_better or neutral
 	Unit      string   `json:"unit"`
 	State     string   `json:"state"`
 	LatestDay string   `json:"latest_day,omitempty"` // empty for no_data
@@ -74,6 +96,10 @@ type MetricRow struct {
 	DeltaPct     *float64 `json:"delta_pct"`
 	Z            *float64 `json:"z"`
 	Comparison   *string  `json:"comparison"` // above, below or typical
+	// Verdict is Comparison seen through Polarity: better, worse, changed
+	// (beyond usual, but the metric has no good direction) or typical.
+	// Empty unless State is ok. See Verdict for the caveat.
+	Verdict string `json:"verdict,omitempty"`
 
 	// Spark is one value per day for the last SparkDays days ending today
 	// (null = no data that day).
@@ -146,17 +172,11 @@ type Gap struct {
 	Span    int    `json:"span_days"`
 }
 
-// alwaysShown are the metrics every overview lists, even with no data yet.
-var alwaysShown = map[string]bool{
-	"heart_rate": true, "resting_heart_rate": true, "hrv_sdnn": true,
-	"step_count": true, "active_energy": true, "body_mass": true,
-}
-
 // BuildOverview reads everything the overview shows. now decides what
 // "today" is (its own local calendar date), which keeps tests deterministic.
-func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time) (*Overview, error) {
+func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time, opts OverviewOptions) (*Overview, error) {
 	today := now.Format(DayLayout)
-	o := &Overview{Today: today, Metrics: []MetricRow{}}
+	o := &Overview{Today: today, Metrics: []MetricRow{}, NotTracked: []string{}}
 
 	for _, name := range metrics.Names() {
 		row, err := buildRow(ctx, conn, name, today)
@@ -164,13 +184,17 @@ func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time) (*Overview,
 			return nil, err
 		}
 		// Show only what the user's data contains: a device that never records
-		// (say) respiratory rate gets no empty row for it. The original six
-		// metrics keep their "no data" rows.
-		if row.State == StateNoData && !alwaysShown[name] {
+		// (say) respiratory rate gets no empty row for it, only a count.
+		if row.State == StateNoData {
+			o.NotTracked = append(o.NotTracked, name)
 			continue
 		}
 		o.Metrics = append(o.Metrics, row)
 	}
+	// Group by category; SliceStable keeps registry order inside a group.
+	sort.SliceStable(o.Metrics, func(i, j int) bool {
+		return categoryRank(o.Metrics[i].Category) < categoryRank(o.Metrics[j].Category)
+	})
 
 	var err error
 	if o.Sleep, err = buildSleep(ctx, conn, today); err != nil {
@@ -182,8 +206,83 @@ func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time) (*Overview,
 	if o.Data, err = buildDataHealth(ctx, conn, o.Metrics); err != nil {
 		return nil, err
 	}
+	if o.Heatmap, err = buildOverviewHeatmap(ctx, conn, o, now, opts); err != nil {
+		return nil, err
+	}
 	o.Empty = o.Data.Samples == 0 && o.Sleep.State == StateNoData && o.Workouts.Count == 0
 	return o, nil
+}
+
+// categoryRank is the display order of the groups.
+func categoryRank(c string) int {
+	for i, x := range []metrics.Category{metrics.Vitals, metrics.Activity, metrics.Body, metrics.Mobility, metrics.Other} {
+		if string(x) == c {
+			return i
+		}
+	}
+	return 99
+}
+
+// buildOverviewHeatmap picks the activity metric (the requested one, else the
+// first of autoHeatmapMetrics that has data) and builds its grid. It returns
+// nil, not an error, when there is nothing to draw.
+func buildOverviewHeatmap(ctx context.Context, conn *sql.DB, o *Overview, now time.Time, opts OverviewOptions) (*Heatmap, error) {
+	if opts.HeatWeeks <= 0 {
+		return nil, nil
+	}
+	has := map[string]bool{}
+	for _, r := range o.Metrics {
+		has[r.Metric] = true
+	}
+	candidates := autoHeatmapMetrics
+	if opts.HeatMetric != "" {
+		m, err := metrics.Lookup(opts.HeatMetric)
+		if err != nil {
+			return nil, err
+		}
+		candidates = []string{m.Name}
+	}
+	for _, name := range candidates {
+		if !has[name] {
+			continue
+		}
+		h, err := BuildHeatmap(ctx, conn, name, min(opts.HeatWeeks, MaxHeatmapWeeks), now)
+		if err != nil {
+			return nil, err
+		}
+		if !h.Empty() {
+			return h, nil
+		}
+	}
+	return nil, nil
+}
+
+// Verdicts: a metric's comparison seen through its polarity.
+const (
+	VerdictBetter  = "better"
+	VerdictWorse   = "worse"
+	VerdictChanged = "changed" // beyond usual, but the metric has no good direction
+	VerdictTypical = "typical"
+)
+
+// Verdict turns a comparison (above, below or typical) into better / worse /
+// changed / typical for a metric of polarity p.
+//
+// Polarity is a general guide for the general population, not medical advice:
+// what is healthy for one person (an athlete's low resting heart rate,
+// deliberate weight change) can differ, which is why neutral metrics are only
+// ever "changed".
+func Verdict(p metrics.Polarity, comparison string) string {
+	if comparison != Above && comparison != Below {
+		return VerdictTypical
+	}
+	switch {
+	case p == metrics.HigherBetter && comparison == Above, p == metrics.LowerBetter && comparison == Below:
+		return VerdictBetter
+	case p == metrics.HigherBetter || p == metrics.LowerBetter:
+		return VerdictWorse
+	}
+	return VerdictChanged
 }
 
 // daysBetween is the number of calendar days from a to b (negative if b is
@@ -215,9 +314,9 @@ func buildRow(ctx context.Context, conn *sql.DB, name, today string) (MetricRow,
 	}
 	label := labels[m.Name]
 	if label == "" {
-		label = m.Name
+		label = m.Label
 	}
-	row := MetricRow{Metric: m.Name, Label: label, Unit: m.Unit, State: StateNoData, Spark: []*float64{}}
+	row := MetricRow{Metric: m.Name, Label: label, Category: string(m.Category), Polarity: string(m.Polarity), Unit: m.Unit, State: StateNoData, Spark: []*float64{}}
 
 	latest, err := LatestSample(ctx, conn, m.Name)
 	if errors.Is(err, ErrNoData) {
@@ -264,6 +363,7 @@ func buildRow(ctx context.Context, conn *sql.DB, name, today string) (MetricRow,
 	row.State = StateOK
 	row.Mean, row.Stddev = &b.Mean, &b.Stddev
 	row.DeltaPct, row.Z, row.Comparison = &c.DeltaPct, &c.Z, &lab
+	row.Verdict = Verdict(m.Polarity, lab)
 	return row, nil
 }
 

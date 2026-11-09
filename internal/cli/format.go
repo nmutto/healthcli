@@ -39,10 +39,23 @@ func (st style) wrap(code, s string) string {
 	return "\x1b[" + code + "m" + s + "\x1b[0m"
 }
 
-func (st style) bold(s string) string   { return st.wrap("1", s) }
-func (st style) dim(s string) string    { return st.wrap("2", s) }
-func (st style) cyan(s string) string   { return st.wrap("36", s) }
-func (st style) yellow(s string) string { return st.wrap("33", s) }
+// The 16-colour ANSI codes the output uses, all in one place. Colour is never
+// the only carrier of meaning: arrows and words say the same thing.
+const (
+	ansiBold   = "1"
+	ansiDim    = "2"
+	ansiRed    = "31" // worse than usual
+	ansiGreen  = "32" // better than usual
+	ansiYellow = "33" // stale data
+	ansiCyan   = "36" // changed, and no good direction
+)
+
+func (st style) bold(s string) string   { return st.wrap(ansiBold, s) }
+func (st style) dim(s string) string    { return st.wrap(ansiDim, s) }
+func (st style) cyan(s string) string   { return st.wrap(ansiCyan, s) }
+func (st style) yellow(s string) string { return st.wrap(ansiYellow, s) }
+func (st style) green(s string) string  { return st.wrap(ansiGreen, s) }
+func (st style) red(s string) string    { return st.wrap(ansiRed, s) }
 
 // formatInt prints a whole number with thousands separators: 12345 -> "12,345".
 func formatInt(v float64) string {
