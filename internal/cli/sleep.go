@@ -64,8 +64,8 @@ the target), heatmap.`,
 		},
 	}
 	cmd.Flags().IntVar(&nights, "nights", stats.DefaultSleepNights, "nights in the usual window (7-90)")
-	cmd.Flags().StringVar(&target, "sleep-target", "8h", "nightly sleep goal for the debt line, e.g. 7h30m")
-	cmd.Flags().StringVar(&by, "by", stats.SleepByAsleep, "calendar value: asleep, bedtime or efficiency")
+	cmd.Flags().StringVar(&target, "sleep-target", "8h", "nightly sleep goal, e.g. 7h30m")
+	cmd.Flags().StringVar(&by, "by", stats.SleepByAsleep, "calendar value: asleep, bedtime, efficiency")
 	cmd.Flags().IntVar(&weeks, "weeks", defaultHeatWeeks, "weeks of calendar (0 hides it)")
 	cmd.Flags().BoolVar(&noColor, "no-color", false, "never use colours")
 	cmd.Flags().BoolVar(&ascii, "ascii", false, "use plain ASCII characters only")

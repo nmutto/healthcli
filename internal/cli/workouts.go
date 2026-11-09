@@ -23,7 +23,8 @@ type with a share bar, weekly training time (--weeks, default 8) with a change
 against the previous four weeks, personal bests over 90 days (activities with
 at least 3 sessions), the newest sessions and a calendar heatmap of workout
 minutes per day. Days without a workout in the calendar are rest days (shown
-from your first workout on). --by type draws each day's main activity as a letter.
+from your first workout on). --by type draws each day's main activity as a
+letter.
 
 Columns with no data (no calories or distance recorded) are left out, and parts
 that need more sessions simply do not appear. The weekly deltas are not
@@ -31,9 +32,10 @@ coloured green or red: more training is not automatically better.
 
 JSON output (--json):
   today, days, count, duration_seconds, energy_kcal, distance_km (both left out
-  when never recorded), active_days, by_type[], weeks[] (start, duration_seconds,
-  count, partial, days, delta_pct), bests[] (kind, activity, day, ..., new),
-  recent[] (day, activity, start, end, duration_seconds, energy_kcal, distance_km)
+  when never recorded), active_days, by_type[], weeks[] (start,
+  duration_seconds, count, partial, days, delta_pct), bests[] (kind, activity, day, ..., new),
+  recent[] (day, activity, start, end, duration_seconds, energy_kcal,
+  distance_km)
 All durations are seconds and absent values are left out, never null.`,
 		Example: `  healthcli workouts
   healthcli workouts --days 90 --weeks 12
@@ -71,7 +73,7 @@ All durations are seconds and absent values are left out, never null.`,
 			return err
 		},
 	}
-	cmd.Flags().IntVar(&days, "days", 28, "window for the totals, type table and recent list (1-365)")
+	cmd.Flags().IntVar(&days, "days", 28, "window for totals, types and recent list (1-365)")
 	cmd.Flags().IntVar(&weeks, "weeks", 8, "weeks of volume bars and calendar (1-53)")
 	cmd.Flags().StringVar(&by, "by", "", `"type": draw the calendar with one letter per activity`)
 	cmd.Flags().BoolVar(&noColor, "no-color", false, "never use colours")

@@ -143,7 +143,7 @@ func TestOneBandStyle(t *testing.T) {
 // (p) --compact keeps a one-character flag in the margin.
 func TestCompactKeepsOneCharacterFlag(t *testing.T) {
 	got := overviewText(t, "import:small", uni80, overviewView{compact: true})
-	if !strings.Contains(got, "\n!Resting HR") || !strings.Contains(got, "\n+Walking heart rate") || !strings.Contains(got, "\n~Respiratory rate") {
+	if !strings.Contains(got, "\n! Resting HR") || !strings.Contains(got, "\n+ Walking heart rate") || !strings.Contains(got, "\n~ Respiratory rate") {
 		t.Errorf("compact rows need the ! + ~ flag:\n%s", got)
 	}
 }
@@ -166,3 +166,15 @@ func TestHeatmapLegendWraps(t *testing.T) {
 }
 
 var _ = time.Second
+
+// ASCII stage glyphs are distinct from each other and from the rules.
+func TestASCIIStageGlyphsAreDistinct(t *testing.T) {
+	g := glyphsFor(false)
+	used := map[rune]string{g.rule: "rule", g.bandRule: "band rule"}
+	for stage, r := range g.stages {
+		if other, dup := used[r]; dup {
+			t.Errorf("stage %s uses %q, same as %s", stage, r, other)
+		}
+		used[r] = stage
+	}
+}

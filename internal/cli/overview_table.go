@@ -176,8 +176,9 @@ func metricTable(o *stats.Overview, ti termInfo, g glyphSet, st style, v overvie
 // planColumns decides which columns exist and how wide they are.
 func planColumns(rows []stats.MetricRow, ti termInfo, g glyphSet, compact bool) tableCols {
 	var c tableCols
-	if !compact { // compact keeps a one-character flag in the margin column
-		c.gutter = gutterW
+	c.gutter = gutterW
+	if compact { // compact: the flag replaces the margin space, so one column less
+		c.gutter = gutterW - 1
 	}
 	c.foldAge = ti.width < narrowAge
 
@@ -273,10 +274,14 @@ func gutterMark(r stats.MetricRow, st style) string {
 // metricRow draws one metric.
 func metricRow(r stats.MetricRow, c tableCols, ti termInfo, g glyphSet, st style) string {
 	line := indent
-	if c.gutter > 0 {
+	if c.gutter == gutterW {
 		line += gutterMark(r, st)
-	} else if flag := strings.TrimRight(gutterMark(r, st), " "); flag != "" {
-		line = flag // compact: the flag takes the place of the margin
+	} else { // compact: the flag takes the margin's place, then one space
+		flag := strings.TrimRight(gutterMark(r, st), " ")
+		if flag == "" {
+			flag = " "
+		}
+		line = flag + " "
 	}
 	line += padRight(fit(r.Label, c.labelW, g), c.labelW) + "  " + latestCell(r, c.latestW, ti, g, st) + "  "
 	line += deltaArea(r, g, st, c.band, c.areaW, c.foldAge)

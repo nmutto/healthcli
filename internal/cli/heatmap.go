@@ -278,13 +278,14 @@ the window (the legend lists the cut points), so the darkest fifth of days is
 always the highest fifth for that metric. A day without data shows a dot, not
 the lowest shade. Today is marked.
 
-The metric defaults to step_count; "sleep" (time asleep per night) and
-"workouts" (minutes per day, with rest days) work too. --weeks sets the maximum number of weeks
-(default 12); fewer are shown if the terminal is too narrow (oldest dropped).
+The metric defaults to step_count; "sleep" (time asleep per day) and
+"workouts" (workout minutes per day, with rest days) work too. --weeks sets the
+maximum number of weeks (default 12); fewer are shown if the terminal is too
+narrow (oldest dropped).
 
 JSON output (--json):
   metric, unit, today, from, thresholds (4 upper bounds of levels 1-4),
-  days_with_data, weeks[7 days each]: day, value (null = no data), level
+  days_with_data, weeks[7 days each]: day, value (left out = no data), level
   (1-5; 0 = no data), future (true after today)`,
 		Example: `  healthcli heatmap
   healthcli heatmap active_energy --weeks 26
