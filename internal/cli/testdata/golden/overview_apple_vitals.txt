@@ -1,0 +1,19 @@
+ healthcli overview                              db: demo.db · imported 1 d ago
+ ──────────────────────────────────────────────────────────────────────────────
+ 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
+ VITALS 9 !1
+
+   METRIC               LATEST          VS 28-DAY USUAL               AGE
+
+ ━━ VITALS ━━ 9 metrics · 1 better · 1 worse · 1 changed · 1 stale ━━━━━━━━━━━━
+   Avg heart rate       76 bpm          ▲ +2%             ···░░░●···
+ ! Resting HR           60 bpm          ▲ +6% worse       ···░░░░●··
+   HRV                  46 ms           ▼ -4%             ···░●░░···
+ ~ Respiratory rate     15.6/min        ▲ +9% changed     ···░░░░●··
+   Wrist temperature    36.0 °C         – 0%              ···░░●░···
+   Blood oxygen         97%             – 0%              ···░░●░···
+   VO2 max              41.9 mL/kg/min  stale                         6 d
+ + Walking heart rate   90 bpm          ▼ -4% better      ···●░░░···
+   Heart rate recovery  26 bpm          need 7d (have 6)
+ green better / red worse / cyan changed (no good direction)
+

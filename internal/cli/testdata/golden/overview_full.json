@@ -296,6 +296,41 @@
       ]
     }
   ],
+  "categories": [
+    {
+      "name": "vitals",
+      "total": 3,
+      "better": 0,
+      "worse": 1,
+      "changed": 0,
+      "typical": 2,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    },
+    {
+      "name": "activity",
+      "total": 2,
+      "better": 1,
+      "worse": 0,
+      "changed": 0,
+      "typical": 1,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    },
+    {
+      "name": "body",
+      "total": 1,
+      "better": 0,
+      "worse": 0,
+      "changed": 0,
+      "typical": 0,
+      "stale": 1,
+      "no_baseline": 0,
+      "no_data": 0
+    }
+  ],
   "not_tracked": [
     "respiratory_rate",
     "apple_sleeping_wrist_temperature",

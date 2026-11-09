@@ -1,6 +1,7 @@
  healthcli overview                                                 db: demo.db
  ──────────────────────────────────────────────────────────────────────────────
  No metric readings yet · slept 7h 00m
+ SLEEP  (not tracked: VITALS, ACTIVITY, BODY, MOBILITY, WORKOUTS)
 
  SLEEP    7h 00m asleep · 8h 30m in bed · last night
  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓████████████████░░░

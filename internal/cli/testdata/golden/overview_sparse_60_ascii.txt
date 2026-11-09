@@ -1,15 +1,19 @@
  healthcli overview          db: demo.db | imported 1 d ago
  ----------------------------------------------------------
  3 typical vs your 28-day usual
+ VITALS 1 | ACTIVITY 1 | BODY 1  (3 not tracked)
 
- METRIC          LATEST        VS 28-DAY USUAL   AGE
- VITALS
- Avg heart rate  79 bpm        v -1%             today
- ACTIVITY
- Steps           19,415 steps  ^ +2%             today
- BODY
- Weight          83.6 kg       ^ +1%             today
- green better / red worse / cyan changed (no good direction)
+   METRIC          LATEST        VS 28-DAY USUAL
+
+ == VITALS == 1 | all typical =============================
+   Avg heart rate  79 bpm        v -1%
+
+ == ACTIVITY == 1 | all typical ===========================
+   Steps           19,415 steps  ^ +2%
+
+ == BODY == 1 | all typical ===============================
+   Weight          83.6 kg       ^ +1%
+ green better red worse cyan changed
 
  SLEEP    no sleep recorded in the last 30 days
  WORKOUTS none in the last 30 days

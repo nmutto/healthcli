@@ -1,0 +1,21 @@
+ healthcli overview                              db: demo.db · imported 1 d ago
+ ──────────────────────────────────────────────────────────────────────────────
+ 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
+ ACTIVITY 8 · SLEEP
+
+   METRIC                      LATEST        VS 28-DAY USUAL
+
+ ━━ ACTIVITY ━━ 8 metrics · 2 better ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ + Steps                       21,999 steps  ▲ +10% better     ···░░░●···
+ + Active energy               880 kcal      ▲ +10% better     ···░░░●···
+   Resting energy              1,730 kcal    ▲ +2%             ···░░░●···
+   Exercise time               43 min        ▲ +16%            ···░░●░···
+   Stand time                  364 min       ▼ -12%            ···░●░░···
+   Flights climbed             8 flights     ▼ -39%            ···●░░░···
+   Walking + running distance  6.5 km        – 0%              ···░░●░···
+   Time in daylight            53 min        ▲ +14%            ···░░●░···
+ green better / red worse / cyan changed (no good direction)
+
+ SLEEP    7h 01m asleep · 7h 30m in bed · last night
+ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████░░░
+ core 4h 16m   REM 1h 18m   deep 1h 27m   awake 17m

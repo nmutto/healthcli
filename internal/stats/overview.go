@@ -52,6 +52,9 @@ type Overview struct {
 	Today   string      `json:"today"`   // the local day the report is relative to
 	Empty   bool        `json:"empty"`   // true when the database holds no data at all
 	Metrics []MetricRow `json:"metrics"` // only metrics that have samples
+	// Categories has one summary per category that has at least one metric,
+	// in display order. Empty categories are left out.
+	Categories []CategorySummary `json:"categories"`
 	// NotTracked lists the registry metrics with no samples at all. The text
 	// output prints just their count.
 	NotTracked []string        `json:"not_tracked"`
@@ -61,6 +64,58 @@ type Overview struct {
 	// metric with data (or the caller asked for 0 weeks).
 	Heatmap *Heatmap   `json:"heatmap"`
 	Data    DataHealth `json:"data"`
+}
+
+// CategorySummary counts the metric rows of one category by outcome. Typical,
+// Better, Worse and Changed add up to the rows with a baseline; Stale,
+// NoBaseline and NoData cover the rest, so the six add up to Total.
+type CategorySummary struct {
+	Name       string `json:"name"`
+	Total      int    `json:"total"`
+	Better     int    `json:"better"`
+	Worse      int    `json:"worse"`
+	Changed    int    `json:"changed"`
+	Typical    int    `json:"typical"`
+	Stale      int    `json:"stale"`
+	NoBaseline int    `json:"no_baseline"`
+	NoData     int    `json:"no_data"`
+}
+
+// CategorySummaries counts the rows per category, in the order the categories
+// first appear (BuildOverview sorts rows by category, so that is display order).
+func CategorySummaries(rows []MetricRow) []CategorySummary {
+	out := []CategorySummary{}
+	idx := map[string]int{}
+	for _, r := range rows {
+		i, ok := idx[r.Category]
+		if !ok {
+			i = len(out)
+			idx[r.Category] = i
+			out = append(out, CategorySummary{Name: r.Category})
+		}
+		c := &out[i]
+		c.Total++
+		switch r.State {
+		case StateOK:
+			switch r.Verdict {
+			case VerdictBetter:
+				c.Better++
+			case VerdictWorse:
+				c.Worse++
+			case VerdictChanged:
+				c.Changed++
+			default:
+				c.Typical++
+			}
+		case StateStale:
+			c.Stale++
+		case StateNoBaseline:
+			c.NoBaseline++
+		default:
+			c.NoData++
+		}
+	}
+	return out
 }
 
 // OverviewOptions are the knobs of BuildOverview.
@@ -205,7 +260,7 @@ func isFinite(xs ...float64) bool {
 // "today" is (its own local calendar date), which keeps tests deterministic.
 func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time, opts OverviewOptions) (*Overview, error) {
 	today := now.Format(DayLayout)
-	o := &Overview{Today: today, Metrics: []MetricRow{}, NotTracked: []string{}}
+	o := &Overview{Today: today, Metrics: []MetricRow{}, Categories: []CategorySummary{}, NotTracked: []string{}}
 
 	for _, name := range metrics.Names() {
 		row, err := buildRow(ctx, conn, name, today, now.Add(futureSlack).Unix())
@@ -224,6 +279,8 @@ func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time, opts Overvi
 	sort.SliceStable(o.Metrics, func(i, j int) bool {
 		return categoryRank(o.Metrics[i].Category) < categoryRank(o.Metrics[j].Category)
 	})
+
+	o.Categories = CategorySummaries(o.Metrics)
 
 	var err error
 	if o.Sleep, err = buildSleep(ctx, conn, today); err != nil {
