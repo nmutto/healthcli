@@ -130,41 +130,6 @@ func formatPct(p float64) string {
 	return s + "%"
 }
 
-// sparkBars are the eight bar heights, shortest to tallest.
-var sparkBars = []rune("▁▂▃▄▅▆▇█")
-
-// sparkGap marks a day without data. A visible dot (not a space) keeps the
-// day count readable when the gap is at the start or end of the line.
-const sparkGap = '·'
-
-// sparkline draws one character per entry. NaN means "no data that day".
-// Bars are scaled between the minimum and maximum of the data shown, so it
-// shows the shape of the trend, not absolute size (min/max are printed too).
-func sparkline(values []float64) string {
-	lo, hi := math.Inf(1), math.Inf(-1)
-	for _, v := range values {
-		if math.IsNaN(v) {
-			continue
-		}
-		lo, hi = math.Min(lo, v), math.Max(hi, v)
-	}
-	out := make([]rune, 0, len(values))
-	for _, v := range values {
-		switch {
-		case math.IsNaN(v):
-			out = append(out, sparkGap)
-		case hi == lo:
-			// Every value is the same: a flat middle line, not a wall of
-			// full-height bars that would suggest a peak.
-			out = append(out, sparkBars[len(sparkBars)/2-1])
-		default:
-			idx := int(math.Round((v - lo) / (hi - lo) * float64(len(sparkBars)-1)))
-			out = append(out, sparkBars[idx])
-		}
-	}
-	return string(out)
-}
-
 // padRight pads s with spaces to n characters (runes, not bytes, so "·" and
 // "▲" count as one). Padding is done on plain text BEFORE coloring, because
 // invisible ANSI codes would otherwise count toward the width.
