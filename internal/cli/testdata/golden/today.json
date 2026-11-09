@@ -4,36 +4,6 @@
   "date": "2026-11-08",
   "metrics": [
     {
-      "metric": "step_count",
-      "label": "Steps",
-      "unit": "count",
-      "value": 12345,
-      "source": "Test Apple Watch",
-      "baseline": {
-        "available": true,
-        "days_with_data": 27,
-        "days_needed": 7,
-        "from": "2026-10-11",
-        "to": "2026-11-07",
-        "mean": 7537.037037037037,
-        "stddev": 1018.3501544346312
-      },
-      "comparison": {
-        "delta": 4807.962962962963,
-        "delta_pct": 63.79115479115478,
-        "z": 4.721325903497558,
-        "label": "above"
-      }
-    },
-    {
-      "metric": "active_energy",
-      "label": "Active energy",
-      "unit": "kcal",
-      "value": null,
-      "baseline": null,
-      "comparison": null
-    },
-    {
       "metric": "heart_rate",
       "label": "Avg heart rate",
       "unit": "bpm",
@@ -53,11 +23,16 @@
         "delta_pct": 3.225806451612903,
         "z": 1.414213562373095,
         "label": "above"
-      }
+      },
+      "category": "vitals",
+      "polarity": "neutral",
+      "state": "ok",
+      "verdict": "changed",
+      "usual": 62
     },
     {
       "metric": "resting_heart_rate",
-      "label": "Resting heart rate",
+      "label": "Resting HR",
       "unit": "bpm",
       "value": 58,
       "source": "Test Apple Watch",
@@ -68,15 +43,38 @@
         "from": "2026-10-11",
         "to": "2026-11-07"
       },
-      "comparison": null
+      "comparison": null,
+      "category": "vitals",
+      "polarity": "lower_better",
+      "state": "no_baseline",
+      "verdict": ""
     },
     {
-      "metric": "hrv_sdnn",
-      "label": "HRV",
-      "unit": "ms",
-      "value": null,
-      "baseline": null,
-      "comparison": null
+      "metric": "step_count",
+      "label": "Steps",
+      "unit": "count",
+      "value": 12345,
+      "source": "Test Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 27,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 7537.037037037037,
+        "stddev": 1018.3501544346312
+      },
+      "comparison": {
+        "delta": 4807.962962962963,
+        "delta_pct": 63.79115479115478,
+        "z": 4.721325903497558,
+        "label": "above"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "better",
+      "usual": 7537.037037037037
     },
     {
       "metric": "body_mass",
@@ -91,7 +89,11 @@
         "from": "2026-10-11",
         "to": "2026-11-07"
       },
-      "comparison": null
+      "comparison": null,
+      "category": "body",
+      "polarity": "neutral",
+      "state": "no_baseline",
+      "verdict": ""
     }
   ],
   "sleep": {
@@ -114,5 +116,115 @@
       "distance_m": 6200,
       "source": "Test Apple Watch"
     }
-  ]
+  ],
+  "categories": [
+    {
+      "name": "vitals",
+      "total": 2,
+      "better": 0,
+      "worse": 0,
+      "changed": 1,
+      "typical": 0,
+      "stale": 0,
+      "no_baseline": 1,
+      "no_data": 0
+    },
+    {
+      "name": "activity",
+      "total": 1,
+      "better": 1,
+      "worse": 0,
+      "changed": 0,
+      "typical": 0,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    },
+    {
+      "name": "body",
+      "total": 1,
+      "better": 0,
+      "worse": 0,
+      "changed": 0,
+      "typical": 0,
+      "stale": 0,
+      "no_baseline": 1,
+      "no_data": 0
+    }
+  ],
+  "tracked_without_reading": [],
+  "sleep_summary": {
+    "today": "2026-11-08",
+    "empty": false,
+    "age_days": 0,
+    "kind": "stages",
+    "night": {
+      "night": "2026-11-08",
+      "source": "Test Apple Watch",
+      "asleep_seconds": 25200,
+      "core_seconds": 16200,
+      "deep_seconds": 5400,
+      "rem_seconds": 3600,
+      "unspecified_seconds": 0,
+      "awake_seconds": 900,
+      "in_bed_seconds": 0,
+      "efficiency_pct": 96.55172413793103,
+      "awakenings": 0,
+      "bedtime": "23:00",
+      "wake": "06:00",
+      "midpoint": "02:30",
+      "stages": [
+        {
+          "stage": "core",
+          "start": "2026-11-07T23:00:00Z",
+          "end": "2026-11-08T03:30:00Z"
+        },
+        {
+          "stage": "deep",
+          "start": "2026-11-08T03:30:00Z",
+          "end": "2026-11-08T05:00:00Z"
+        },
+        {
+          "stage": "rem",
+          "start": "2026-11-08T05:00:00Z",
+          "end": "2026-11-08T06:00:00Z"
+        }
+      ]
+    },
+    "seven_nights": {
+      "nights": 1,
+      "asleep_seconds": 25200,
+      "efficiency_pct": 96.55172413793103,
+      "awake_seconds": 900,
+      "awakenings": 0,
+      "deep_seconds": 5400,
+      "rem_seconds": 3600,
+      "core_seconds": 16200,
+      "bedtime_min_since_18h": 300,
+      "wake_min_since_18h": 720,
+      "midpoint_min_since_18h": 510
+    },
+    "fourteen_nights": {
+      "nights": 1,
+      "asleep_seconds": 25200,
+      "efficiency_pct": 96.55172413793103,
+      "awake_seconds": 900,
+      "awakenings": 0,
+      "deep_seconds": 5400,
+      "rem_seconds": 3600,
+      "core_seconds": 16200,
+      "bedtime_min_since_18h": 300,
+      "wake_min_since_18h": 720,
+      "midpoint_min_since_18h": 510
+    },
+    "usual": {
+      "nights": 0
+    },
+    "debt": {
+      "target_seconds": 28800,
+      "last_night_seconds": 3600,
+      "nights": 1,
+      "window_seconds": 3600
+    }
+  }
 }

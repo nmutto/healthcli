@@ -31,6 +31,9 @@ type SleepOptions struct {
 	Target time.Duration // nightly sleep goal; 0 = 8 h
 	By     string        // heatmap value: asleep (default), bedtime, efficiency
 	Weeks  int           // heatmap weeks; 0 = no heatmap
+	// UsualExcludesLast takes the shown night out of the usual window (the
+	// nights BEFORE it), like a metric's baseline excludes its own day.
+	UsualExcludesLast bool
 }
 
 // SleepReport is the whole SLEEP section as data. Renderers and --json read
@@ -311,7 +314,7 @@ func spreadOf(nights []SleepNight) *SleepRegularity {
 
 // summarize builds the report from nights (any order is fine, they are
 // sorted by SleepNights). usualNights is the size of the usual window.
-func summarize(today string, nights []SleepNight, usualNights int, target time.Duration) *SleepReport {
+func summarize(today string, nights []SleepNight, usualNights int, target time.Duration, excludeLast bool) *SleepReport {
 	r := &SleepReport{Today: today, Nights: nights, UsualNights: usualNights}
 	if len(nights) == 0 {
 		r.Empty = true
@@ -335,6 +338,11 @@ func summarize(today string, nights []SleepNight, usualNights int, target time.D
 	week := lastNights(nights, last.Night, 7)
 	fortnight := lastNights(nights, last.Night, 14)
 	usual := lastNights(nights, last.Night, usualNights)
+	if excludeLast {
+		if before, err := AddDays(last.Night, -1); err == nil {
+			usual = lastNights(nights[:len(nights)-1], before, usualNights)
+		}
+	}
 	r.Week, r.Fortnight, r.Usual = aggregate(week), aggregate(fortnight), aggregate(usual)
 
 	if reg := spreadOf(fortnight); reg != nil {
@@ -460,7 +468,7 @@ func BuildSleepReport(ctx context.Context, conn *sql.DB, now time.Time, opts Sle
 	if err != nil {
 		return nil, err
 	}
-	r := summarize(today, nights, opts.Nights, opts.Target)
+	r := summarize(today, nights, opts.Nights, opts.Target, opts.UsualExcludesLast)
 	if opts.Weeks > 0 && !r.Empty {
 		h, err := sleepHeatmap(nights, now, opts.Weeks, opts.By)
 		if err != nil {

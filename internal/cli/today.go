@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
+	"os"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -18,16 +20,6 @@ import (
 // todayReport. Turning the report into text lives in today_render.go, so the
 // text can be tested without a database.
 
-// todayMetrics is the order and wording of the rows in the summary.
-var todayMetrics = []struct{ name, label string }{
-	{"step_count", "Steps"},
-	{"active_energy", "Active energy"},
-	{"heart_rate", "Avg heart rate"},
-	{"resting_heart_rate", "Resting heart rate"},
-	{"hrv_sdnn", "HRV"},
-	{"body_mass", "Weight"},
-}
-
 // Values of todayReport.Status.
 const (
 	statusOK       = "ok"       // the requested date has data
@@ -36,6 +28,8 @@ const (
 )
 
 // Field names below are the documented --json contract of "healthcli today".
+// The first fields are the original contract; the ones marked "added" came
+// with the one-day overview and are only ever additions (never null).
 type todayReport struct {
 	Status        string         `json:"status"`
 	RequestedDate string         `json:"requested_date"`
@@ -43,16 +37,28 @@ type todayReport struct {
 	Metrics       []todayMetric  `json:"metrics"`
 	Sleep         *todaySleep    `json:"sleep"` // null when no sleep ended on Date
 	Workouts      []todayWorkout `json:"workouts"`
+
+	Categories            []stats.CategorySummary `json:"categories"`              // added: counts per category band
+	TrackedWithoutReading []string                `json:"tracked_without_reading"` // added: tracked metrics with no reading on Date
+	SleepSummary          *stats.SleepReport      `json:"sleep_summary,omitempty"` // added: the night's full report; left out without sleep
+
+	day *stats.DayReport // what the text is drawn from; not part of the JSON
 }
 
 type todayMetric struct {
 	Metric     string          `json:"metric"`
 	Label      string          `json:"label"`
 	Unit       string          `json:"unit"`
-	Value      *float64        `json:"value"` // null when nothing was recorded that day
+	Value      *float64        `json:"value"` // always set: metrics without a reading that day are left out
 	Source     string          `json:"source,omitempty"`
-	Baseline   *baselineInfo   `json:"baseline"`   // null when Value is null
+	Baseline   *baselineInfo   `json:"baseline"`
 	Comparison *comparisonInfo `json:"comparison"` // null unless the baseline is available
+
+	Category string   `json:"category"`        // added: vitals, activity, body, mobility or other
+	Polarity string   `json:"polarity"`        // added: higher_better, lower_better or neutral
+	State    string   `json:"state"`           // added: ok or no_baseline
+	Verdict  string   `json:"verdict"`         // added: better, worse, changed or typical; "" without a baseline
+	Usual    *float64 `json:"usual,omitempty"` // added: the 28-day mean, same as baseline.mean
 }
 
 type baselineInfo struct {
@@ -98,42 +104,86 @@ var nowFunc = time.Now
 
 func newTodayCmd(opts *options) *cobra.Command {
 	var date string
+	var noColor, ascii, compact bool
+	var categoryArg []string
 	cmd := &cobra.Command{
 		Use:   "today",
 		Short: "Show a day's summary compared with your baseline",
-		Long: `Show one day (default: today, local time): steps, active energy, average and
-resting heart rate, HRV and weight, each next to its 28-day baseline; last
-night's sleep; and the day's workouts.
+		Long: `Show one day (default: today, local time) as a one-day slice of "healthcli
+overview": every metric that has a reading on that day next to your 28-day
+usual (the 28 days before it), grouped in category bands; the night of sleep
+that ended on that day; and the day's workouts.
 
-If the date has no data at all, the latest day that does is shown instead.
-Colors are used only on a terminal, and never when NO_COLOR is set.
+There is no trend line and no calendar. Each row reads LATEST, USUAL and VS
+USUAL, followed by a small range gauge (where the value sits in your usual
+range) when the terminal is wide enough. Beyond-usual values are coloured by which direction is generally
+healthy: green "better", red "worse"; metrics with no good direction are cyan
+"changed". A marker in the left gutter flags rows: "!" worse, "+" better,
+"~" changed. A metric needs 7 days of history in the 28 before the day for a
+comparison ("need 7d (have 3)" until then). That direction is a general guide,
+not medical advice.
 
-JSON output (--json) has these fields:
+Metrics with no reading on the day are not listed; one dim line counts the
+tracked ones. If the date has no data at all, the latest day that does is shown
+instead, and a dim line says so. A date in the future is an error.
+
+Sleep belongs to the date it ends on, counting sleep that ends after 18:00 as
+the next day's night (as in "healthcli sleep"); its "usual" is the nights
+before the one shown. --category vitals,sleep shows only those (vitals,
+activity, body, mobility, other, sleep, workouts) in the text and in --json
+alike, including the "no reading" count; --compact drops the blank lines and keeps a
+one-character flag in the gutter. The output is 50-100 columns wide ($COLUMNS or
+the terminal width). On a pipe, or with --ascii, only plain ASCII characters are
+used. NO_COLOR and --no-color switch colours off; FORCE_COLOR switches them on
+even for a pipe.
+
+JSON output (--json) has these fields (the ones marked * were added later):
   status          "ok", "fallback" (date had no data; showing the latest day) or "no_data"
   requested_date  the day asked for      date  the day shown
-  metrics[]       metric, label, unit, value (null if none), source,
+  metrics[]       only metrics with a reading that day (--category narrows this list,
+                  categories[], tracked_without_reading[], sleep and workouts[] alike): metric, label, unit, value, source,
                   baseline {available, days_with_data, days_needed, from, to, mean, stddev},
-                  comparison {delta, delta_pct, z, label: above|below|typical} (null without baseline)
+                  comparison {delta, delta_pct, z, label: above|below|typical} (null without baseline),
+                  *category, *polarity, *state (ok|no_baseline),
+                  *verdict (better|worse|changed|typical, "" without baseline; unlike
+                  comparison.label it ignores changes too small to matter), *usual (the
+                  baseline mean)
   sleep           null, or {night, source, asleep_seconds, core_seconds, deep_seconds,
                   rem_seconds, unspecified_seconds, awake_seconds, in_bed_seconds}
   workouts[]      activity, start, duration_seconds, energy_kcal, distance_m (null if not
-                  recorded), source`,
+                  recorded), source
+  *categories[]   name, total, better, worse, changed, typical, stale, no_baseline, no_data
+  *tracked_without_reading[]  metrics recorded on other days but not on this one
+  *sleep_summary  the night's full report ("healthcli sleep --help"); left out without sleep`,
 		Example: `  healthcli today
   healthcli today --date 2026-11-08
+  healthcli today --category vitals,sleep --compact
   healthcli today --json`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runToday(cmd, opts, date)
+			cats, err := parseCategories(categoryArg)
+			if err != nil {
+				return err
+			}
+			view := overviewView{compact: compact, categories: cats, oneDay: true}
+			return runToday(cmd, opts, date, noColor, ascii, view)
 		},
 	}
 	cmd.Flags().StringVar(&date, "date", "", "local day to show, YYYY-MM-DD (default: today)")
+	cmd.Flags().BoolVar(&noColor, "no-color", false, "never use colours")
+	cmd.Flags().BoolVar(&ascii, "ascii", false, "use plain ASCII characters only")
+	cmd.Flags().StringSliceVar(&categoryArg, "category", nil, "only these categories, comma list of\nvitals, activity, body, mobility,\nother, sleep, workouts")
+	cmd.Flags().BoolVar(&compact, "compact", false, "no blank lines between sections;\ngutter is one flag (! + ~)")
 	return cmd
 }
 
-func runToday(cmd *cobra.Command, opts *options, date string) error {
+func runToday(cmd *cobra.Command, opts *options, date string, noColor, ascii bool, view overviewView) error {
+	now := nowFunc()
 	if date == "" {
-		date = nowFunc().Format(stats.DayLayout)
+		date = now.Format(stats.DayLayout)
 	} else if err := checkDateFlag(date); err != nil {
+		return err
+	} else if err := checkNotFuture(date, now); err != nil {
 		return err
 	}
 
@@ -147,19 +197,24 @@ func runToday(cmd *cobra.Command, opts *options, date string) error {
 	if err != nil {
 		return err
 	}
+	if report, err = report.restrict(view); err != nil {
+		return err
+	}
 	out := cmd.OutOrStdout()
 	if opts.jsonOutput {
 		enc := json.NewEncoder(out)
 		enc.SetIndent("", "  ")
 		return enc.Encode(report)
 	}
-	_, err = fmt.Fprint(out, renderToday(report, style{color: colorFor(out)}))
+	view.now = now
+	ti := detectTerm(out, os.Getenv, noColor, ascii)
+	_, err = fmt.Fprint(out, renderToday(report, ti, view))
 	return err
 }
 
-// checkDateFlag validates --date. Years are limited to 1900..2999: nothing
-// real lies outside, and day arithmetic at the ends of the calendar
-// (year 0, year 10000) is not worth supporting.
+// checkDateFlag validates --date: YYYY-MM-DD. Years are limited to
+// 1900..2999: nothing real lies outside, and day arithmetic at the ends of the
+// calendar (year 0, year 10000) is not worth supporting.
 func checkDateFlag(date string) error {
 	t, err := time.Parse(stats.DayLayout, date)
 	if err != nil {
@@ -167,6 +222,15 @@ func checkDateFlag(date string) error {
 	}
 	if y := t.Year(); y < 1900 || y > 2999 {
 		return fmt.Errorf("bad --date %q: year must be between 1900 and 2999", date)
+	}
+	return nil
+}
+
+// checkNotFuture rejects a day after now's local day. "healthcli today" has
+// nothing to say about the future; "trend" can still end there.
+func checkNotFuture(date string, now time.Time) error {
+	if today := now.Format(stats.DayLayout); date > today { // "YYYY-MM-DD" strings sort like dates
+		return fmt.Errorf("bad --date %q: that day is in the future (today is %s)", date, today)
 	}
 	return nil
 }
@@ -210,63 +274,43 @@ func buildToday(ctx context.Context, conn *sql.DB, date string) (*todayReport, e
 	return report, nil
 }
 
-func (r *todayReport) isEmpty() bool {
-	if r.Sleep != nil || len(r.Workouts) > 0 {
-		return false
+func (r *todayReport) isEmpty() bool { return r.day == nil || r.day.Empty() }
+
+// collectDay reads one local day (stats.BuildDay) and shapes it for --json.
+func collectDay(ctx context.Context, conn *sql.DB, day string) (*todayReport, error) {
+	d, err := stats.BuildDay(ctx, conn, day)
+	if err != nil {
+		return nil, err
 	}
-	for _, m := range r.Metrics {
-		if m.Value != nil {
-			return false
-		}
-	}
-	return true
+	return shapeDay(d)
 }
 
-// collectDay reads all the data of one local day.
-func collectDay(ctx context.Context, conn *sql.DB, day string) (*todayReport, error) {
-	r := &todayReport{Date: day, Metrics: []todayMetric{}, Workouts: []todayWorkout{}}
-
-	for _, tm := range todayMetrics {
-		m, err := metrics.Lookup(tm.name)
+// shapeDay fills the --json fields of a report from the day's data.
+func shapeDay(d *stats.DayReport) (*todayReport, error) {
+	r := &todayReport{
+		Date: d.Day, day: d,
+		Metrics: []todayMetric{}, Workouts: []todayWorkout{},
+		Categories: d.Categories, TrackedWithoutReading: d.NoReading,
+	}
+	for _, row := range d.Metrics {
+		m, err := metricJSON(row, d.Day)
 		if err != nil {
 			return nil, err
 		}
-		row := todayMetric{Metric: m.Name, Label: tm.label, Unit: m.Unit}
-		series, err := stats.DailySeries(ctx, conn, m.Name, day, day)
-		if err != nil {
-			return nil, err
-		}
-		if len(series) > 0 {
-			v := series[0].Value
-			row.Value, row.Source = &v, series[0].Source
-			if err := addBaseline(ctx, conn, &row, day); err != nil {
-				return nil, err
-			}
-		}
-		r.Metrics = append(r.Metrics, row)
+		r.Metrics = append(r.Metrics, m)
 	}
-
-	nights, err := stats.SleepNights(ctx, conn, day, day)
-	if err != nil {
-		return nil, err
-	}
-	for _, n := range nights {
-		if n.Night == day {
-			r.Sleep = &todaySleep{
-				Night: n.Night, Source: n.Source,
-				AsleepSeconds: seconds(n.Asleep), CoreSeconds: seconds(n.Core),
-				DeepSeconds: seconds(n.Deep), REMSeconds: seconds(n.REM),
-				UnspecifiedSeconds: seconds(n.Unspecified), AwakeSeconds: seconds(n.Awake),
-				InBedSeconds: seconds(n.InBed),
-			}
+	if d.Sleep != nil {
+		n := d.Sleep.Last
+		r.SleepSummary = d.Sleep
+		r.Sleep = &todaySleep{
+			Night: n.Night, Source: n.Source,
+			AsleepSeconds: seconds(n.Asleep), CoreSeconds: seconds(n.Core),
+			DeepSeconds: seconds(n.Deep), REMSeconds: seconds(n.REM),
+			UnspecifiedSeconds: seconds(n.Unspecified), AwakeSeconds: seconds(n.Awake),
+			InBedSeconds: seconds(n.InBed),
 		}
 	}
-
-	ws, err := stats.Workouts(ctx, conn, day, day)
-	if err != nil {
-		return nil, err
-	}
-	for _, w := range ws {
+	for _, w := range d.Workouts {
 		r.Workouts = append(r.Workouts, todayWorkout{
 			Activity: w.Activity, Start: w.Start.Format(time.RFC3339),
 			DurationSeconds: seconds(w.Duration), EnergyKcal: w.EnergyKcal,
@@ -276,28 +320,88 @@ func collectDay(ctx context.Context, conn *sql.DB, day string) (*todayReport, er
 	return r, nil
 }
 
+// restrict keeps only what --category names, in the text and in --json alike:
+// the metric rows and band counts, the "no reading" footer and list, and the
+// sleep and workouts parts. It runs after the fallback decision, which looks at
+// the whole day.
+func (r *todayReport) restrict(v overviewView) (*todayReport, error) {
+	if len(v.categories) == 0 || r.day == nil {
+		return r, nil
+	}
+	d := *r.day
+	d.Metrics, d.NoReading = []stats.MetricRow{}, []string{}
+	for _, row := range r.day.Metrics {
+		if v.wants(row.Category) {
+			d.Metrics = append(d.Metrics, row)
+		}
+	}
+	d.Categories = stats.CategorySummaries(d.Metrics)
+	for _, name := range r.day.NoReading {
+		if m, err := metrics.Lookup(name); err == nil && v.wants(string(m.Category)) {
+			d.NoReading = append(d.NoReading, name)
+		}
+	}
+	if !v.wants(sleepName) {
+		d.Sleep = nil
+	}
+	if !v.wants(workoutsName) {
+		d.Workouts = []stats.Workout{}
+	}
+	out, err := shapeDay(&d)
+	if err != nil {
+		return nil, err
+	}
+	out.Status, out.RequestedDate = r.Status, r.RequestedDate
+	return out, nil
+}
+
 func seconds(d time.Duration) int64 { return int64(d / time.Second) }
 
-// addBaseline attaches the 28-day baseline and the comparison to row.
-// "Not enough data" is an expected state, not an error: it just means the
-// text says "baseline n/a".
-func addBaseline(ctx context.Context, conn *sql.DB, row *todayMetric, day string) error {
-	b, err := stats.BaselineFor(ctx, conn, row.Metric, day, stats.DefaultBaselineDays)
-	info := &baselineInfo{
-		DaysWithData: b.N, DaysNeeded: stats.MinBaselineDays, From: b.From, To: b.To,
-	}
-	row.Baseline = info
-	switch {
-	case errors.Is(err, stats.ErrNotEnoughData):
+// jsonSafe makes an overflowed daily value encodable: JSON has no Infinity, so
+// it becomes the largest float (the text shows it in the huge-number format).
+// NaN has no sensible number and becomes null.
+func jsonSafe(v *float64) *float64 {
+	if v == nil {
 		return nil
-	case err != nil:
-		return err
 	}
-	info.Available = true
-	info.Mean, info.Stddev = &b.Mean, &b.Stddev
-	c := stats.Compare(*row.Value, b)
-	row.Comparison = &comparisonInfo{Delta: c.Delta, DeltaPct: c.DeltaPct, Z: c.Z, Label: c.Label}
-	return nil
+	switch {
+	case math.IsNaN(*v):
+		return nil
+	case math.IsInf(*v, 1):
+		m := math.MaxFloat64
+		return &m
+	case math.IsInf(*v, -1):
+		m := -math.MaxFloat64
+		return &m
+	}
+	return v
+}
+
+// metricJSON turns a day's metric row into the --json shape. "Not enough
+// data" is an expected state, not an error: baseline.available is false.
+func metricJSON(row stats.MetricRow, day string) (todayMetric, error) {
+	from, err := stats.AddDays(day, -stats.DefaultBaselineDays)
+	if err != nil {
+		return todayMetric{}, err
+	}
+	to, err := stats.AddDays(day, -1)
+	if err != nil {
+		return todayMetric{}, err
+	}
+	m := todayMetric{
+		Metric: row.Metric, Label: row.Label, Unit: row.Unit, Value: jsonSafe(row.Value), Source: row.Source,
+		Category: row.Category, Polarity: row.Polarity, State: row.State, Verdict: row.Verdict, Usual: row.Mean,
+		Baseline: &baselineInfo{DaysWithData: row.BaselineDays, DaysNeeded: stats.MinBaselineDays, From: from, To: to},
+	}
+	if row.Mean != nil && row.Stddev != nil && row.Value != nil {
+		m.Baseline.Available = true
+		m.Baseline.Mean, m.Baseline.Stddev = row.Mean, row.Stddev
+		// The raw comparison, before the "too small to matter" rule that the
+		// verdict applies.
+		c := stats.Compare(*row.Value, stats.Baseline{Mean: *row.Mean, Stddev: *row.Stddev})
+		m.Comparison = &comparisonInfo{Delta: c.Delta, DeltaPct: c.DeltaPct, Z: c.Z, Label: c.Label}
+	}
+	return m, nil
 }
 
 // latestDataDay finds the newest local day with any data: the newest

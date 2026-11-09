@@ -87,7 +87,7 @@ func TestSummarizeRegularityDebtAndWindows(t *testing.T) {
 			Night: day.Format(DayLayout), Asleep: 7 * time.Hour, Start: start, End: start + 7*3600,
 		})
 	}
-	r := summarize("2024-12-20", nights, 28, 8*time.Hour)
+	r := summarize("2024-12-20", nights, 28, 8*time.Hour, false)
 	if r.Kind != "unspecified" || r.Week.Nights != 7 || r.Fortnight.Nights != 14 || r.Usual.Nights != 20 {
 		t.Errorf("windows: %s %d %d %d", r.Kind, r.Week.Nights, r.Fortnight.Nights, r.Usual.Nights)
 	}
@@ -106,11 +106,11 @@ func TestSummarizeRegularityDebtAndWindows(t *testing.T) {
 
 	// Fewer than 5 nights: no regularity. A surplus is a negative debt.
 	short := []SleepNight{{Night: "2024-12-20", Asleep: 9 * time.Hour, Start: 100, End: 100 + 9*3600}}
-	r = summarize("2024-12-20", short, 28, 8*time.Hour)
+	r = summarize("2024-12-20", short, 28, 8*time.Hour, false)
 	if r.Regularity != nil || r.Debt.LastSecs != -3600 {
 		t.Errorf("short: %+v %+v", r.Regularity, r.Debt)
 	}
-	if !summarize("2024-12-20", nil, 28, 8*time.Hour).Empty {
+	if !summarize("2024-12-20", nil, 28, 8*time.Hour, false).Empty {
 		t.Error("no nights: Empty")
 	}
 }

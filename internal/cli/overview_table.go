@@ -131,6 +131,7 @@ type tableCols struct {
 	ageW    int // 0 = no age column
 	band    bool
 	foldAge bool // stale rows put their age in the "vs usual" cell
+	short   bool // rows use their short label (a long one would be cut)
 }
 
 // metricTable draws the header and, per category, a band and its rows.
@@ -206,7 +207,19 @@ func planColumns(rows []stats.MetricRow, ti termInfo, g glyphSet, compact bool) 
 
 	// Long registry labels must not push the line past the terminal: cut the
 	// label to what is left once the other columns have their minimum.
-	c.labelW = min(c.labelW, max(ti.width-(len(indent)+c.gutter+2+c.latestW+2+deltaW+ageCol), 12))
+	// A label that does not fit is replaced by its short form for every row
+	// (when that fits) instead of being cut.
+	labelRoom := max(ti.width-(len(indent)+c.gutter+2+c.latestW+2+deltaW+ageCol), 12)
+	if c.labelW > labelRoom {
+		shortW := len("METRIC")
+		for _, r := range rows {
+			shortW = max(shortW, runeLen(r.Short))
+		}
+		if shortW <= labelRoom {
+			c.labelW, c.short = shortW, true
+		}
+	}
+	c.labelW = min(c.labelW, labelRoom)
 
 	// Width budget: drop the trend first when the line gets too long, then
 	// the baseline band.
@@ -271,19 +284,23 @@ func gutterMark(r stats.MetricRow, st style) string {
 	return "  "
 }
 
+// rowPrefix is the margin and gutter marker in front of a row. In compact mode
+// (gutter narrower than gutterW) the flag takes the margin's place.
+func rowPrefix(r stats.MetricRow, gutter int, st style) string {
+	if gutter == gutterW {
+		return indent + gutterMark(r, st)
+	}
+	flag := strings.TrimRight(gutterMark(r, st), " ")
+	if flag == "" {
+		flag = " "
+	}
+	return flag + " "
+}
+
 // metricRow draws one metric.
 func metricRow(r stats.MetricRow, c tableCols, ti termInfo, g glyphSet, st style) string {
-	line := indent
-	if c.gutter == gutterW {
-		line += gutterMark(r, st)
-	} else { // compact: the flag takes the margin's place, then one space
-		flag := strings.TrimRight(gutterMark(r, st), " ")
-		if flag == "" {
-			flag = " "
-		}
-		line = flag + " "
-	}
-	line += padRight(fit(r.Label, c.labelW, g), c.labelW) + "  " + latestCell(r, c.latestW, ti, g, st) + "  "
+	line := rowPrefix(r, c.gutter, st)
+	line += padRight(fit(dayLabel(r, c.short), c.labelW, g), c.labelW) + "  " + latestCell(r, c.latestW, ti, g, st) + "  "
 	line += deltaArea(r, g, st, c.band, c.areaW, c.foldAge)
 	if c.sparkW > 0 {
 		line += "  " + padRight(sparkText(r, c.sparkW, g), c.sparkW)

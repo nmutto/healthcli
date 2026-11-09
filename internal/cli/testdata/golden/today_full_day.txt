@@ -1,0 +1,34 @@
+ Sunday 2026-11-08 (yesterday)
+ ──────────────────────────────────────────────────────────────────────────────
+ 1 better, 2 typical vs your 28-day usual · Steps +52% · slept 7h 00m
+ VITALS 1 · ACTIVITY 2 · SLEEP
+
+   METRIC          LATEST        USUAL  VS USUAL
+
+ ━━ VITALS ━━ 1 metric · all typical ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Avg heart rate  67 bpm        69     ▼ -3%          ···●░░░···
+
+ ━━ ACTIVITY ━━ 2 metrics · 1 better ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ + Steps           11,800 steps  7,784  ▲ +52% better  ···░░░░··●
+   Active energy   640 kcal      560    ▲ +14%         ···░░░●···
+ green better / red worse / cyan changed (no good direction)
+ 3 tracked metrics have no reading on this day
+
+ ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
+       23:00                                                              06:00
+ awake                                                                         
+ REM                                                     ▓▓▓▓▓▓▓               
+ core  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒                      
+ deep                                                           ███████████████
+       23        00        01        02         03        04        05
+
+ STAT         LAST NIGHT          1 NIGHT             VS USUAL
+ Asleep       7h 00m              7h 00m              need 7 nights (have 0)
+ In bed       8h 30m              8h 30m              need 7 nights (have 0)
+ Efficiency   82%                 82%                 need 7 nights (have 0)
+ Awake        15m / 0 awakenings  15m / 0 awakenings  need 7 nights (have 0)
+ Deep         1h 30m 21%          1h 30m              need 7 nights (have 0)
+ REM          40m 10%             40m                 need 7 nights (have 0)
+ Bedtime      23:00               23:00               need 7 nights (have 0)
+ Midpoint     02:30               02:30               need 7 nights (have 0)
+ Sleep debt   1h 00m short last night vs 8h target

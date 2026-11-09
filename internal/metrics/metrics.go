@@ -58,6 +58,7 @@ func (p Polarity) Valid() bool {
 type Metric struct {
 	Name     string   // stored in samples.metric, e.g. "heart_rate"
 	Label    string   // display name, e.g. "Respiratory rate"
+	Short    string   // shorter name for narrow tables; "" = same as Label
 	Category Category // which overview section it belongs in
 	Unit     string   // canonical unit, stored in samples.unit
 	// Decimals is how many digits after the point the CLI prints for this
@@ -148,7 +149,7 @@ var known = []Metric{
 	{Name: "apple_exercise_time", Label: "Exercise time", Category: Activity, Unit: "min", Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
 	{Name: "apple_stand_time", Label: "Stand time", Category: Activity, Unit: "min", Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
 	{Name: "flights_climbed", Label: "Flights climbed", Category: Activity, Unit: "count", Polarity: HigherBetter, Daily: Sum},
-	{Name: "distance_walking_running", Label: "Walking + running distance", Category: Activity, Unit: "km", Decimals: 1, Polarity: HigherBetter, Daily: Sum,
+	{Name: "distance_walking_running", Label: "Walking + running distance", Short: "Walk + run distance", Category: Activity, Unit: "km", Decimals: 1, Polarity: HigherBetter, Daily: Sum,
 		Conversions: map[string]float64{"m": 0.001, "mi": 1.609344}},
 	{Name: "time_in_daylight", Label: "Time in daylight", Category: Activity, Unit: "min", Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
 

@@ -211,6 +211,14 @@ func wkRecent(r *stats.WorkoutsReport, g glyphSet, st style, width int, full boo
 		n = min(n, 2)
 	}
 	rows := r.Recent[:min(n, len(r.Recent))]
+	return wkSessionRows(rows, "RECENT", 10, func(w stats.Workout) string { return w.Start.Format("Mon Jan 02") }, g, st, width)
+}
+
+// wkSessionRows draws sessions as a title line and one row each:
+// when, activity, time, then distance, pace and kcal where they fit. whenW is
+// the width of the `when` text (a date for the recent list, a clock time for a
+// single day). "healthcli today" uses it too.
+func wkSessionRows(rows []stats.Workout, title string, whenW int, when func(stats.Workout) string, g glyphSet, st style, width int) []string {
 	if len(rows) == 0 {
 		return nil
 	}
@@ -222,7 +230,7 @@ func wkRecent(r *stats.WorkoutsReport, g glyphSet, st style, width int, full boo
 	cells := make([]cell, len(rows))
 	has := [3]bool{}
 	for i, w := range rows {
-		if w.DistanceM != nil {
+		if w.DistanceM != nil && *w.DistanceM > 0 { // a recorded 0 m is no distance
 			cells[i].dist = fmt.Sprintf("%.1f km", *w.DistanceM/1000)
 			cells[i].pace = wkPace(w)
 		}
@@ -233,8 +241,8 @@ func wkRecent(r *stats.WorkoutsReport, g glyphSet, st style, width int, full boo
 		has[1] = has[1] || cells[i].pace != ""
 		has[2] = has[2] || cells[i].kcal != ""
 	}
-	// date 10, name, time 7, dist 7, pace 9, kcal 8, with spaces between.
-	room := width - len(indent) - 10 - 1 - nameW - 1 - 7
+	// when, name, time 7, dist 7, pace 9, kcal 8, with spaces between.
+	room := width - len(indent) - whenW - 1 - nameW - 1 - 7
 	for _, c := range []struct {
 		i, w int
 	}{{2, 9}, {1, 10}, {0, 8}} { // drop order: kcal, pace, dist
@@ -254,9 +262,9 @@ func wkRecent(r *stats.WorkoutsReport, g glyphSet, st style, width int, full boo
 		has[c.i] = false
 	}
 
-	lines := []string{indent + st.dim("RECENT")}
+	lines := []string{indent + st.dim(title)}
 	for i, w := range rows {
-		line := indent + w.Start.Format("Mon Jan 02") + " " + padRight(fit(w.Activity, nameW, g), nameW) + " " +
+		line := indent + padRight(when(w), whenW) + " " + padRight(fit(w.Activity, nameW, g), nameW) + " " +
 			fmt.Sprintf("%7s", formatDuration(w.Duration))
 		if has[0] {
 			line += " " + fmt.Sprintf("%7s", cells[i].dist)

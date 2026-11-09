@@ -65,6 +65,7 @@ func TestDateAndDaysValidation(t *testing.T) {
 		{"trend", "steps", "--date", "9999-12-31"}, // used to loop forever
 		{"today", "--date", "0001-01-01"},
 		{"today", "--date", "1899-12-31"},
+		{"today", "--date", "2999-12-31", "--json"}, // the future: nothing to show
 	}
 	for _, args := range bad {
 		if _, _, err := run(t, append([]string{"--db", db}, args...)...); err == nil {
@@ -78,7 +79,6 @@ func TestDateAndDaysValidation(t *testing.T) {
 		{"trend", "sleep", "--days", "3650", "--json"},
 		{"trend", "steps", "--date", "1900-01-01", "--days", "3"},
 		{"trend", "steps", "--date", "2999-12-31", "--days", "3650"},
-		{"today", "--date", "2999-12-31", "--json"},
 	}
 	for _, args := range good {
 		if _, _, err := run(t, append([]string{"--db", db}, args...)...); err != nil {

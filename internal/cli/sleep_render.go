@@ -265,27 +265,26 @@ func sleepBar(r *stats.SleepReport, width int, g glyphSet, st style) []string {
 	if r.Kind == "unspecified" {
 		bar := g.stackedBarPainted([]segment{{"unspecified", 1}}, cells, st.stage)
 		mid, _ := n.MidpointMin() // the same number as the table's Midpoint row
-		note := "(stages not recorded)"
 		span := localClock(n.Start, n.StartTZ) + " " + g.arrow + " " + localClock(n.End, n.EndTZ)
-		// Everything, then without the midpoint, then without the times: the
-		// note is never cut.
-		info := ""
+		asleep := "asleep " + formatDuration(n.Asleep)
+		// The longest wording that fits: all the facts with the full note, then
+		// the short note, then fewer facts. Measured on plain text, painted last.
+		var info, note string
+	pick:
 		for _, parts := range [][]string{
-			{"asleep " + formatDuration(n.Asleep), span, "midpoint " + stats.ClockText(mid)},
-			{"asleep " + formatDuration(n.Asleep), span},
-			{"asleep " + formatDuration(n.Asleep)},
+			{asleep, span, "midpoint " + stats.ClockText(mid)},
+			{asleep, span},
+			{asleep},
 		} {
-			info = strings.Join(parts, "   ")
-			if runeLen(info)+2+runeLen(note) <= cells {
-				break
+			for _, nt := range []string{"(stages not recorded)", "(no stages)"} {
+				info, note = strings.Join(parts, "   "), nt
+				if runeLen(info)+2+runeLen(nt) <= cells {
+					break pick
+				}
 			}
 		}
-		if pad := cells - runeLen(info) - runeLen(note); pad >= 2 {
-			info += strings.Repeat(" ", pad) + st.dim(note)
-		} else {
-			info += "  " + st.dim(note)
-		}
-		return []string{sleepIndent + bar, sleepIndent + fit(info, cells, g)}
+		pad := max(cells-runeLen(info)-runeLen(note), 2)
+		return []string{sleepIndent + bar, sleepIndent + fit(info, cells-runeLen(note)-2, g) + strings.Repeat(" ", pad) + st.dim(note)}
 	}
 	segs := []segment{
 		{"awake", int64(n.Awake)}, {"rem", int64(n.REM)}, {"core", int64(n.Core)}, {"deep", int64(n.Deep)},
@@ -514,8 +513,8 @@ func sleepStatTable(r *stats.SleepReport, ti termInfo, width int, opts sleepOpts
 	nameW, lastW, weekW := 13, 20, 20
 	wide := width >= 80
 	switch {
-	case width < 60:
-		nameW, lastW, weekW = 10, 12, 12
+	case width < 60: // "Efficiency" and "Sleep debt" are 10 wide: keep a space after them
+		nameW, lastW, weekW = 11, 12, 12
 	case width < 80:
 		nameW, lastW, weekW = 11, 12, 12
 	}
