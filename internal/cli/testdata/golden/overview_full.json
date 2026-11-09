@@ -5,6 +5,8 @@
     {
       "metric": "heart_rate",
       "label": "Avg heart rate",
+      "category": "vitals",
+      "polarity": "neutral",
       "unit": "bpm",
       "state": "ok",
       "latest_day": "2026-11-08",
@@ -17,6 +19,7 @@
       "delta_pct": -2.898550724637681,
       "z": -0.9819805060619656,
       "comparison": "typical",
+      "verdict": "typical",
       "spark": [
         70,
         66,
@@ -51,6 +54,8 @@
     {
       "metric": "resting_heart_rate",
       "label": "Resting HR",
+      "category": "vitals",
+      "polarity": "lower_better",
       "unit": "bpm",
       "state": "ok",
       "latest_day": "2026-11-07",
@@ -63,6 +68,7 @@
       "delta_pct": 9.101725163593102,
       "z": 3.829790233561456,
       "comparison": "above",
+      "verdict": "worse",
       "spark": [
         59,
         61,
@@ -95,54 +101,10 @@
       ]
     },
     {
-      "metric": "step_count",
-      "label": "Steps",
-      "unit": "count",
-      "state": "ok",
-      "latest_day": "2026-11-08",
-      "age_days": 0,
-      "value": 11800,
-      "source": "Test Apple Watch",
-      "baseline_days_with_data": 28,
-      "baseline_mean": 7783.928571428572,
-      "baseline_stddev": 1165.0030655998905,
-      "delta_pct": 51.59440238586832,
-      "z": 3.4472625413251152,
-      "comparison": "above",
-      "spark": [
-        6450,
-        9600,
-        8700,
-        7800,
-        6900,
-        6000,
-        9150,
-        8250,
-        7350,
-        6450,
-        9600,
-        8700,
-        7800,
-        6900,
-        6000,
-        9150,
-        8250,
-        7350,
-        6450,
-        9600,
-        8700,
-        7800,
-        6900,
-        6000,
-        9150,
-        8250,
-        7350,
-        11800
-      ]
-    },
-    {
       "metric": "hrv_sdnn",
       "label": "HRV",
+      "category": "vitals",
+      "polarity": "higher_better",
       "unit": "ms",
       "state": "ok",
       "latest_day": "2026-11-06",
@@ -155,6 +117,7 @@
       "delta_pct": -3.508771929824561,
       "z": -0.6293167755275526,
       "comparison": "typical",
+      "verdict": "typical",
       "spark": [
         null,
         56,
@@ -187,8 +150,108 @@
       ]
     },
     {
+      "metric": "step_count",
+      "label": "Steps",
+      "category": "activity",
+      "polarity": "higher_better",
+      "unit": "count",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 11800,
+      "source": "Test Apple Watch",
+      "baseline_days_with_data": 28,
+      "baseline_mean": 7783.928571428572,
+      "baseline_stddev": 1165.0030655998905,
+      "delta_pct": 51.59440238586832,
+      "z": 3.4472625413251152,
+      "comparison": "above",
+      "verdict": "better",
+      "spark": [
+        6450,
+        9600,
+        8700,
+        7800,
+        6900,
+        6000,
+        9150,
+        8250,
+        7350,
+        6450,
+        9600,
+        8700,
+        7800,
+        6900,
+        6000,
+        9150,
+        8250,
+        7350,
+        6450,
+        9600,
+        8700,
+        7800,
+        6900,
+        6000,
+        9150,
+        8250,
+        7350,
+        11800
+      ]
+    },
+    {
+      "metric": "active_energy",
+      "label": "Active energy",
+      "category": "activity",
+      "polarity": "higher_better",
+      "unit": "kcal",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 640,
+      "source": "Test Apple Watch",
+      "baseline_days_with_data": 28,
+      "baseline_mean": 560,
+      "baseline_stddev": 90.75812380738728,
+      "delta_pct": 14.285714285714285,
+      "z": 0.8814637923739052,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        460,
+        660,
+        540,
+        420,
+        620,
+        500,
+        700,
+        580,
+        460,
+        660,
+        540,
+        420,
+        620,
+        500,
+        700,
+        580,
+        460,
+        660,
+        540,
+        420,
+        620,
+        500,
+        700,
+        580,
+        460,
+        660,
+        540,
+        640
+      ]
+    },
+    {
       "metric": "body_mass",
       "label": "Weight",
+      "category": "body",
+      "polarity": "neutral",
       "unit": "kg",
       "state": "stale",
       "latest_day": "2026-10-30",
@@ -231,53 +294,33 @@
         null,
         null
       ]
-    },
-    {
-      "metric": "active_energy",
-      "label": "Active energy",
-      "unit": "kcal",
-      "state": "ok",
-      "latest_day": "2026-11-08",
-      "age_days": 0,
-      "value": 640,
-      "source": "Test Apple Watch",
-      "baseline_days_with_data": 28,
-      "baseline_mean": 560,
-      "baseline_stddev": 90.75812380738728,
-      "delta_pct": 14.285714285714285,
-      "z": 0.8814637923739052,
-      "comparison": "typical",
-      "spark": [
-        460,
-        660,
-        540,
-        420,
-        620,
-        500,
-        700,
-        580,
-        460,
-        660,
-        540,
-        420,
-        620,
-        500,
-        700,
-        580,
-        460,
-        660,
-        540,
-        420,
-        620,
-        500,
-        700,
-        580,
-        460,
-        660,
-        540,
-        640
-      ]
     }
+  ],
+  "not_tracked": [
+    "respiratory_rate",
+    "apple_sleeping_wrist_temperature",
+    "oxygen_saturation",
+    "vo2_max",
+    "walking_heart_rate_average",
+    "heart_rate_recovery_one_minute",
+    "blood_pressure_systolic",
+    "blood_pressure_diastolic",
+    "blood_glucose",
+    "basal_energy",
+    "apple_exercise_time",
+    "apple_stand_time",
+    "flights_climbed",
+    "distance_walking_running",
+    "time_in_daylight",
+    "body_fat_percentage",
+    "body_mass_index",
+    "lean_body_mass",
+    "height",
+    "walking_speed",
+    "walking_step_length",
+    "walking_asymmetry",
+    "walking_double_support",
+    "apple_walking_steadiness"
   ],
   "sleep": {
     "state": "ok",
@@ -303,6 +346,465 @@
       "age_days": 3,
       "distance_m": 5200
     }
+  },
+  "heatmap": {
+    "metric": "step_count",
+    "unit": "count",
+    "today": "2026-11-08",
+    "from": "2026-08-17",
+    "thresholds": [
+      6450,
+      7350,
+      8250,
+      9150
+    ],
+    "days_with_data": 40,
+    "weeks": [
+      [
+        {
+          "day": "2026-08-17",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-18",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-19",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-20",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-21",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-22",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-23",
+          "value": null,
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-08-24",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-25",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-26",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-27",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-28",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-29",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-08-30",
+          "value": null,
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-08-31",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-01",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-02",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-03",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-04",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-05",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-06",
+          "value": null,
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-07",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-08",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-09",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-10",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-11",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-12",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-13",
+          "value": null,
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-14",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-15",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-16",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-17",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-18",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-19",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-20",
+          "value": null,
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-21",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-22",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-23",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-24",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-25",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-26",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-27",
+          "value": null,
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-28",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-29",
+          "value": null,
+          "level": 0
+        },
+        {
+          "day": "2026-09-30",
+          "value": 9150,
+          "level": 4
+        },
+        {
+          "day": "2026-10-01",
+          "value": 8250,
+          "level": 3
+        },
+        {
+          "day": "2026-10-02",
+          "value": 7350,
+          "level": 2
+        },
+        {
+          "day": "2026-10-03",
+          "value": 6450,
+          "level": 1
+        },
+        {
+          "day": "2026-10-04",
+          "value": 9600,
+          "level": 5
+        }
+      ],
+      [
+        {
+          "day": "2026-10-05",
+          "value": 8700,
+          "level": 4
+        },
+        {
+          "day": "2026-10-06",
+          "value": 7800,
+          "level": 3
+        },
+        {
+          "day": "2026-10-07",
+          "value": 6900,
+          "level": 2
+        },
+        {
+          "day": "2026-10-08",
+          "value": 6000,
+          "level": 1
+        },
+        {
+          "day": "2026-10-09",
+          "value": 9150,
+          "level": 4
+        },
+        {
+          "day": "2026-10-10",
+          "value": 8250,
+          "level": 3
+        },
+        {
+          "day": "2026-10-11",
+          "value": 7350,
+          "level": 2
+        }
+      ],
+      [
+        {
+          "day": "2026-10-12",
+          "value": 6450,
+          "level": 1
+        },
+        {
+          "day": "2026-10-13",
+          "value": 9600,
+          "level": 5
+        },
+        {
+          "day": "2026-10-14",
+          "value": 8700,
+          "level": 4
+        },
+        {
+          "day": "2026-10-15",
+          "value": 7800,
+          "level": 3
+        },
+        {
+          "day": "2026-10-16",
+          "value": 6900,
+          "level": 2
+        },
+        {
+          "day": "2026-10-17",
+          "value": 6000,
+          "level": 1
+        },
+        {
+          "day": "2026-10-18",
+          "value": 9150,
+          "level": 4
+        }
+      ],
+      [
+        {
+          "day": "2026-10-19",
+          "value": 8250,
+          "level": 3
+        },
+        {
+          "day": "2026-10-20",
+          "value": 7350,
+          "level": 2
+        },
+        {
+          "day": "2026-10-21",
+          "value": 6450,
+          "level": 1
+        },
+        {
+          "day": "2026-10-22",
+          "value": 9600,
+          "level": 5
+        },
+        {
+          "day": "2026-10-23",
+          "value": 8700,
+          "level": 4
+        },
+        {
+          "day": "2026-10-24",
+          "value": 7800,
+          "level": 3
+        },
+        {
+          "day": "2026-10-25",
+          "value": 6900,
+          "level": 2
+        }
+      ],
+      [
+        {
+          "day": "2026-10-26",
+          "value": 6000,
+          "level": 1
+        },
+        {
+          "day": "2026-10-27",
+          "value": 9150,
+          "level": 4
+        },
+        {
+          "day": "2026-10-28",
+          "value": 8250,
+          "level": 3
+        },
+        {
+          "day": "2026-10-29",
+          "value": 7350,
+          "level": 2
+        },
+        {
+          "day": "2026-10-30",
+          "value": 6450,
+          "level": 1
+        },
+        {
+          "day": "2026-10-31",
+          "value": 9600,
+          "level": 5
+        },
+        {
+          "day": "2026-11-01",
+          "value": 8700,
+          "level": 4
+        }
+      ],
+      [
+        {
+          "day": "2026-11-02",
+          "value": 7800,
+          "level": 3
+        },
+        {
+          "day": "2026-11-03",
+          "value": 6900,
+          "level": 2
+        },
+        {
+          "day": "2026-11-04",
+          "value": 6000,
+          "level": 1
+        },
+        {
+          "day": "2026-11-05",
+          "value": 9150,
+          "level": 4
+        },
+        {
+          "day": "2026-11-06",
+          "value": 8250,
+          "level": 3
+        },
+        {
+          "day": "2026-11-07",
+          "value": 7350,
+          "level": 2
+        },
+        {
+          "day": "2026-11-08",
+          "value": 11800,
+          "level": 5
+        }
+      ]
+    ]
   },
   "data": {
     "samples": 232,

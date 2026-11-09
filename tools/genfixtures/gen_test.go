@@ -144,3 +144,50 @@ func TestZipContainsXML(t *testing.T) {
 		t.Error("zipped XML differs from export.xml")
 	}
 }
+
+func TestSparseProfileOnlyHasStepsHeartRateWeight(t *testing.T) {
+	dir := t.TempDir()
+	if err := generate(dir, profiles["sparse"], 1, true); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(filepath.Join(dir, "export.xml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	types := map[string]bool{}
+	dec := xml.NewDecoder(bytes.NewReader(b))
+	for {
+		tok, err := dec.Token()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			t.Fatalf("not well-formed: %v", err)
+		}
+		se, ok := tok.(xml.StartElement)
+		if !ok {
+			continue
+		}
+		if se.Name.Local == "Workout" {
+			t.Fatal("sparse profile must have no workouts")
+		}
+		for _, at := range se.Attr {
+			if at.Name.Local == "type" {
+				types[at.Value] = true
+			}
+		}
+	}
+	want := map[string]bool{
+		"HKQuantityTypeIdentifierHeartRate": true,
+		"HKQuantityTypeIdentifierStepCount": true,
+		"HKQuantityTypeIdentifierBodyMass":  true,
+	}
+	if len(types) != len(want) {
+		t.Errorf("types = %v, want exactly %v", types, want)
+	}
+	for ty := range want {
+		if !types[ty] {
+			t.Errorf("missing %s", ty)
+		}
+	}
+}

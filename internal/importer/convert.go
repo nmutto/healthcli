@@ -87,7 +87,7 @@ func sampleRow(a map[string]string) (sampleData, string) {
 	if !ok {
 		return sampleData{}, reasonBadValue
 	}
-	value, err := m.ToCanonical(raw, a["unit"])
+	value, err := m.FromAppleUnit(raw, a["unit"])
 	if err != nil {
 		return sampleData{}, reasonBadUnit
 	}

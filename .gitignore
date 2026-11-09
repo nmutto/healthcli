@@ -7,7 +7,8 @@
 export.zip
 export.xml
 apple_health_export/
-# synthetic fixtures: the small sample is committed, large is generated on demand
+# synthetic fixtures: the small and sparse samples are committed, large is generated on demand
 !testdata/small/export.xml
+!testdata/sparse/export.xml
 /testdata/large/
 /completions/

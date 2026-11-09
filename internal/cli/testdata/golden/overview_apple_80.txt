@@ -1,0 +1,62 @@
+ healthcli overview                              db: demo.db · imported 1 d ago
+ ──────────────────────────────────────────────────────────────────────────────
+ 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
+
+ METRIC                      LATEST          VS 28-DAY USUAL               AGE
+ VITALS
+ Avg heart rate              76 bpm          ▲ +2%             ···░░░●···  today
+ Resting HR                  60 bpm          ▲ +6% worse       ···░░░░●··  today
+ HRV                         46 ms           ▼ -4%             ···░●░░···  today
+ Respiratory rate            15.6/min        ▲ +9% changed     ···░░░░●··  today
+ Wrist temperature           36.0 °C         – 0%              ···░░●░···  today
+ Blood oxygen                97%             – 0%              ···░░●░···  today
+ VO2 max                     41.9 mL/kg/min  stale                         6 d
+ Walking heart rate          90 bpm          ▼ -4% better      ···●░░░···  today
+ Heart rate recovery         26 bpm          need 7d (have 6)              1 d
+ ACTIVITY
+ Steps                       21,999 steps    ▲ +10% better     ···░░░●···  today
+ Active energy               880 kcal        ▲ +10% better     ···░░░●···  today
+ Resting energy              1,730 kcal      ▲ +2%             ···░░░●···  today
+ Exercise time               43 min          ▲ +16%            ···░░●░···  today
+ Stand time                  364 min         ▼ -12%            ···░●░░···  today
+ Flights climbed             8 flights       ▼ -39%            ···●░░░···  today
+ Walking + running distance  6.5 km          – 0%              ···░░●░···  today
+ Time in daylight            53 min          ▲ +14%            ···░░●░···  today
+ BODY
+ Weight                      78.5 kg         need 7d (have 4)              1 d
+ Body fat                    18.5%           need 7d (have 4)              1 d
+ BMI                         24.0            need 7d (have 4)              1 d
+ Lean body mass              63.2 kg         need 7d (have 4)              1 d
+ MOBILITY
+ Walking speed               5.5 km/h        ▲ +2%             ···░░●░···  today
+ Step length                 73 cm           ▲ +2%             ···░░░●···  today
+ Walking asymmetry           4.9%            ▲ +38% worse      ···░░░░●··  today
+ Double support time         30.7%           ▲ +7% worse       ···░░░░●··  today
+ Walking steadiness          94%             stale                         6 d
+ green better / red worse / cyan changed (no good direction)
+
+ SLEEP    7h 01m asleep · 7h 30m in bed · last night
+ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████░░░
+ core 4h 16m   REM 1h 18m   deep 1h 27m   awake 17m
+ WORKOUTS 7 in 30 d · 6h 13m · 3,243 kcal · latest: running 8.5 km, 1 d ago
+
+ CALENDAR step count per day, 12 weeks to 2026-11-08
+     Aug Sep     Oct     Nov
+ Mon · · · · · · · · · · ▁ ▁
+ Tue · · · · · · · · · · ▇ ▅
+ Wed · · · · · · · · · · ▇ ▃
+ Thu · · · · · · · · · · ▅ ▃
+ Fri · · · · · · · · · · ▅ █
+ Sat · · · · · · · · · · ▃ █
+ Sun · · · · · · · · · · ▁ ▇ ◂
+
+ ▁ ≤17,731  ▃ ≤19,464  ▅ ≤20,972  ▇ ≤21,999  █ >21,999
+ · no data   ◂ today   steps per day
+
+ DATA     1,271 samples, 14 sleep nights
+          range: 2026-10-26 → 2026-11-08
+          sources: Watch 74%, iPhone 26%
+          last import: 1,468 added · 9 duplicates
+          skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
+          days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13
+ not tracked in your data: 4 metrics

@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
+	"sort"
 	"time"
 
 	"github.com/nmutto/healthcli/internal/metrics"
@@ -33,8 +35,9 @@ const (
 	StateNoData     = "no_data"     // this metric has never been recorded
 )
 
-// labels are the short names shown in the table. A metric missing here falls
-// back to its stored name, so adding a metric never breaks the overview.
+// labels are short table names that override the registry label where the
+// registry one is too long for a narrow table. A metric missing here uses its
+// registry label (metrics.Metric.Label).
 var labels = map[string]string{
 	"step_count":         "Steps",
 	"active_energy":      "Active energy",
@@ -46,19 +49,39 @@ var labels = map[string]string{
 
 // Overview is the whole report. The json tags are the documented --json shape.
 type Overview struct {
-	Today    string          `json:"today"` // the local day the report is relative to
-	Empty    bool            `json:"empty"` // true when the database holds no data at all
-	Metrics  []MetricRow     `json:"metrics"`
-	Sleep    OverviewSleep   `json:"sleep"`
-	Workouts WorkoutsSummary `json:"workouts"`
-	Data     DataHealth      `json:"data"`
+	Today   string      `json:"today"`   // the local day the report is relative to
+	Empty   bool        `json:"empty"`   // true when the database holds no data at all
+	Metrics []MetricRow `json:"metrics"` // only metrics that have samples
+	// NotTracked lists the registry metrics with no samples at all. The text
+	// output prints just their count.
+	NotTracked []string        `json:"not_tracked"`
+	Sleep      OverviewSleep   `json:"sleep"`
+	Workouts   WorkoutsSummary `json:"workouts"`
+	// Heatmap is the activity calendar, or null when there is no activity
+	// metric with data (or the caller asked for 0 weeks).
+	Heatmap *Heatmap   `json:"heatmap"`
+	Data    DataHealth `json:"data"`
 }
+
+// OverviewOptions are the knobs of BuildOverview.
+type OverviewOptions struct {
+	HeatWeeks  int    // weeks of heatmap; 0 leaves the heatmap out
+	HeatMetric string // metric for the heatmap; "" picks one automatically
+}
+
+// DefaultOverviewOptions is what "healthcli overview" does without flags.
+func DefaultOverviewOptions() OverviewOptions { return OverviewOptions{HeatWeeks: 12} }
+
+// autoHeatmapMetrics are tried in this order when no heatmap metric is given.
+var autoHeatmapMetrics = []string{"step_count", "apple_exercise_time", "active_energy"}
 
 // MetricRow is one metric, anchored on its OWN newest day (not on "today"),
 // so a metric that was not recorded today still shows its last value.
 type MetricRow struct {
 	Metric    string   `json:"metric"`
 	Label     string   `json:"label"`
+	Category  string   `json:"category"`
+	Polarity  string   `json:"polarity"` // higher_better, lower_better or neutral
 	Unit      string   `json:"unit"`
 	State     string   `json:"state"`
 	LatestDay string   `json:"latest_day,omitempty"` // empty for no_data
@@ -74,6 +97,10 @@ type MetricRow struct {
 	DeltaPct     *float64 `json:"delta_pct"`
 	Z            *float64 `json:"z"`
 	Comparison   *string  `json:"comparison"` // above, below or typical
+	// Verdict is Comparison seen through Polarity: better, worse, changed
+	// (beyond usual, but the metric has no good direction) or typical.
+	// Empty unless State is ok. See Verdict for the caveat.
+	Verdict string `json:"verdict,omitempty"`
 
 	// Spark is one value per day for the last SparkDays days ending today
 	// (null = no data that day).
@@ -146,19 +173,57 @@ type Gap struct {
 	Span    int    `json:"span_days"`
 }
 
+// MinRelativeChange is the smallest relative change (percent) that counts as
+// better / worse / changed when the metric has no MinDelta of its own.
+const MinRelativeChange = 2.0
+
+// futureSlack is how far past "now" a sample may start and still count: a
+// device in another time zone can be a day ahead. Later samples are ignored.
+const futureSlack = 24 * time.Hour
+
+// meaningful says whether a change is big enough to matter, on top of being
+// beyond one standard deviation: a tiny wobble in a very steady metric is
+// still "typical".
+func meaningful(m metrics.Metric, c Comparison) bool {
+	if m.MinDelta > 0 {
+		return math.Abs(c.Delta) >= m.MinDelta
+	}
+	return math.Abs(c.DeltaPct) >= MinRelativeChange
+}
+
+// isFinite reports whether every number is a real, finite float.
+func isFinite(xs ...float64) bool {
+	for _, x := range xs {
+		if math.IsNaN(x) || math.IsInf(x, 0) {
+			return false
+		}
+	}
+	return true
+}
+
 // BuildOverview reads everything the overview shows. now decides what
 // "today" is (its own local calendar date), which keeps tests deterministic.
-func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time) (*Overview, error) {
+func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time, opts OverviewOptions) (*Overview, error) {
 	today := now.Format(DayLayout)
-	o := &Overview{Today: today, Metrics: []MetricRow{}}
+	o := &Overview{Today: today, Metrics: []MetricRow{}, NotTracked: []string{}}
 
 	for _, name := range metrics.Names() {
-		row, err := buildRow(ctx, conn, name, today)
+		row, err := buildRow(ctx, conn, name, today, now.Add(futureSlack).Unix())
 		if err != nil {
 			return nil, err
 		}
+		// Show only what the user's data contains: a device that never records
+		// (say) respiratory rate gets no empty row for it, only a count.
+		if row.State == StateNoData {
+			o.NotTracked = append(o.NotTracked, name)
+			continue
+		}
 		o.Metrics = append(o.Metrics, row)
 	}
+	// Group by category; SliceStable keeps registry order inside a group.
+	sort.SliceStable(o.Metrics, func(i, j int) bool {
+		return categoryRank(o.Metrics[i].Category) < categoryRank(o.Metrics[j].Category)
+	})
 
 	var err error
 	if o.Sleep, err = buildSleep(ctx, conn, today); err != nil {
@@ -167,11 +232,86 @@ func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time) (*Overview,
 	if o.Workouts, err = buildWorkouts(ctx, conn, today); err != nil {
 		return nil, err
 	}
-	if o.Data, err = buildDataHealth(ctx, conn, o.Metrics); err != nil {
+	if o.Data, err = buildDataHealth(ctx, conn, o.Metrics, now); err != nil {
+		return nil, err
+	}
+	if o.Heatmap, err = buildOverviewHeatmap(ctx, conn, o, now, opts); err != nil {
 		return nil, err
 	}
 	o.Empty = o.Data.Samples == 0 && o.Sleep.State == StateNoData && o.Workouts.Count == 0
 	return o, nil
+}
+
+// categoryRank is the display order of the groups.
+func categoryRank(c string) int {
+	for i, x := range []metrics.Category{metrics.Vitals, metrics.Activity, metrics.Body, metrics.Mobility, metrics.Other} {
+		if string(x) == c {
+			return i
+		}
+	}
+	return 99
+}
+
+// buildOverviewHeatmap picks the activity metric (the requested one, else the
+// first of autoHeatmapMetrics that has data) and builds its grid. It returns
+// nil, not an error, when there is nothing to draw.
+func buildOverviewHeatmap(ctx context.Context, conn *sql.DB, o *Overview, now time.Time, opts OverviewOptions) (*Heatmap, error) {
+	if opts.HeatWeeks <= 0 {
+		return nil, nil
+	}
+	has := map[string]bool{}
+	for _, r := range o.Metrics {
+		has[r.Metric] = true
+	}
+	candidates := autoHeatmapMetrics
+	if opts.HeatMetric != "" {
+		m, err := metrics.Lookup(opts.HeatMetric)
+		if err != nil {
+			return nil, err
+		}
+		candidates = []string{m.Name}
+	}
+	for _, name := range candidates {
+		if !has[name] {
+			continue
+		}
+		h, err := BuildHeatmap(ctx, conn, name, min(opts.HeatWeeks, MaxHeatmapWeeks), now)
+		if err != nil {
+			return nil, err
+		}
+		if !h.Empty() {
+			return h, nil
+		}
+	}
+	return nil, nil
+}
+
+// Verdicts: a metric's comparison seen through its polarity.
+const (
+	VerdictBetter  = "better"
+	VerdictWorse   = "worse"
+	VerdictChanged = "changed" // beyond usual, but the metric has no good direction
+	VerdictTypical = "typical"
+)
+
+// Verdict turns a comparison (above, below or typical) into better / worse /
+// changed / typical for a metric of polarity p.
+//
+// Polarity is a general guide for the general population, not medical advice:
+// what is healthy for one person (an athlete's low resting heart rate,
+// deliberate weight change) can differ, which is why neutral metrics are only
+// ever "changed".
+func Verdict(p metrics.Polarity, comparison string) string {
+	if comparison != Above && comparison != Below {
+		return VerdictTypical
+	}
+	switch {
+	case p == metrics.HigherBetter && comparison == Above, p == metrics.LowerBetter && comparison == Below:
+		return VerdictBetter
+	case p == metrics.HigherBetter || p == metrics.LowerBetter:
+		return VerdictWorse
+	}
+	return VerdictChanged
 }
 
 // daysBetween is the number of calendar days from a to b (negative if b is
@@ -196,18 +336,18 @@ func ageOf(today, day string) (int, error) {
 	return max(n, 0), err
 }
 
-func buildRow(ctx context.Context, conn *sql.DB, name, today string) (MetricRow, error) {
+func buildRow(ctx context.Context, conn *sql.DB, name, today string, maxStart int64) (MetricRow, error) {
 	m, err := metrics.Lookup(name)
 	if err != nil {
 		return MetricRow{}, err
 	}
 	label := labels[m.Name]
 	if label == "" {
-		label = m.Name
+		label = m.Label
 	}
-	row := MetricRow{Metric: m.Name, Label: label, Unit: m.Unit, State: StateNoData, Spark: []*float64{}}
+	row := MetricRow{Metric: m.Name, Label: label, Category: string(m.Category), Polarity: string(m.Polarity), Unit: m.Unit, State: StateNoData, Spark: []*float64{}}
 
-	latest, err := LatestSample(ctx, conn, m.Name)
+	latest, err := latestSampleUpTo(ctx, conn, m.Name, maxStart)
 	if errors.Is(err, ErrNoData) {
 		return row, nil
 	}
@@ -228,7 +368,12 @@ func buildRow(ctx context.Context, conn *sql.DB, name, today string) (MetricRow,
 		return row, nil // cannot happen: the sample is on that day
 	}
 	v := daily[0].Value
-	row.Value, row.Source = &v, daily[0].Source
+	row.Source = daily[0].Source
+	if !isFinite(v) { // a sum that overflowed: no usable number to show or compare
+		row.State = StateNoBaseline
+		return row, nil
+	}
+	row.Value = &v
 
 	if row.Spark, err = sparkValues(ctx, conn, m.Name, today, latest.Day); err != nil {
 		return MetricRow{}, err
@@ -247,11 +392,19 @@ func buildRow(ctx context.Context, conn *sql.DB, name, today string) (MetricRow,
 	if err != nil {
 		return MetricRow{}, err
 	}
+	if !isFinite(b.Mean, b.Stddev) { // the baseline overflowed: cannot compare
+		row.State = StateNoBaseline
+		return row, nil
+	}
 	c := Compare(v, b)
 	lab := c.Label
+	if lab != Typical && !meaningful(m, c) {
+		lab = Typical // beyond one stddev, but too small a change to matter
+	}
 	row.State = StateOK
 	row.Mean, row.Stddev = &b.Mean, &b.Stddev
 	row.DeltaPct, row.Z, row.Comparison = &c.DeltaPct, &c.Z, &lab
+	row.Verdict = Verdict(m.Polarity, lab)
 	return row, nil
 }
 
@@ -277,7 +430,7 @@ func sparkValues(ctx context.Context, conn *sql.DB, metric, today, latestDay str
 		if err != nil {
 			return nil, err
 		}
-		if v, ok := byDay[day]; ok {
+		if v, ok := byDay[day]; ok && isFinite(v) {
 			out[i] = &v
 		}
 	}
@@ -339,7 +492,7 @@ func buildWorkouts(ctx context.Context, conn *sql.DB, today string) (WorkoutsSum
 	return w, nil
 }
 
-func buildDataHealth(ctx context.Context, conn *sql.DB, rows []MetricRow) (DataHealth, error) {
+func buildDataHealth(ctx context.Context, conn *sql.DB, rows []MetricRow, now time.Time) (DataHealth, error) {
 	d := DataHealth{SourceCount: map[string]int64{}, Gaps: []Gap{}}
 
 	// Rows per source, grouped into classes (a user can have several iPhones).
@@ -370,7 +523,7 @@ func buildDataHealth(ctx context.Context, conn *sql.DB, rows []MetricRow) (DataH
 	var first, last sql.NullString // NULL when the table is empty
 	err = conn.QueryRowContext(ctx, `
 		SELECT min(date(start_ts + tz_offset, 'unixepoch')), max(date(start_ts + tz_offset, 'unixepoch'))
-		FROM samples`).Scan(&first, &last)
+		FROM samples WHERE start_ts <= ?`, now.Add(futureSlack).Unix()).Scan(&first, &last)
 	if err != nil {
 		return d, fmt.Errorf("stats: sample range: %w", err)
 	}

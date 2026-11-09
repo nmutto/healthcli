@@ -1,19 +1,36 @@
  healthcli overview                              db: demo.db | imported 3 d ago
  ------------------------------------------------------------------------------
- 2 of 5 readings differ from your 28-day usual | Resting HR +9% | slept 7h 00m
+ 1 better, 1 worse, 3 typical vs your 28-day usual | Resting HR +9%
 
- METRIC          LATEST        VS 28-DAY USUAL       20 DAYS               AGE
- Avg heart rate  67 bpm        v -3%     ...*===...  .+@-#:*.+@-#:*.+@-#:  today
- Resting HR      66 bpm        ^ +9%     ...====..*  -+:=.-+:=.-+:=.-+:@_  1 d
- Steps           11,800 steps  ^ +52%    ...====..*  -:+=-:.+=-:+=-:.+=-@  today
- HRV             55 ms         v -4%     ...=*==...  _.+@_#-#_*:+_+@=_-__  2 d
- Weight          72.4 kg       stale                 ___@___.__._________  9 d
- Active energy   640 kcal      ^ +14%    ...===*...  :#=.*-@+:#=.*-@+:#=#  today
+ METRIC          LATEST        VS 28-DAY USUAL               AGE
+ VITALS
+ Avg heart rate  67 bpm        v -3%             ...*===...  today
+ Resting HR      66 bpm        ^ +9% worse       ...====..*  1 d
+ HRV             55 ms         v -4%             ...=*==...  2 d
+ ACTIVITY
+ Steps           11,800 steps  ^ +52% better     ...====..*  today
+ Active energy   640 kcal      ^ +14%            ...===*...  today
+ BODY
+ Weight          72.4 kg       stale                         9 d
+ green better / red worse / cyan changed (no good direction)
 
  SLEEP    7h 00m asleep | 8h 30m in bed | last night
  ----------------------------------------------------+++++++################...
  core 4h 50m   REM 40m   deep 1h 30m   awake 15m
  WORKOUTS 3 in 30 d | 2h 18m | 1,560 kcal | latest: running 5.2 km, 3 d ago
+
+ CALENDAR step count per day, 12 weeks to 2026-11-08
+     Aug Sep     Oct     Nov
+ Mon _ _ _ _ _ _ _ # . + . +
+ Tue _ _ _ _ _ _ _ + @ - # -
+ Wed _ _ _ _ _ _ # - # . + .
+ Thu _ _ _ _ _ _ + . + @ - #
+ Fri _ _ _ _ _ _ - # - # . +
+ Sat _ _ _ _ _ _ . + . + @ -
+ Sun _ _ _ _ _ _ @ - # - # @ <
+
+ . <=6,450  - <=7,350  + <=8,250  # <=9,150  @ >9,150
+ _ no data   < today   steps per day
 
  DATA     232 samples, 1 sleep night
           range: 2026-09-30 -> 2026-11-08
@@ -21,3 +38,4 @@
           last import: 1,230 added | 40 duplicates
           skipped: 5 (unknown_type 3, bad_date 1, bad_value 1)
           days missing: Weight 9 of 13, HRV 6 of 25
+ not tracked in your data: 24 metrics

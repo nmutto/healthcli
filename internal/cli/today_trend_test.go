@@ -275,7 +275,7 @@ func TestFormatting(t *testing.T) {
 			t.Errorf("formatDuration(%v) = %q, want %q", d, got, want)
 		}
 	}
-	if got := formatSigned(-0.04, "kg"); got != "0.0" {
+	if got := formatSigned(-0.04, "body_mass"); got != "0.0" {
 		t.Errorf("formatSigned tiny = %q", got)
 	}
 }

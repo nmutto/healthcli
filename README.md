@@ -83,32 +83,50 @@ One screen with every metric, last night's sleep, recent workouts and how comple
 
 ```console
 $ healthcli --db demo.db overview
- healthcli overview                            db: demo.db · imported today
+ healthcli overview                              db: demo.db · imported 1 d ago
  ──────────────────────────────────────────────────────────────────────────────
- 4 of 5 readings differ from your 28-day usual · Resting HR +6% · slept 7h 01m
+ 3 typical vs your 28-day usual
 
- METRIC          LATEST        VS 28-DAY USUAL       20 DAYS               AGE
- Avg heart rate  76 bpm        ▲ +2%     ···░░░●···  ······▄▁▄▄▇▆▆▅▇▆█▆▆█  today
- Resting HR      60 bpm        ▲ +6%     ···░░░░●··  ······▁▂▃▅▆▇█▁▂▃▅▆▇█  today
- Steps           21,999 steps  ▲ +10%    ···░░░●···  ······▁▇▆▅▆▃▂▂▅▄▄█▇▇  today
- HRV             46 ms         ▼ -4%     ···░●░░···  ······▂▅▃▁▁▂▆▆▄▄█▃█▃  today
- Weight          78.5 kg       baseline 4/7 days     ······▆··▆··▃··█··▁·  1 d
- Active energy   880 kcal      ▲ +10%    ···░░░●···  ······▁▇▆▅▆▃▂▂▅▄▄█▇▇  today
+ METRIC          LATEST        VS 28-DAY USUAL               AGE
+ VITALS
+ Avg heart rate  79 bpm        ▼ -1%             ···░●░░···  today
+ ACTIVITY
+ Steps           19,415 steps  ▲ +2%             ···░░●░···  today
+ BODY
+ Weight          83.6 kg       ▲ +1%             ···░░░░●··  today
+ green better / red worse / cyan changed (no good direction)
 
- SLEEP    7h 01m asleep · 7h 30m in bed · last night
- ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████░░░
- core 4h 16m   REM 1h 18m   deep 1h 27m   awake 17m
- WORKOUTS 7 in 30 d · 6h 13m · 3,243 kcal · latest: running 8.5 km, 1 d ago
+ SLEEP    no sleep recorded in the last 30 days
+ WORKOUTS none in the last 30 days
 
- DATA     1,035 samples, 14 sleep nights
-          range: 2026-10-27 → 2026-11-09
-          sources: Watch 78%, iPhone 22%
-          last import: 1,232 added · 9 duplicates
-          skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
-          days missing: Weight 8 of 13
+ CALENDAR step count per day, 12 weeks to 2026-11-08
+     Aug Sep     Oct     Nov
+ Mon · · · · · · · · ▁ ▇ ▃ ▁
+ Tue · · · · · · · · ▇ █ ▃ █
+ Wed · · · · · · · · ▃ ▅ ▁ ▁
+ Thu · · · · · · · · ▇ ▃ ▃ ▇
+ Fri · · · · · · · · ▇ █ ▅ ▁
+ Sat · · · · · · · · ▁ ▇ ▅ █
+ Sun · · · · · · · · ▃ ▅ █ ▅ ◂
+
+ ▁ ≤16,838  ▃ ≤18,863  ▅ ≤19,498  ▇ ≤21,359  █ >21,359
+ · no data   ◂ today   steps per day
+
+ DATA     1,802 samples
+          range: 2026-10-12 → 2026-11-08
+          sources: other 100%
+          last import: 1,802 added · 0 duplicates
+          days missing: Weight 18 of 28
+ not tracked in your data: 27 metrics
 ```
 
-This example is **synthetic** (generated fixture data, with dates shifted to look current). Each metric is compared with its own 28-day usual and shows its own newest day and age. Colour, when your terminal supports it, only marks "unusual", never "good" or "bad". On a pipe, or with `--ascii`, it uses plain ASCII; `--no-color` and `NO_COLOR` turn colour off, and `--json` prints the same report as JSON.
+This example is **synthetic**: it is the real output for the generated "sparse" fixture (a fitness band that records only heart rate, steps and weight), with dates shifted to look current. A device that records more gets more rows, grouped under small VITALS / ACTIVITY / BODY / MOBILITY headings; metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`).
+
+Each metric is compared with its own 28-day usual and shows its own newest day and age. When a value is beyond your usual (1+ standard deviation, and a change of at least 2% or a small per-metric minimum) it is coloured by which direction is generally healthy for that metric: **green** and the word "better", **red** and "worse". Metrics with no good direction (weight, respiratory rate, wrist temperature) are **cyan** and carry the word "changed". Every beyond-usual row has its word, so nothing depends on colour; typical rows are plain. Stale readings are yellow. The legend is the line under the table.
+
+> The better/worse direction is a general guide, not medical advice. What is healthy for one person (an athlete's low resting heart rate, deliberate weight change) can differ.
+
+The calendar after the table shows daily steps (else exercise time, else active energy); `--weeks N` sets its length (default 12, `0` hides it) and `--heatmap METRIC` picks another metric. On a pipe, or with `--ascii`, the output is plain ASCII; `--no-color` and `NO_COLOR` turn colour off, and `--json` prints the same report as JSON, including each metric's polarity and verdict, `not_tracked` and the heatmap grid.
 
 A day's summary against your recent baseline:
 
@@ -168,6 +186,46 @@ $ healthcli --db demo.db query "SELECT metric, count(*) AS n FROM samples GROUP 
   {"metric": "step_count", "n": 448},
   {"metric": "heart_rate", "n": 330}
 ]
+```
+
+### Calendar heatmap
+
+`healthcli heatmap [metric]` draws a GitHub-style calendar: a row per weekday, a column per week, newest on the right. Shades are the metric's own quintiles over the window, and the legend gives the actual cut points. A day without data is a dot, never the lowest shade; `◂` marks today. The default metric is `step_count`, `--weeks` sets the maximum (default 12; a narrow terminal drops the oldest weeks), and `--json` prints the grid.
+
+The output below is from a synthetic test database (made-up step counts), not real data:
+
+```console
+$ healthcli heatmap
+step count per day, 12 weeks to 2026-11-04
+    Aug Sep     Oct     Nov
+Mon █ ▇ ▅ ▃ ▁ ▇ ▅ ▃ ▁ █ ▅ ▃
+Tue ▇ ▅ ▃ ▁ █ ▅ ▃ ▁ █ ▇ ▅ ▁
+Wed ▅ ▃ ▁ █ ▇ ▅ ▁ █ ▇ ▅ ▃ ▁ ◂
+Thu ▅ ▁ █ ▇ ▅ ▃ ▁ ▇ ▅ ▃ ▁
+Fri ▃ ▁ ▇ ▅ ▃ ▁ █ ▅ ▃ ▁ █
+Sat ▁ █ ▅ ▃ ▁ █ ▇ ▅ ▁ █ ▇
+Sun █ ▇ ▅ ▁ █ ▇ ▅ ▃ ▁ ▇ ▅
+
+▁ ≤4,950  ▃ ≤6,900  ▅ ≤9,500  ▇ ≤11,450  █ >11,450
+· no data   ◂ today   steps per day
+```
+
+On a pipe or with `--ascii` the same chart uses plain characters:
+
+```console
+$ healthcli heatmap --ascii
+step count per day, 12 weeks to 2026-11-04
+    Aug Sep     Oct     Nov
+Mon @ # + - . # + - . @ + -
+Tue # + - . @ + - . @ # + .
+Wed + - . @ # + . @ # + - . <
+Thu + . @ # + - . # + - .
+Fri - . # + - . @ + - . @
+Sat . @ + - . @ # + . @ #
+Sun @ # + . @ # + - . # +
+
+. <=4,950  - <=6,900  + <=9,500  # <=11,450  @ >11,450
+_ no data   < today   steps per day
 ```
 
 ### Where is my data?

@@ -1,0 +1,12 @@
+step count per day, 12 weeks to 2026-11-04
+    Aug Sep     Oct     Nov
+Mon · ▁ · · ▃ · · ▅ · · ▇ ·
+Tue ▃ · · ▅ · · ▅ · · ▇ · ▃
+Wed · · ▅ · · ▇ · · █ · · ▁ ◂
+Thu · ▅ · · ▇ · · █ · · ▁
+Fri ▇ · · █ · · ▁ · · ▃ ·
+Sat · · █ · · ▁ · · ▃ · ·
+Sun · ▁ · · ▃ · · ▅ · · ▅
+
+▁ ≤4,800  ▃ ≤6,400  ▅ ≤8,800  ▇ ≤10,400  █ >10,400
+· no data   ◂ today   steps per day

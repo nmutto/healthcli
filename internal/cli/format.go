@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/nmutto/healthcli/internal/metrics"
 )
 
 // style decides whether text gets ANSI colors. The render functions take a
@@ -39,13 +41,29 @@ func (st style) wrap(code, s string) string {
 	return "\x1b[" + code + "m" + s + "\x1b[0m"
 }
 
-func (st style) bold(s string) string   { return st.wrap("1", s) }
-func (st style) dim(s string) string    { return st.wrap("2", s) }
-func (st style) cyan(s string) string   { return st.wrap("36", s) }
-func (st style) yellow(s string) string { return st.wrap("33", s) }
+// The 16-colour ANSI codes the output uses, all in one place. Colour is never
+// the only carrier of meaning: arrows and words say the same thing.
+const (
+	ansiBold   = "1"
+	ansiDim    = "2"
+	ansiRed    = "31" // worse than usual
+	ansiGreen  = "32" // better than usual
+	ansiYellow = "33" // stale data
+	ansiCyan   = "36" // changed, and no good direction
+)
+
+func (st style) bold(s string) string   { return st.wrap(ansiBold, s) }
+func (st style) dim(s string) string    { return st.wrap(ansiDim, s) }
+func (st style) cyan(s string) string   { return st.wrap(ansiCyan, s) }
+func (st style) yellow(s string) string { return st.wrap(ansiYellow, s) }
+func (st style) green(s string) string  { return st.wrap(ansiGreen, s) }
+func (st style) red(s string) string    { return st.wrap(ansiRed, s) }
 
 // formatInt prints a whole number with thousands separators: 12345 -> "12,345".
 func formatInt(v float64) string {
+	if huge(v) {
+		return formatHuge(v)
+	}
 	n := int64(math.Round(v))
 	neg := n < 0
 	if neg {
@@ -66,6 +84,22 @@ func formatInt(v float64) string {
 	return b.String()
 }
 
+// maxPlain is the largest magnitude printed in full; beyond it numbers switch
+// to scientific notation so a freak value cannot widen a column (and int64
+// conversion cannot overflow).
+const maxPlain = 1e15
+
+// huge reports a number that cannot be printed in full: too big, NaN or Inf.
+func huge(v float64) bool { return math.IsNaN(v) || math.IsInf(v, 0) || math.Abs(v) >= maxPlain }
+
+// formatHuge prints such a number: "1.00e+300", or "-" for NaN and Inf.
+func formatHuge(v float64) string {
+	if math.IsNaN(v) || math.IsInf(v, 0) {
+		return "-"
+	}
+	return strconv.FormatFloat(v, 'e', 2, 64)
+}
+
 // formatDuration prints "45m" under an hour and "7h 12m" from an hour up.
 // Rounding to whole minutes first avoids "6h 60m".
 func formatDuration(d time.Duration) string {
@@ -76,26 +110,28 @@ func formatDuration(d time.Duration) string {
 	return fmt.Sprintf("%dh %02dm", mins/60, mins%60)
 }
 
-// decimals is how many digits after the point each unit gets. Counts and
-// energy are whole numbers; a heart rate of 61.4 bpm is false precision;
-// body weight is shown to 0.1 kg like a bathroom scale does.
-func decimals(unit string) int {
-	if unit == "kg" {
-		return 1
+// formatValue prints a metric value with the digits its registry entry calls
+// for (Metric.Decimals) and thousands separators (no unit suffix).
+func formatValue(v float64, metric string) string {
+	if huge(v) {
+		return formatHuge(v)
 	}
-	return 0
-}
-
-// formatValue prints a metric value with the digits and separators its unit
-// calls for (no unit suffix).
-func formatValue(v float64, unit string) string {
-	if d := decimals(unit); d > 0 {
+	if d := decimals(metric); d > 0 {
 		return strconv.FormatFloat(v, 'f', d, 64)
 	}
 	return formatInt(v)
 }
 
-// unitLabel is the unit as printed. Apple's "count" is meaningless to read,
+// decimals is the registry's digits after the point for a metric; an unknown
+// name gets 0.
+func decimals(metric string) int {
+	if m, err := metrics.Lookup(metric); err == nil {
+		return m.Decimals
+	}
+	return 0
+}
+
+// unitLabel is the unit as stored. Apple's "count" is meaningless to read,
 // so step counts say "steps".
 func unitLabel(metric, unit string) string {
 	if metric == "step_count" {
@@ -104,11 +140,52 @@ func unitLabel(metric, unit string) string {
 	return unit
 }
 
+// displayUnit is the unit as a person writes it: "%", "°C", "/min". It is
+// display only (stored units never change) and may be empty, as for BMI where
+// the label already says it. glued units print with no space: "97%".
+func displayUnit(metric, unit string, unicode bool) (text string, glued bool) {
+	switch unit {
+	case "percent":
+		return "%", true
+	case "degC":
+		if unicode {
+			return "°C", false
+		}
+		return "C", false
+	case "breaths/min":
+		return "/min", true
+	case "kg/m2":
+		return "", false
+	case "count":
+		switch metric {
+		case "step_count":
+			return "steps", false
+		case "flights_climbed":
+			return "flights", false
+		}
+		return "", false
+	}
+	return unit, false
+}
+
+// withUnit is value and display unit together: "97%", "36.4 °C", "7,412 steps".
+func withUnit(v float64, metric, unit string, unicode bool) string {
+	s := formatValue(v, metric)
+	u, glued := displayUnit(metric, unit, unicode)
+	switch {
+	case u == "":
+		return s
+	case glued:
+		return s + u
+	}
+	return s + " " + u
+}
+
 // formatSigned is formatValue with an explicit + for positive numbers, used
 // for differences. A tiny difference that rounds to zero prints without a
 // sign ("0"), never "+0" or "-0".
-func formatSigned(v float64, unit string) string {
-	s := formatValue(v, unit)
+func formatSigned(v float64, metric string) string {
+	s := formatValue(v, metric)
 	if strings.Trim(s, "0.-") == "" {
 		return strings.TrimPrefix(s, "-")
 	}

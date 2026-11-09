@@ -23,11 +23,12 @@ type overviewView struct {
 // Fixed column widths of the metric table. The label, value and sparkline
 // columns are sized from the data and the terminal width instead.
 const (
-	deltaW   = 8  // "▲ +17%", at most "▼ <-999%"
-	bandW    = 10 // the baseline band
-	ageW     = 5  // "today", "12 d"
-	minSpark = 14 // a trend line shorter than two weeks is not worth drawing
-	indent   = " "
+	deltaW     = 16 // "▲ +17% better", at most "▼ <-999% changed"; also fits the header
+	bandW      = 10 // the baseline band
+	minAgeW    = 5  // "today", "12 d"; wider when an age needs it
+	maxLatestW = 18 // longer values are cut, so one freak number cannot widen the table
+	minSpark   = 14 // a trend line shorter than two weeks is not worth drawing
+	indent     = " "
 )
 
 // sectionLabelW pads SLEEP / WORKOUTS / DATA so their text lines up.
@@ -47,10 +48,18 @@ func renderOverview(o *stats.Overview, ti termInfo, v overviewView) string {
 	}
 
 	b.WriteString(indent + headline(o, g, ti.width-2) + "\n\n")
-	b.WriteString(metricTable(o, ti, g, st))
-	b.WriteString("\n" + sleepBlock(o.Sleep, ti, g, st))
+	if len(o.Metrics) > 0 { // e.g. a database with only sleep has no table
+		b.WriteString(metricTable(o, ti, g, st))
+		b.WriteString(tableFooter(o, st))
+		b.WriteString("\n")
+	}
+	b.WriteString(sleepBlock(o.Sleep, ti, g, st))
 	b.WriteString(workoutsBlock(o.Workouts, ti, g, st))
+	b.WriteString(heatmapBlock(o.Heatmap, ti, st))
 	b.WriteString("\n" + dataBlock(o.Data, ti, g, st, v))
+	if n := len(o.NotTracked); n > 0 {
+		b.WriteString(indent + st.dim(fmt.Sprintf("not tracked in your data: %s", plural(int64(n), "metric"))) + "\n")
+	}
 	return b.String()
 }
 
@@ -77,9 +86,11 @@ func agoText(now, then time.Time) string {
 	return fmt.Sprintf("%d d ago", days)
 }
 
-// headline is the one-sentence summary at the top.
+// headline is the one-sentence summary at the top. Metrics with a good
+// direction are counted as better / worse; the others, when beyond usual, as
+// "changed".
 func headline(o *stats.Overview, g glyphSet, width int) string {
-	compared, differ := 0, 0
+	counts := map[string]int{}
 	var mover *stats.MetricRow // the differing metric with the largest |z|
 	waiting := false           // some metric still lacks history for a baseline
 	newest := -1               // age of the freshest reading, -1 = none
@@ -87,9 +98,8 @@ func headline(o *stats.Overview, g glyphSet, width int) string {
 		r := &o.Metrics[i]
 		switch r.State {
 		case stats.StateOK:
-			compared++
+			counts[r.Verdict]++
 			if r.Differs() {
-				differ++
 				if mover == nil || math.Abs(*r.Z) > math.Abs(*mover.Z) {
 					mover = r
 				}
@@ -103,9 +113,19 @@ func headline(o *stats.Overview, g glyphSet, width int) string {
 	}
 
 	var parts []string
+	var counted []string
+	for _, v := range []string{stats.VerdictBetter, stats.VerdictWorse, stats.VerdictChanged, stats.VerdictTypical} {
+		if counts[v] > 0 {
+			counted = append(counted, fmt.Sprintf("%d %s", counts[v], v))
+		}
+	}
 	switch {
-	case compared > 0:
-		parts = append(parts, fmt.Sprintf("%d of %d readings differ from your %d-day usual", differ, compared, stats.DefaultBaselineDays))
+	case len(counted) > 0:
+		text := fmt.Sprintf("%s vs your %d-day usual", strings.Join(counted, ", "), stats.DefaultBaselineDays)
+		if runeLen(text) > width { // narrow terminal: say it shorter instead of cutting it
+			text = strings.Join(counted, ", ") + " vs usual"
+		}
+		parts = append(parts, text)
 	case waiting:
 		parts = append(parts, fmt.Sprintf("Not enough history to compare yet (a baseline needs %d days)", stats.MinBaselineDays))
 	case newest > 0:
@@ -146,6 +166,9 @@ func pctText(pct float64) string {
 	case r < -999:
 		return "<-999%"
 	}
+	if math.IsNaN(r) {
+		return "-"
+	}
 	return fmt.Sprintf("%+d%%", int(r))
 }
 
@@ -157,10 +180,25 @@ func metricTable(o *stats.Overview, ti termInfo, g glyphSet, st style) string {
 	for i, r := range o.Metrics {
 		latest[i] = "-"
 		if r.Value != nil {
-			latest[i] = formatValue(*r.Value, r.Unit) + " " + unitLabel(r.Metric, r.Unit)
+			latest[i] = withUnit(*r.Value, r.Metric, r.Unit, ti.unicode)
 		}
 		labelW = max(labelW, runeLen(r.Label))
+		latest[i] = fit(latest[i], maxLatestW, g)
 		latestW = max(latestW, runeLen(latest[i]))
+	}
+	// The age column is as wide as its widest text ("1500 d" needs 6).
+	ageW := minAgeW
+	for _, r := range o.Metrics {
+		ageW = max(ageW, runeLen(ageText(r)))
+	}
+
+	// Long registry labels ("Walking + running distance") must not push the
+	// line past the terminal: cut the label column to what is left once the
+	// other columns have their minimum, but never below 12.
+	labelW = min(labelW, max(ti.width-(len(indent)+2+latestW+2+deltaW+2+ageW), 12))
+	labels := make([]string, len(o.Metrics))
+	for i, r := range o.Metrics {
+		labels[i] = fit(r.Label, labelW, g)
 	}
 
 	// Width budget. Drop the sparkline first when the line gets too long,
@@ -186,20 +224,19 @@ func metricTable(o *stats.Overview, ti termInfo, g glyphSet, st style) string {
 	head += "  AGE"
 	b.WriteString(st.dim(strings.TrimRight(head, " ")) + "\n")
 
+	// A small dim heading per category, only when there is more than one.
+	groups := map[string]bool{}
+	for _, r := range o.Metrics {
+		groups[r.Category] = true
+	}
+	prevCategory := ""
 	for i, r := range o.Metrics {
-		if r.State == stats.StateNoData {
-			// Nothing to show: one muted row, built without inner colours so
-			// the escape codes do not nest.
-			row := indent + padRight(r.Label, labelW) + "  " + padRight(latest[i], latestW) + "  " + padRight("no data", areaW)
-			if sparkW > 0 {
-				row += "  " + strings.Repeat(" ", sparkW)
-			}
-			b.WriteString(st.dim(strings.TrimRight(row+"  -", " ")) + "\n")
-			continue
+		if len(groups) > 1 && r.Category != prevCategory {
+			b.WriteString(indent + st.dim(strings.ToUpper(r.Category)) + "\n")
 		}
-		area, paintArea := deltaArea(r, g, showBand, areaW)
-		line := indent + padRight(r.Label, labelW) + "  " + padRight(latest[i], latestW) + "  "
-		line += paintArea(st, padRight(area, areaW))
+		prevCategory = r.Category
+		line := indent + padRight(labels[i], labelW) + "  " + padRight(latest[i], latestW) + "  "
+		line += deltaArea(r, g, st, showBand, areaW)
 		if sparkW > 0 {
 			line += "  " + padRight(sparkText(r, sparkW, g), sparkW)
 		}
@@ -217,31 +254,93 @@ func colorIf(cond bool, paint func(string) string, s string) string {
 	return s
 }
 
-// deltaArea is the text of the "vs usual" area for a row, plus how to colour
-// it. Colour never carries meaning alone: the arrow or the word says it too.
-func deltaArea(r stats.MetricRow, g glyphSet, showBand bool, areaW int) (string, func(style, string) string) {
-	none := func(_ style, s string) string { return s }
-	dim := func(st style, s string) string { return st.dim(s) }
+// verdictPaint is the colour decision: what colour a verdict gets.
+//
+//	better  -> green    worse -> red    changed -> cyan    typical -> none
+//
+// "changed" is a metric beyond its usual that has no good direction
+// (neutral polarity). Polarity is a general guide, not medical advice.
+func verdictPaint(st style, verdict string) func(string) string {
+	switch verdict {
+	case stats.VerdictBetter:
+		return st.green
+	case stats.VerdictWorse:
+		return st.red
+	case stats.VerdictChanged:
+		return st.cyan
+	}
+	return func(s string) string { return s }
+}
+
+// verdictWord is the text that backs the colour up: better, worse or changed
+// (typical rows are plain). Colour is never the only signal.
+func verdictWord(verdict string) string {
+	if verdict == stats.VerdictBetter || verdict == stats.VerdictWorse || verdict == stats.VerdictChanged {
+		return verdict
+	}
+	return ""
+}
+
+// deltaArea is the "vs usual" area of a row, painted and padded to areaW.
+// Only the arrow, delta and word are coloured, plus the marker in the band,
+// never the whole row. Colour never carries meaning alone: the arrow and the
+// word say it too.
+func deltaArea(r stats.MetricRow, g glyphSet, st style, showBand bool, areaW int) string {
 	switch r.State {
 	case stats.StateOK:
+		paint := verdictPaint(st, r.Verdict)
 		text := g.deltaArrow(*r.DeltaPct) + " " + pctText(*r.DeltaPct)
-		text = padRight(text, deltaW)
+		if w := verdictWord(r.Verdict); w != "" {
+			text += " " + w
+		}
+		out := paint(text)
+		used := runeLen(text)
 		if showBand {
-			text += "  " + g.bandBar(*r.Value, *r.Mean, *r.Stddev, bandW)
+			out += strings.Repeat(" ", deltaW-used+2)
+			band := g.bandBar(*r.Value, *r.Mean, *r.Stddev, bandW)
+			out += strings.Replace(band, string(g.marker), paint(string(g.marker)), 1)
+			used = deltaW + 2 + bandW
 		}
-		switch {
-		case math.Abs(*r.Z) >= 2: // far from usual
-			return text, func(st style, s string) string { return st.yellow(s) }
-		case r.Differs():
-			return text, func(st style, s string) string { return st.cyan(s) }
-		}
-		return text, none
+		return out + strings.Repeat(" ", max(areaW-used, 0))
 	case stats.StateNoBaseline:
-		return fit(fmt.Sprintf("baseline %d/%d days", r.BaselineDays, stats.MinBaselineDays), areaW, g), dim
+		return st.dim(padRight(fit(fmt.Sprintf("need %dd (have %d)", stats.MinBaselineDays, r.BaselineDays), areaW, g), areaW))
 	case stats.StateStale:
-		return "stale", func(st style, s string) string { return st.yellow(s) }
+		return st.yellow(padRight("stale", areaW))
 	}
-	return "no data", dim
+	return st.dim(padRight("no data", areaW))
+}
+
+// tableFooter explains the colours. It is plain text, so it also helps when
+// colour is off (the words in the rows are the same either way).
+func tableFooter(o *stats.Overview, st style) string {
+	sep := st.dim(" / ")
+	return indent + st.green("green") + st.dim(" better") + sep + st.red("red") + st.dim(" worse") + sep +
+		st.cyan("cyan") + st.dim(" changed (no good direction)") + "\n"
+}
+
+// heatmapBlock is the activity calendar, titled and indented like the other
+// sections. Nothing is printed when there is no heatmap.
+func heatmapBlock(h *stats.Heatmap, ti termInfo, st style) string {
+	if h == nil {
+		return ""
+	}
+	inner := ti
+	inner.width = ti.width - len(indent)
+	lines := renderHeatmap(h, inner)
+	if len(lines) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString("\n" + indent + st.bold("CALENDAR") + " " + lines[0] + "\n")
+	for _, l := range lines[1:] {
+		// A very wide legend (huge numbers) loses its colours rather than
+		// running past the terminal.
+		if plain := stripANSI(l); runeLen(plain) > inner.width {
+			l = fit(plain, inner.width, glyphsFor(ti.unicode))
+		}
+		b.WriteString(strings.TrimRight(indent+l, " ") + "\n")
+	}
+	return b.String()
 }
 
 // sparkText draws the last n days of the row's trend (n <= SparkDays).
@@ -265,6 +364,8 @@ func ageText(r stats.MetricRow) string {
 	switch {
 	case r.AgeDays == 0:
 		return "today"
+	case r.AgeDays > 9999:
+		return ">9999 d"
 	}
 	return fmt.Sprintf("%d d", r.AgeDays)
 }
@@ -487,6 +588,21 @@ func plural(n int64, noun string) string {
 		return "1 " + noun
 	}
 	return formatInt(float64(n)) + " " + noun + "s"
+}
+
+// stripANSI removes colour codes, to measure the visible width of a line.
+func stripANSI(s string) string {
+	var b strings.Builder
+	for i := 0; i < len(s); i++ {
+		if s[i] == 0x1b {
+			for i < len(s) && s[i] != 'm' {
+				i++
+			}
+			continue
+		}
+		b.WriteByte(s[i])
+	}
+	return b.String()
 }
 
 func runeLen(s string) int { return len([]rune(s)) }

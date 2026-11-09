@@ -32,7 +32,7 @@ func renderToday(r *todayReport, st style) string {
 	for _, m := range r.Metrics {
 		rw := row{label: m.Label, value: "-"}
 		if m.Value != nil {
-			rw.value = formatValue(*m.Value, m.Unit) + " " + unitLabel(m.Metric, m.Unit)
+			rw.value = formatValue(*m.Value, m.Metric) + " " + unitLabel(m.Metric, m.Unit)
 			rw.base, rw.cmp, rw.tag = baselineCells(m)
 		}
 		labelW, valueW = max(labelW, len(rw.label)), max(valueW, len([]rune(rw.value)))
@@ -82,8 +82,8 @@ func baselineCells(m todayMetric) (base, cmp, label string) {
 		return fmt.Sprintf("baseline n/a (need %d days)", m.Baseline.DaysNeeded), "", ""
 	}
 	c := m.Comparison
-	return "baseline " + formatValue(*m.Baseline.Mean, m.Unit),
-		fmt.Sprintf("%s (%s)", formatSigned(c.Delta, m.Unit), formatPct(c.DeltaPct)), c.Label
+	return "baseline " + formatValue(*m.Baseline.Mean, m.Metric),
+		fmt.Sprintf("%s (%s)", formatSigned(c.Delta, m.Metric), formatPct(c.DeltaPct)), c.Label
 }
 
 // labelColor colors the comparison word. Whether "above" is good depends on
