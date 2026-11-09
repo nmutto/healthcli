@@ -45,7 +45,7 @@ var asciiGlyphs = glyphSet{
 	bars: []rune(".:-=+*#@"), gap: '_',
 	up: "^", down: "v", flat: "-",
 	track: '.', usual: '=', marker: '*',
-	stages: map[string]rune{"core": '-', "rem": '+', "deep": '#', "unspecified": '-', "awake": '.'},
+	stages: map[string]rune{"core": '-', "rem": '+', "deep": '#', "unspecified": '=', "awake": '.'},
 	rule:   '-', bandRule: '=', arrow: "->", dot: "|", ellipsis: "...",
 	box: [6]rune{'+', '+', '+', '+', '-', '|'},
 }

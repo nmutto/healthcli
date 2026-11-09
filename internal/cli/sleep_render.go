@@ -498,7 +498,11 @@ func sleepStatTable(r *stats.SleepReport, ti termInfo, width int, opts sleepOpts
 		} else if v, ok := compareSleep(s, s.val(r.Week), s.val(r.Usual), g); ok {
 			vs = st.verdict(v.verdict, v.text)
 		}
-		lines = append(lines, sleepIndent+padRight(s.name, nameW)+padRight(lastText, lastW)+padRight(weekText, weekW)+vs)
+		lastCell := padRight(lastText, lastW)
+		if lastText == "" { // earlier nights have it, last night does not: a dash, not a blank
+			lastCell = st.dim(padRight(g.flat, lastW))
+		}
+		lines = append(lines, sleepIndent+padRight(s.name, nameW)+lastCell+padRight(weekText, weekW)+vs)
 	}
 
 	if opts.Full {
@@ -530,7 +534,7 @@ func formatSleepValue(s sleepStat, v float64) string {
 	return secsText(v)
 }
 
-// regularityLine is "Regularity ±38m bed · ±31m mid (14 n)  ▼ better than usual ±52m".
+// regularityLine is "Regularity ±38m bed · ±31m mid (14 n)  ▼ better than usual (±52m)".
 func regularityLine(r *stats.SleepReport, g glyphSet, st style, width, nameW int) []string {
 	reg := r.Regularity
 	if reg == nil {
@@ -550,9 +554,14 @@ func regularityLine(r *stats.SleepReport, g glyphSet, st style, width, nameW int
 		case diff >= 5:
 			word, verdict, arrow = "worse", "worse", g.up
 		}
-		usual := fmt.Sprintf("%s %s than usual %.0fm", arrow, word, reg.UsualBedtimeMin)
+		// "worse than usual (±39m)", "same as usual (±39m)"; shorter when narrow.
+		than := "than"
+		if verdict == "typical" {
+			than = "as"
+		}
+		usual := fmt.Sprintf("%s %s %s usual (%s%.0fm)", arrow, word, than, pm, reg.UsualBedtimeMin)
 		if width < 70 {
-			usual = fmt.Sprintf("%s %s (usual %.0fm)", arrow, word, reg.UsualBedtimeMin)
+			usual = fmt.Sprintf("%s %s (usual %s%.0fm)", arrow, word, pm, reg.UsualBedtimeMin)
 		}
 		line += "   " + st.verdict(verdict, usual)
 	}

@@ -225,3 +225,66 @@ func TestHypnogramAwakeWins(t *testing.T) {
 		t.Errorf("core row lost cells:\n%s", strings.Join(lines, "\n"))
 	}
 }
+
+// The unspecified bar must be visible in ASCII and must not look like the
+// rule under the header (it used to be the same dash, a "duplicate rule").
+func TestSleepUnspecifiedBarIsNotARule(t *testing.T) {
+	for _, width := range []int{60, 80} {
+		lines := renderSleepFor(t, "unspecified", termInfo{width: width}, width, false, "")
+		if len(lines) < 3 {
+			t.Fatalf("too short: %v", lines)
+		}
+		rule, bar := strings.TrimSpace(lines[1]), strings.TrimSpace(lines[2])
+		if bar == "" || bar == rule || strings.Trim(bar, "-") == "" {
+			t.Errorf("width %d: line under the rule must be the bar, got %q (rule %q)", width, bar, rule)
+		}
+	}
+}
+
+// Last night has no stages but earlier nights do: a dim dash, not a blank.
+func TestSleepLastNightDashWhenStagesMissing(t *testing.T) {
+	path := seedSleep(t, "rich")
+	conn, err := db.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	midnight := time.Date(2026, 11, 4, 0, 0, 0, 0, time.UTC).Unix()
+	if _, err := conn.Exec(`DELETE FROM sleep_stages WHERE end_ts >= ?`, midnight); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := conn.Exec(`INSERT INTO sleep_stages (stage, start_ts, end_ts, tz_offset, source)
+		VALUES ('asleep_unspecified', ?, ?, 0, 'Test iPhone')`, midnight-3600, midnight+6*3600); err != nil {
+		t.Fatal(err)
+	}
+	r, err := stats.BuildSleepReport(context.Background(), conn, heatNow, stats.SleepOptions{Weeks: 12})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := strings.Join(renderSleepSection(r, termInfo{width: 80}, 80, sleepOpts{Full: true}), "\n")
+	for _, line := range strings.Split(got, "\n") {
+		if strings.HasPrefix(line, " Deep ") && !strings.Contains(line[:20], "-") {
+			t.Errorf("Deep row needs a dash in the LAST NIGHT cell: %q", line)
+		}
+	}
+	if !strings.Contains(got, " Deep ") {
+		t.Errorf("no Deep row:\n%s", got)
+	}
+}
+
+// Delta phrases read as English: "same as usual", "worse than usual".
+func TestRegularityWording(t *testing.T) {
+	g := glyphsFor(true)
+	for _, c := range []struct {
+		now, usual float64
+		want       string
+	}{
+		{20, 20, "same as usual (±20m)"}, {50, 30, "worse than usual (±30m)"}, {10, 30, "better than usual (±30m)"},
+	} {
+		r := &stats.SleepReport{Regularity: &stats.SleepRegularity{Nights: 14, BedtimeMin: c.now, MidpointMin: 5, UsualBedtimeMin: c.usual}}
+		line := regularityLine(r, g, style{}, 80, 11)[0]
+		if !strings.Contains(line, c.want) || strings.Contains(line, "same than") {
+			t.Errorf("want %q in %q", c.want, line)
+		}
+	}
+}

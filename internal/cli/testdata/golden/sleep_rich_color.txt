@@ -19,7 +19,7 @@
  Bedtime      00:05           23:58         [36m▲ +49m later[0m
  Wake         06:00           06:15         [2m– typical[0m
  Midpoint     03:03           03:07         [36m▲ +26m later[0m
- Regularity   ±51m bed ±34m mid (14 n)   [31m▲ worse than usual 39m[0m
+ Regularity   ±51m bed ±34m mid (14 n)   [31m▲ worse than usual (±39m)[0m
  Sleep debt   2h 10m short last night, 7 n: 13h 07m short vs 8h target
 [2m green better / red worse / cyan neutral[0m
 
