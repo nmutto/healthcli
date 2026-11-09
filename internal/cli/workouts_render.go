@@ -388,7 +388,7 @@ func wkHeatmap(r *stats.WorkoutsReport, ti termInfo, width int, opts workoutsOpt
 	}
 	room := width - len(indent)
 	weeks = min(weeks, stats.MaxHeatmapWeeks, heatWeeksFit(room))
-	spec := stats.HeatSpec{Title: "workout minutes", Format: minutesText, ZeroIsRest: true}
+	spec := stats.HeatSpec{Title: "workout minutes", Hue: stats.HueGreen, Format: minutesText, ZeroIsRest: true}
 	h, err := stats.HeatmapFromDays(spec, now, weeks, r.MinutesByDay)
 	if err != nil || h.Empty() {
 		return nil

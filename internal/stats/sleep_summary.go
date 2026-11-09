@@ -375,13 +375,13 @@ func sleepHeatmap(nights []SleepNight, now time.Time, weeks int, by string) (*He
 	var value func(SleepNight) (float64, bool)
 	switch by {
 	case "", SleepByAsleep:
-		spec = HeatSpec{Title: "time asleep", Format: minutesText}
+		spec = HeatSpec{Title: "time asleep", Hue: HueBlue, Format: minutesText}
 		value = func(n SleepNight) (float64, bool) { return n.Asleep.Minutes(), n.Asleep > 0 }
 	case SleepByBedtime:
-		spec = HeatSpec{Title: "bedtime", Format: ClockText}
+		spec = HeatSpec{Title: "bedtime", Hue: HueBlue, Format: ClockText}
 		value = SleepNight.BedtimeMin
 	case SleepByEfficiency:
-		spec = HeatSpec{Title: "sleep efficiency", Format: func(v float64) string { return fmt.Sprintf("%.0f%%", v) }}
+		spec = HeatSpec{Title: "sleep efficiency", Hue: HueBlue, Format: func(v float64) string { return fmt.Sprintf("%.0f%%", v) }}
 		value = func(n SleepNight) (float64, bool) { p, _, ok := n.Efficiency(); return p, ok }
 	default:
 		return nil, fmt.Errorf("--by must be asleep, bedtime or efficiency, got %q", by)

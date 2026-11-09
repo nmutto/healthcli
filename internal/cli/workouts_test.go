@@ -228,3 +228,17 @@ func TestWorkoutsJSONShape(t *testing.T) {
 		t.Errorf("zero-duration workout leaked into the report:\n%s", out)
 	}
 }
+
+// The workouts calendar inside the section is green (it used to fall back to
+// the orange activity ramp because only the standalone command set the hue).
+func TestWorkoutsSectionHeatmapIsGreen(t *testing.T) {
+	r := seedWorkouts(t, "rich")
+	ti := termInfo{width: 80, unicode: true, color: true}
+	got := strings.Join(renderWorkoutsSection(r, ti, ti.width, workoutsOpts{Full: true, Weeks: 8}), "\n")
+	for _, code := range heatGreen {
+		if strings.Contains(got, code) {
+			return
+		}
+	}
+	t.Errorf("no green heatmap colour in the section:\n%s", got)
+}

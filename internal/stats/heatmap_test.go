@@ -117,3 +117,17 @@ func TestBuildHeatmapFromDatabase(t *testing.T) {
 		t.Errorf("sunday layout: from %s, last cell %+v", h.From, h.Weeks[0][6])
 	}
 }
+
+// Every sleep heatmap view is blue; the colour comes from the spec, not the title.
+func TestSleepHeatmapsAreBlue(t *testing.T) {
+	now := time.Date(2026, 11, 9, 12, 0, 0, 0, time.UTC)
+	for _, by := range []string{"", SleepByAsleep, SleepByBedtime, SleepByEfficiency} {
+		h, err := sleepHeatmap(nil, now, 4, by)
+		if err != nil {
+			t.Fatalf("by %q: %v", by, err)
+		}
+		if h.Hue != HueBlue {
+			t.Errorf("by %q: hue %q, want %q", by, h.Hue, HueBlue)
+		}
+	}
+}

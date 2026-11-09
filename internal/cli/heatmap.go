@@ -36,13 +36,13 @@ var (
 	heatBlue   = [stats.HeatLevels]string{"38;5;18", "38;5;25", "38;5;33", "38;5;39", "38;5;45"}     // sleep
 )
 
-// heatColorsFor picks the ramp for a heatmap: workouts are green, sleep is
-// blue, and everything else (steps, energy, ...) is orange.
+// heatColorsFor picks the ramp from the heatmap's hue: workouts are green,
+// sleep is blue, and everything else (steps, energy, ...) is orange.
 func heatColorsFor(h *stats.Heatmap) [stats.HeatLevels]string {
-	switch {
-	case h.Metric == "workouts":
+	switch h.Hue {
+	case stats.HueGreen:
 		return heatGreen
-	case strings.HasPrefix(h.Metric, "sleep"):
+	case stats.HueBlue:
 		return heatBlue
 	}
 	return heatOrange
@@ -374,9 +374,11 @@ func buildNamedHeatmap(ctx context.Context, conn *sql.DB, name string, weeks int
 	var byDay map[string]float64
 	spec := stats.HeatSpec{Title: name, Format: minutesText}
 	if name == "sleep" {
+		spec.Hue = stats.HueBlue
 		byDay, err = stats.SleepAsleepByDay(ctx, conn, from, today)
 	} else {
 		spec.ZeroIsRest = true
+		spec.Hue = stats.HueGreen
 		byDay, err = stats.WorkoutMinutesByDay(ctx, conn, from, today)
 	}
 	if err != nil {

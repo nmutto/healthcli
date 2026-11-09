@@ -33,6 +33,7 @@ type Heatmap struct {
 	// Title, Format and ZeroIsRest come from the HeatSpec; the renderer uses
 	// them instead of looking at the metric name.
 	Title      string               `json:"-"`
+	Hue        string               `json:"-"`
 	Format     func(float64) string `json:"-"`
 	ZeroIsRest bool                 `json:"-"`
 	Today      string               `json:"today"`
@@ -83,9 +84,17 @@ func BuildHeatmap(ctx context.Context, conn *sql.DB, metric string, weeks int, n
 
 // HeatSpec says how to title, label and shade one heatmap. Any source of
 // "a number per day" (steps, sleep, workouts) can use the same engine.
+// Colour families a heatmap can ask for. The CLI turns them into ramps.
+const (
+	HueOrange = "orange" // steps and other activity (the default)
+	HueGreen  = "green"  // workouts
+	HueBlue   = "blue"   // sleep
+)
+
 type HeatSpec struct {
 	Title  string // "step_count", "sleep", "workouts"
 	Unit   string
+	Hue    string               // colour family: HueGreen, HueBlue; empty means orange
 	Format func(float64) string // how a value is written in the legend
 	// ZeroIsRest: a day without a value after the first real one is a rest
 	// day (value 0, drawn dim), not missing data. Quintiles then use the
@@ -123,7 +132,7 @@ func HeatmapFromDays(spec HeatSpec, now time.Time, weeks int, byDay map[string]f
 		}
 	}
 	h := layoutHeatmap(spec.Title, spec.Unit, today, from, weeks, days, spec.ZeroIsRest)
-	h.Title, h.Format, h.ZeroIsRest = spec.Title, spec.Format, spec.ZeroIsRest
+	h.Title, h.Hue, h.Format, h.ZeroIsRest = spec.Title, spec.Hue, spec.Format, spec.ZeroIsRest
 	return h, nil
 }
 
