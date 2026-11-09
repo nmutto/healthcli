@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -57,7 +59,7 @@ func renderHeatmap(h *stats.Heatmap, ti termInfo) []string {
 	}
 
 	lines := []string{
-		fmt.Sprintf("%s per day, %s to %s", strings.ReplaceAll(h.Metric, "_", " "), plural(int64(len(weeks)), "week"), h.Today),
+		fmt.Sprintf("%s per day, %s to %s", strings.ReplaceAll(heatTitle(h), "_", " "), plural(int64(len(weeks)), "week"), h.Today),
 		heatMonthLine(weeks),
 	}
 
@@ -72,8 +74,12 @@ func renderHeatmap(h *stats.Heatmap, ti termInfo) []string {
 			case cell.Future:
 				b.WriteString("  ")
 				continue
+			case cell.Value == nil && h.ZeroIsRest:
+				b.WriteString(" ") // before the first value: blank, not a gap
 			case cell.Value == nil:
 				b.WriteString(st.dim(string(g.gap)))
+			case cell.Level == 0:
+				b.WriteString(st.dim(string(restGlyph(g)))) // a real zero: a rest day
 			default:
 				glyph := st.wrap(heatColors[cell.Level-1], string(g.shade(cell.Level)))
 				b.WriteString(glyph)
@@ -93,6 +99,55 @@ func renderHeatmap(h *stats.Heatmap, ti termInfo) []string {
 	lines = append(lines, "")
 	lines = append(lines, heatLegend(h, ti, st)...)
 	return lines
+}
+
+// heatTitle, heatFormat and heatUnit read the Heatmap's own labels. A map built
+// by BuildHeatmap (a registry metric) has none, so those fall back to the
+// metric name.
+func heatTitle(h *stats.Heatmap) string {
+	if h.Title != "" {
+		return h.Title
+	}
+	return h.Metric
+}
+
+func heatFormat(h *stats.Heatmap, v float64) string {
+	if h.Format != nil {
+		return h.Format(v)
+	}
+	return formatValue(v, h.Metric)
+}
+
+func heatUnit(h *stats.Heatmap) string {
+	if h.Format != nil {
+		return h.Unit
+	}
+	return unitLabel(h.Metric, h.Unit)
+}
+
+// restGlyph marks a rest day (a real zero), distinct from the gap glyph in
+// ASCII; in Unicode the gap is already a dot, so rest maps never draw gaps.
+func restGlyph(g glyphSet) rune {
+	if g.gap == '_' {
+		return '.'
+	}
+	return g.gap
+}
+
+// heatTail is the last legend line: what the other symbols mean.
+func heatTail(h *stats.Heatmap, ti termInfo, st style) string {
+	g := glyphsFor(ti.unicode)
+	var tail string
+	if h.ZeroIsRest {
+		tail = st.dim(string(restGlyph(g))) + " rest day   "
+	} else {
+		tail = st.dim(string(g.gap)) + " no data   "
+	}
+	tail += todayMark(ti.unicode) + " today   "
+	if u := heatUnit(h); u != "" {
+		tail += u + " "
+	}
+	return tail + "per day"
 }
 
 // todayMark is the symbol shown after today's cell.
@@ -153,7 +208,6 @@ func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
 	if !ti.unicode {
 		le = "<="
 	}
-	unit := unitLabel(h.Metric, h.Unit)
 	if h.Flat && len(h.Thresholds) > 0 {
 		// Every day has the same value: one shade, one sentence, no "≤0 ≤0 ≤0".
 		level := 3
@@ -161,22 +215,22 @@ func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
 			level = 1
 		}
 		return []string{
-			st.wrap(heatColors[level-1], string(g.shade(level))) + " every day: " + formatValue(h.Thresholds[0], h.Metric),
-			st.dim(string(g.gap)) + " no data   " + todayMark(ti.unicode) + " today   " + unit + " per day",
+			st.wrap(heatColors[level-1], string(g.shade(level))) + " every day: " + heatFormat(h, h.Thresholds[0]),
+			heatTail(h, ti, st),
 		}
 	}
 	var parts []string
 	for i := 1; i <= stats.HeatLevels; i++ {
 		glyph := st.wrap(heatColors[i-1], string(g.shade(i)))
 		if i < stats.HeatLevels {
-			parts = append(parts, glyph+" "+le+formatValue(h.Thresholds[i-1], h.Metric))
+			parts = append(parts, glyph+" "+le+heatFormat(h, h.Thresholds[i-1]))
 		} else {
-			parts = append(parts, glyph+" "+gt+formatValue(h.Thresholds[i-2], h.Metric))
+			parts = append(parts, glyph+" "+gt+heatFormat(h, h.Thresholds[i-2]))
 		}
 	}
 	return []string{
 		strings.Join(parts, "  "),
-		st.dim(string(g.gap)) + " no data   " + todayMark(ti.unicode) + " today   " + unit + " per day",
+		heatTail(h, ti, st),
 	}
 }
 
@@ -192,7 +246,8 @@ the window (the legend lists the cut points), so the darkest fifth of days is
 always the highest fifth for that metric. A day without data shows a dot, not
 the lowest shade. Today is marked.
 
-The metric defaults to step_count. --weeks sets the maximum number of weeks
+The metric defaults to step_count; "sleep" (time asleep per night) and
+"workouts" (minutes per day, with rest days) work too. --weeks sets the maximum number of weeks
 (default 12); fewer are shown if the terminal is too narrow (oldest dropped).
 
 JSON output (--json):
@@ -201,6 +256,8 @@ JSON output (--json):
   (1-5; 0 = no data), future (true after today)`,
 		Example: `  healthcli heatmap
   healthcli heatmap active_energy --weeks 26
+  healthcli heatmap sleep
+  healthcli heatmap workouts --weeks 26
   healthcli heatmap steps --json`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -217,12 +274,64 @@ JSON output (--json):
 	return cmd
 }
 
+// heatmapName resolves the argument: "sleep", "workouts" or a registry metric
+// (aliases allowed). The error for a typo also lists sleep and workouts.
+func heatmapName(arg string) (string, error) {
+	switch strings.ToLower(strings.TrimSpace(arg)) {
+	case "sleep":
+		return "sleep", nil
+	case "workouts", "workout":
+		return "workouts", nil
+	}
+	m, err := metrics.Lookup(arg)
+	if err != nil {
+		return "", fmt.Errorf("%w\nalso: sleep, workouts", err)
+	}
+	return m.Name, nil
+}
+
+// minutesText writes minutes as "7h 30m" for the legend.
+func minutesText(mins float64) string {
+	return formatDuration(time.Duration(mins * float64(time.Minute)))
+}
+
+// buildNamedHeatmap builds the heatmap for sleep, workouts or a metric. Sleep
+// and workouts feed the same engine as steps, just with a different source
+// of "one number per day".
+func buildNamedHeatmap(ctx context.Context, conn *sql.DB, name string, weeks int, now time.Time) (*stats.Heatmap, error) {
+	if name != "sleep" && name != "workouts" {
+		return stats.BuildHeatmap(ctx, conn, name, weeks, now)
+	}
+	if weeks < 1 || weeks > stats.MaxHeatmapWeeks {
+		return nil, fmt.Errorf("--weeks must be between 1 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
+	}
+	// The window starts on the Monday `weeks` calendar weeks back; reading
+	// one day more than needed is harmless, so just go back far enough.
+	today := now.Format(stats.DayLayout)
+	from, err := stats.AddDays(today, -(7*weeks + 6))
+	if err != nil {
+		return nil, err
+	}
+	var byDay map[string]float64
+	spec := stats.HeatSpec{Title: name, Format: minutesText}
+	if name == "sleep" {
+		byDay, err = stats.SleepAsleepByDay(ctx, conn, from, today)
+	} else {
+		spec.ZeroIsRest = true
+		byDay, err = stats.WorkoutMinutesByDay(ctx, conn, from, today)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return stats.HeatmapFromDays(spec, now, weeks, byDay)
+}
+
 func runHeatmap(cmd *cobra.Command, opts *options, name string, weeks int, noColor, ascii bool) error {
 	if weeks < 1 || weeks > stats.MaxHeatmapWeeks {
 		return fmt.Errorf("--weeks must be between 1 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
 	}
 	// Check the name before opening the database (friendly list on a typo).
-	m, err := metrics.Lookup(name)
+	name, err := heatmapName(name)
 	if err != nil {
 		return err
 	}
@@ -237,7 +346,7 @@ func runHeatmap(cmd *cobra.Command, opts *options, name string, weeks int, noCol
 		return err
 	}
 	defer conn.Close()
-	h, err := stats.BuildHeatmap(cmdContext(cmd), conn, m.Name, weeks, nowFunc())
+	h, err := buildNamedHeatmap(cmdContext(cmd), conn, name, weeks, nowFunc())
 	if err != nil {
 		return err
 	}
@@ -248,7 +357,7 @@ func runHeatmap(cmd *cobra.Command, opts *options, name string, weeks int, noCol
 		return enc.Encode(h)
 	}
 	if h.Empty() {
-		_, err = fmt.Fprintf(out, "No %s data in the last %s yet.\n", strings.ReplaceAll(m.Name, "_", " "), plural(int64(weeks), "week"))
+		_, err = fmt.Fprintf(out, "No %s data in the last %s yet.\n", strings.ReplaceAll(name, "_", " "), plural(int64(weeks), "week"))
 		return err
 	}
 	_, err = fmt.Fprintln(out, strings.Join(renderHeatmap(h, ti), "\n"))
