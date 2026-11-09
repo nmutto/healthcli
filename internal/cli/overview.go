@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
+	"time"
 
 	"github.com/spf13/cobra"
 
 	"github.com/nmutto/healthcli/internal/db"
-	"github.com/nmutto/healthcli/internal/metrics"
 	"github.com/nmutto/healthcli/internal/stats"
 )
 
@@ -20,7 +21,8 @@ import (
 func newOverviewCmd(opts *options) *cobra.Command {
 	var noColor, ascii bool
 	var heatWeeks int
-	var heatMetric string
+	var heatmapArg, categoryArg []string
+	var compact, full bool
 	cmd := &cobra.Command{
 		Use:   "overview",
 		Short: "One-screen summary of every metric, sleep, workouts and data health",
@@ -44,6 +46,15 @@ good direction (weight, respiratory rate, ...) are cyan with the word
 is yellow. Colour is never the only signal: every row has an arrow, and
 beyond-usual rows also carry the word.
 
+Metrics are grouped in category bands (vitals, activity, body, mobility) with a
+one-line summary each. A marker in the left gutter flags rows that need a look:
+"!" worse, "+" better, "~" changed. An index line under the headline lists the
+categories and counts the worse rows ("!1"); categories your data has nothing
+for are named once as "not tracked". The AGE column shows only readings 2 or
+more days old. --category vitals,sleep shows only those (vitals, activity,
+body, mobility, other, sleep, workouts); --compact drops the blank lines and
+the gutter for small terminal panes; --full shows every section.
+
 After the sleep and workouts lines comes a calendar heatmap of daily activity:
 steps if you have them, else exercise time, else active energy (no calendar if
 you have none of these). --weeks sets its length (default 12, 0 hides it) and
@@ -56,6 +67,7 @@ more than a day in the future are ignored.
 
 JSON output (--json) is the same report:
   today, empty (true when the database has no data)
+  categories[]  name, total, better, worse, changed, typical, stale, no_baseline, no_data
   metrics[]  metric, label, category, polarity, unit, state (ok|no_baseline|stale|no_data), latest_day,
              age_days, value, source, baseline_days_with_data, baseline_mean,
              baseline_stddev, delta_pct, z, comparison (above|below|typical),
@@ -67,6 +79,8 @@ JSON output (--json) is the same report:
   heatmap    the activity grid (see "healthcli heatmap --help"), null if none
   data       samples, first_day, last_day, source_samples, last_import, gaps[]`,
 		Example: `  healthcli overview
+  healthcli overview --category vitals,activity
+  healthcli overview --compact
   healthcli overview --ascii --no-color
   healthcli overview --json`,
 		Args: cobra.NoArgs,
@@ -74,24 +88,42 @@ JSON output (--json) is the same report:
 			if heatWeeks < 0 || heatWeeks > stats.MaxHeatmapWeeks {
 				return fmt.Errorf("--weeks must be between 0 and %d, got %d", stats.MaxHeatmapWeeks, heatWeeks)
 			}
-			if heatMetric != "" {
-				m, err := metrics.Lookup(heatMetric) // friendly list on a typo
+			cats, err := parseCategories(categoryArg)
+			if err != nil {
+				return err
+			}
+			// --heatmap is a list of steps|sleep|workouts|<metric>. Each name is
+			// checked now (friendly list on a typo); only the first metric is
+			// drawn for the moment, sleep and workouts are kept for the renderer.
+			var heatmaps []string
+			heatMetric := ""
+			for _, arg := range heatmapArg {
+				name, err := heatmapName(arg)
 				if err != nil {
 					return err
 				}
-				heatMetric = m.Name
+				if !slices.Contains(heatmaps, name) {
+					heatmaps = append(heatmaps, name)
+				}
+				if name != sleepName && name != workoutsName && heatMetric == "" {
+					heatMetric = name
+				}
 			}
-			return runOverview(cmd, opts, noColor, ascii, stats.OverviewOptions{HeatWeeks: heatWeeks, HeatMetric: heatMetric})
+			view := overviewView{compact: compact, categories: cats, heatmaps: heatmaps, full: full}
+			return runOverview(cmd, opts, noColor, ascii, view, stats.OverviewOptions{HeatWeeks: heatWeeks, HeatMetric: heatMetric})
 		},
 	}
 	cmd.Flags().BoolVar(&noColor, "no-color", false, "never use colours")
 	cmd.Flags().BoolVar(&ascii, "ascii", false, "use plain ASCII characters only")
 	cmd.Flags().IntVar(&heatWeeks, "weeks", defaultHeatWeeks, "weeks of activity heatmap (0 hides it)")
-	cmd.Flags().StringVar(&heatMetric, "heatmap", "", "metric for the heatmap (default: steps, else exercise time, else active energy)")
+	cmd.Flags().StringSliceVar(&heatmapArg, "heatmap", nil, "heatmaps to show, comma list of steps|sleep|workouts|<metric> (default: steps, else exercise time, else active energy)")
+	cmd.Flags().StringSliceVar(&categoryArg, "category", nil, "only these categories, comma list (vitals, activity, body, mobility, other, sleep, workouts)")
+	cmd.Flags().BoolVar(&compact, "compact", false, "dense table: no blank lines between categories, no gutter marker")
+	cmd.Flags().BoolVar(&full, "full", false, "show every section and heatmap")
 	return cmd
 }
 
-func runOverview(cmd *cobra.Command, opts *options, noColor, ascii bool, bo stats.OverviewOptions) error {
+func runOverview(cmd *cobra.Command, opts *options, noColor, ascii bool, view overviewView, bo stats.OverviewOptions) error {
 	conn, err := openDB(opts)
 	if err != nil {
 		return err
@@ -119,8 +151,14 @@ func runOverview(cmd *cobra.Command, opts *options, noColor, ascii bool, bo stat
 	if err != nil {
 		return err
 	}
-	_, err = fmt.Fprint(out, renderOverview(report, ti, overviewView{dbName: name, now: now}))
+	_, err = fmt.Fprint(out, renderOverview(report, ti, withDB(view, name, now)))
 	return err
+}
+
+// withDB adds the database name and the clock to the view the flags built.
+func withDB(v overviewView, name string, now time.Time) overviewView {
+	v.dbName, v.now = name, now
+	return v
 }
 
 // dbDisplayName is the file name of the database in use ("health.db").

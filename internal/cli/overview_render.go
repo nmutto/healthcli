@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"math"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -18,6 +19,18 @@ import (
 type overviewView struct {
 	dbName string
 	now    time.Time // for "imported 3 d ago"
+
+	compact    bool     // --compact: no blank lines, no gutter
+	categories []string // --category: only these (canonical names); nil = all
+	heatmaps   []string // --heatmap: steps/sleep/workouts/metric names asked for
+	full       bool     // --full: every section and heatmap
+}
+
+// section is one named block of the overview. renderOverview builds the list
+// and prints the blocks in order, so adding a section is adding one entry.
+type section struct {
+	name string // metrics, sleep, workouts, heatmap, data
+	text func() string
 }
 
 // Fixed column widths of the metric table. The label, value and sparkline
@@ -25,7 +38,6 @@ type overviewView struct {
 const (
 	deltaW     = 16 // "▲ +17% better", at most "▼ <-999% changed"; also fits the header
 	bandW      = 10 // the baseline band
-	minAgeW    = 5  // "today", "12 d"; wider when an age needs it
 	maxLatestW = 18 // longer values are cut, so one freak number cannot widen the table
 	minSpark   = 14 // a trend line shorter than two weeks is not worth drawing
 	indent     = " "
@@ -47,20 +59,56 @@ func renderOverview(o *stats.Overview, ti termInfo, v overviewView) string {
 		return b.String()
 	}
 
-	b.WriteString(indent + headline(o, g, ti.width-2) + "\n\n")
-	if len(o.Metrics) > 0 { // e.g. a database with only sleep has no table
-		b.WriteString(metricTable(o, ti, g, st))
-		b.WriteString(tableFooter(o, st))
-		b.WriteString("\n")
+	b.WriteString(indent + headline(o, g, ti.width-2) + "\n")
+	if idx := indexLine(o, v, ti, g, st); idx != "" {
+		b.WriteString(indent + idx + "\n")
 	}
-	b.WriteString(sleepBlock(o.Sleep, ti, g, st))
-	b.WriteString(workoutsBlock(o.Workouts, ti, g, st))
-	b.WriteString(heatmapBlock(o.Heatmap, ti, st))
-	b.WriteString("\n" + dataBlock(o.Data, ti, g, st, v))
-	if n := len(o.NotTracked); n > 0 {
-		b.WriteString(indent + st.dim(fmt.Sprintf("not tracked in your data: %s", plural(int64(n), "metric"))) + "\n")
+	b.WriteString("\n")
+	for _, sec := range overviewSections(o, ti, g, st, v) {
+		b.WriteString(sec.text())
 	}
 	return b.String()
+}
+
+// overviewSections lists the blocks to print, in order. --category hides every
+// block it does not name, and also the heatmap and DATA unless asked for.
+func overviewSections(o *stats.Overview, ti termInfo, g glyphSet, st style, v overviewView) []section {
+	filtered := len(v.categories) > 0
+	secs := []section{
+		{"metrics", func() string {
+			if len(o.Metrics) == 0 { // e.g. a database with only sleep has no table
+				return ""
+			}
+			return metricTable(o, ti, g, st, v) + tableFooter(o, st, ti, g) + "\n"
+		}},
+	}
+	if v.wants("sleep") {
+		secs = append(secs, section{"sleep", func() string { return sleepBlock(o.Sleep, ti, g, st) }})
+	}
+	if v.wants("workouts") {
+		secs = append(secs, section{"workouts", func() string { return workoutsBlock(o.Workouts, ti, g, st) }})
+	}
+	if !filtered || len(v.heatmaps) > 0 {
+		secs = append(secs, section{"heatmap", func() string { return heatmapBlock(o.Heatmap, ti, st) }})
+	}
+	if !filtered {
+		secs = append(secs, section{"data", func() string {
+			out := "\n" + dataBlock(o.Data, ti, g, st, v)
+			if n := len(o.NotTracked); n > 0 {
+				out += indent + st.dim(fmt.Sprintf("not tracked in your data: %s", plural(int64(n), "metric"))) + "\n"
+			}
+			return out
+		}})
+	}
+	return secs
+}
+
+// wants reports whether a category (or sleep / workouts) is selected.
+func (v overviewView) wants(name string) bool {
+	if len(v.categories) == 0 {
+		return true
+	}
+	return slices.Contains(v.categories, name)
 }
 
 // titleLine is "healthcli overview" on the left and the database and import
@@ -172,80 +220,6 @@ func pctText(pct float64) string {
 	return fmt.Sprintf("%+d%%", int(r))
 }
 
-// metricTable draws the header and one row per metric.
-func metricTable(o *stats.Overview, ti termInfo, g glyphSet, st style) string {
-	// Plain-text cells first, so column widths can come from the data.
-	labelW, latestW := len("METRIC"), len("LATEST")
-	latest := make([]string, len(o.Metrics))
-	for i, r := range o.Metrics {
-		latest[i] = "-"
-		if r.Value != nil {
-			latest[i] = withUnit(*r.Value, r.Metric, r.Unit, ti.unicode)
-		}
-		labelW = max(labelW, runeLen(r.Label))
-		latest[i] = fit(latest[i], maxLatestW, g)
-		latestW = max(latestW, runeLen(latest[i]))
-	}
-	// The age column is as wide as its widest text ("1500 d" needs 6).
-	ageW := minAgeW
-	for _, r := range o.Metrics {
-		ageW = max(ageW, runeLen(ageText(r)))
-	}
-
-	// Long registry labels ("Walking + running distance") must not push the
-	// line past the terminal: cut the label column to what is left once the
-	// other columns have their minimum, but never below 12.
-	labelW = min(labelW, max(ti.width-(len(indent)+2+latestW+2+deltaW+2+ageW), 12))
-	labels := make([]string, len(o.Metrics))
-	for i, r := range o.Metrics {
-		labels[i] = fit(r.Label, labelW, g)
-	}
-
-	// Width budget. Drop the sparkline first when the line gets too long,
-	// then the band. The fixed part is: indent, label, value, delta, age and
-	// the two-space gaps between them.
-	fixed := len(indent) + labelW + 2 + latestW + 2 + deltaW + 2 + ageW
-	showBand := true
-	sparkW := min(ti.width-(fixed+2+bandW)-2, stats.SparkDays)
-	if sparkW < minSpark {
-		sparkW = 0
-		showBand = fixed+2+bandW <= ti.width
-	}
-	areaW := deltaW // the delta+band area, which also holds state words
-	if showBand {
-		areaW += 2 + bandW
-	}
-
-	var b strings.Builder
-	head := indent + padRight("METRIC", labelW) + "  " + padRight("LATEST", latestW) + "  " + padRight("VS 28-DAY USUAL", areaW)
-	if sparkW > 0 {
-		head += "  " + padRight(fmt.Sprintf("%d DAYS", sparkW), sparkW)
-	}
-	head += "  AGE"
-	b.WriteString(st.dim(strings.TrimRight(head, " ")) + "\n")
-
-	// A small dim heading per category, only when there is more than one.
-	groups := map[string]bool{}
-	for _, r := range o.Metrics {
-		groups[r.Category] = true
-	}
-	prevCategory := ""
-	for i, r := range o.Metrics {
-		if len(groups) > 1 && r.Category != prevCategory {
-			b.WriteString(indent + st.dim(strings.ToUpper(r.Category)) + "\n")
-		}
-		prevCategory = r.Category
-		line := indent + padRight(labels[i], labelW) + "  " + padRight(latest[i], latestW) + "  "
-		line += deltaArea(r, g, st, showBand, areaW)
-		if sparkW > 0 {
-			line += "  " + padRight(sparkText(r, sparkW, g), sparkW)
-		}
-		line += "  " + colorIf(r.State == stats.StateStale, st.yellow, ageText(r))
-		b.WriteString(strings.TrimRight(line, " ") + "\n")
-	}
-	return b.String()
-}
-
 // colorIf applies paint to s when cond holds.
 func colorIf(cond bool, paint func(string) string, s string) string {
 	if cond {
@@ -285,7 +259,7 @@ func verdictWord(verdict string) string {
 // Only the arrow, delta and word are coloured, plus the marker in the band,
 // never the whole row. Colour never carries meaning alone: the arrow and the
 // word say it too.
-func deltaArea(r stats.MetricRow, g glyphSet, st style, showBand bool, areaW int) string {
+func deltaArea(r stats.MetricRow, g glyphSet, st style, showBand bool, areaW int, foldAge bool) string {
 	switch r.State {
 	case stats.StateOK:
 		paint := verdictPaint(st, r.Verdict)
@@ -305,17 +279,13 @@ func deltaArea(r stats.MetricRow, g glyphSet, st style, showBand bool, areaW int
 	case stats.StateNoBaseline:
 		return st.dim(padRight(fit(fmt.Sprintf("need %dd (have %d)", stats.MinBaselineDays, r.BaselineDays), areaW, g), areaW))
 	case stats.StateStale:
-		return st.yellow(padRight("stale", areaW))
+		word := "stale"
+		if foldAge { // no AGE column at this width
+			word += " " + ageText(r)
+		}
+		return st.yellow(padRight(word, areaW))
 	}
 	return st.dim(padRight("no data", areaW))
-}
-
-// tableFooter explains the colours. It is plain text, so it also helps when
-// colour is off (the words in the rows are the same either way).
-func tableFooter(o *stats.Overview, st style) string {
-	sep := st.dim(" / ")
-	return indent + st.green("green") + st.dim(" better") + sep + st.red("red") + st.dim(" worse") + sep +
-		st.cyan("cyan") + st.dim(" changed (no good direction)") + "\n"
 }
 
 // heatmapBlock is the activity calendar, titled and indented like the other

@@ -86,14 +86,18 @@ $ healthcli --db demo.db overview
  healthcli overview                              db: demo.db · imported 1 d ago
  ──────────────────────────────────────────────────────────────────────────────
  3 typical vs your 28-day usual
+ VITALS 1 · ACTIVITY 1 · BODY 1  (not tracked: MOBILITY, SLEEP, WORKOUTS)
 
- METRIC          LATEST        VS 28-DAY USUAL               AGE
- VITALS
- Avg heart rate  79 bpm        ▼ -1%             ···░●░░···  today
- ACTIVITY
- Steps           19,415 steps  ▲ +2%             ···░░●░···  today
- BODY
- Weight          83.6 kg       ▲ +1%             ···░░░░●··  today
+   METRIC          LATEST        VS 28-DAY USUAL               17 DAYS
+
+ ━━ VITALS ━━ 1 metric · all typical ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Avg heart rate  79 bpm        ▼ -1%             ···░●░░···  ▃▁▄█▅▆▇▄▄▄▄▂▆█▅▃▃
+
+ ━━ ACTIVITY ━━ 1 metric · all typical ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Steps           19,415 steps  ▲ +2%             ···░░●░···  █▆▅▄▄▁▄▅▅█▁▇▃▇▃█▅
+
+ ━━ BODY ━━ 1 metric · all typical ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Weight          83.6 kg       ▲ +1%             ···░░░░●··  ·▁··▃··▄··▂··▁··█
  green better / red worse / cyan changed (no good direction)
 
  SLEEP    no sleep recorded in the last 30 days
@@ -120,7 +124,7 @@ $ healthcli --db demo.db overview
  not tracked in your data: 27 metrics
 ```
 
-This example is **synthetic**: it is the real output for the generated "sparse" fixture (a fitness band that records only heart rate, steps and weight), with dates shifted to look current. A device that records more gets more rows, grouped under small VITALS / ACTIVITY / BODY / MOBILITY headings; metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`).
+This example is **synthetic**: it is the real output for the generated "sparse" fixture (a fitness band that records only heart rate, steps and weight), with dates shifted to look current. A device that records more gets more rows, grouped in VITALS / ACTIVITY / BODY / MOBILITY bands (a `!` / `+` / `~` in the left gutter marks worse / better / changed rows; `--category vitals,sleep` shows only some, `--compact` drops the blank lines); metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`).
 
 Each metric is compared with its own 28-day usual and shows its own newest day and age. When a value is beyond your usual (1+ standard deviation, and a change of at least 2% or a small per-metric minimum) it is coloured by which direction is generally healthy for that metric: **green** and the word "better", **red** and "worse". Metrics with no good direction (weight, respiratory rate, wrist temperature) are **cyan** and carry the word "changed". Every beyond-usual row has its word, so nothing depends on colour; typical rows are plain. Stale readings are yellow. The legend is the line under the table.
 

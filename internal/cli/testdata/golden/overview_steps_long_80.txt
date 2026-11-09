@@ -1,9 +1,12 @@
  healthcli overview                                                 db: demo.db
  ──────────────────────────────────────────────────────────────────────────────
  1 typical vs your 28-day usual
+ ACTIVITY 1  (not tracked: VITALS, BODY, MOBILITY, SLEEP, WORKOUTS)
 
- METRIC  LATEST       VS 28-DAY USUAL               21 DAYS                AGE
- Steps   4,000 steps  ▼ -41%            ···●░░░···  ▅█▁▄█▆▄▇▅▄▇▅█▆▄▁▆▄▇▅▄  today
+   METRIC  LATEST       VS 28-DAY USUAL               26 DAYS
+
+ ━━ ACTIVITY ━━ 1 metric · all typical ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Steps   4,000 steps  ▼ -41%            ···●░░░···  ▄▇▅▄▇▅█▁▄█▆▄▇▅▄▇▅█▆▄▁▆▄▇▅▄
  green better / red worse / cyan changed (no good direction)
 
  SLEEP    no sleep recorded in the last 30 days

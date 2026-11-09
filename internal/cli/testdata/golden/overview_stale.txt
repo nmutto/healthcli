@@ -1,17 +1,21 @@
  healthcli overview                              db: demo.db · imported 3 d ago
  ──────────────────────────────────────────────────────────────────────────────
  No recent readings: the newest is 12 d old
+ VITALS 3 · ACTIVITY 2 · BODY 1 · SLEEP · WORKOUTS  (not tracked: MOBILITY)
 
- METRIC          LATEST        VS 28-DAY USUAL               AGE
- VITALS
- Avg heart rate  67 bpm        stale                         12 d
- Resting HR      66 bpm        stale                         13 d
- HRV             55 ms         stale                         14 d
- ACTIVITY
- Steps           11,800 steps  stale                         12 d
- Active energy   640 kcal      stale                         12 d
- BODY
- Weight          72.4 kg       stale                         21 d
+   METRIC          LATEST        VS 28-DAY USUAL               AGE
+
+ ━━ VITALS ━━ 3 metrics · 3 stale ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Avg heart rate  67 bpm        stale                         12 d
+   Resting HR      66 bpm        stale                         13 d
+   HRV             55 ms         stale                         14 d
+
+ ━━ ACTIVITY ━━ 2 metrics · 2 stale ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Steps           11,800 steps  stale                         12 d
+   Active energy   640 kcal      stale                         12 d
+
+ ━━ BODY ━━ 1 metric · 1 stale ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Weight          72.4 kg       stale                         21 d
  green better / red worse / cyan changed (no good direction)
 
  SLEEP    7h 00m asleep · 8h 30m in bed · 12 d ago (stale)

@@ -192,29 +192,33 @@ func TestOverviewGoldens(t *testing.T) {
 	cases := []struct {
 		name, scenario string
 		ti             termInfo
+		view           overviewView // zero value = the defaults
 	}{
-		{"overview_full_80.txt", "full", termInfo{width: 80, unicode: true}},
-		{"overview_full_60.txt", "full", termInfo{width: 60, unicode: true}},
-		{"overview_full_100.txt", "full", termInfo{width: 100, unicode: true}},
-		{"overview_full_ascii.txt", "full", termInfo{width: 80}},
-		{"overview_full_color.txt", "full", termInfo{width: 80, unicode: true, color: true}},
-		{"overview_empty.txt", "empty", termInfo{width: 80, unicode: true}},
-		{"overview_empty_60_ascii.txt", "empty", termInfo{width: 60}},
-		{"overview_sleep_only.txt", "sleep-only", termInfo{width: 80, unicode: true}},
-		{"overview_stale.txt", "stale", termInfo{width: 80, unicode: true}},
-		{"overview_apple_80.txt", "import:small", termInfo{width: 80, unicode: true}},
-		{"overview_apple_color.txt", "import:small", termInfo{width: 80, unicode: true, color: true}},
-		{"overview_apple_ascii.txt", "import:small", termInfo{width: 80}},
-		{"overview_apple_60.txt", "import:small", termInfo{width: 60, unicode: true}},
-		{"overview_sparse_80.txt", "import:sparse", termInfo{width: 80, unicode: true}},
-		{"overview_sparse_60_ascii.txt", "import:sparse", termInfo{width: 60}},
-		{"overview_steps_only.txt", "steps-only", termInfo{width: 80, unicode: true}},
-		{"overview_steps_long_80.txt", "steps-long", termInfo{width: 80, unicode: true}},
-		{"overview_steps_long_60_ascii.txt", "steps-long", termInfo{width: 60}},
+		{"overview_full_80.txt", "full", termInfo{width: 80, unicode: true}, overviewView{}},
+		{"overview_full_60.txt", "full", termInfo{width: 60, unicode: true}, overviewView{}},
+		{"overview_full_100.txt", "full", termInfo{width: 100, unicode: true}, overviewView{}},
+		{"overview_full_ascii.txt", "full", termInfo{width: 80}, overviewView{}},
+		{"overview_full_color.txt", "full", termInfo{width: 80, unicode: true, color: true}, overviewView{}},
+		{"overview_empty.txt", "empty", termInfo{width: 80, unicode: true}, overviewView{}},
+		{"overview_empty_60_ascii.txt", "empty", termInfo{width: 60}, overviewView{}},
+		{"overview_sleep_only.txt", "sleep-only", termInfo{width: 80, unicode: true}, overviewView{}},
+		{"overview_stale.txt", "stale", termInfo{width: 80, unicode: true}, overviewView{}},
+		{"overview_apple_80.txt", "import:small", termInfo{width: 80, unicode: true}, overviewView{}},
+		{"overview_apple_color.txt", "import:small", termInfo{width: 80, unicode: true, color: true}, overviewView{}},
+		{"overview_apple_ascii.txt", "import:small", termInfo{width: 80}, overviewView{}},
+		{"overview_apple_60.txt", "import:small", termInfo{width: 60, unicode: true}, overviewView{}},
+		{"overview_sparse_80.txt", "import:sparse", termInfo{width: 80, unicode: true}, overviewView{}},
+		{"overview_sparse_60_ascii.txt", "import:sparse", termInfo{width: 60}, overviewView{}},
+		{"overview_steps_only.txt", "steps-only", termInfo{width: 80, unicode: true}, overviewView{}},
+		{"overview_steps_long_80.txt", "steps-long", termInfo{width: 80, unicode: true}, overviewView{}},
+		{"overview_steps_long_60_ascii.txt", "steps-long", termInfo{width: 60}, overviewView{}},
+		{"overview_apple_compact.txt", "import:small", termInfo{width: 80, unicode: true}, overviewView{compact: true}},
+		{"overview_apple_vitals.txt", "import:small", termInfo{width: 80, unicode: true}, overviewView{categories: []string{"vitals"}}},
+		{"overview_apple_sleep_activity.txt", "import:small", termInfo{width: 80, unicode: true}, overviewView{categories: []string{"sleep", "activity"}}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			got := renderOverview(overviewReport(t, c.scenario), c.ti, testView)
+			got := renderOverview(overviewReport(t, c.scenario), c.ti, withDB(c.view, testView.dbName, testView.now))
 			checkViewGolden(t, c.name, got)
 
 			// Whatever the scenario: never wider than the terminal, and no
@@ -381,8 +385,9 @@ func TestOverviewColourIsLocal(t *testing.T) {
 	if !strings.Contains(worse, "\x1b[31m▲ +9% worse\x1b[0m") || !strings.Contains(worse, "\x1b[31m●\x1b[0m") {
 		t.Errorf("worse row should be red on delta and marker: %q", worse)
 	}
-	if strings.HasPrefix(strings.TrimSpace(worse), "\x1b") {
-		t.Errorf("the label must not be coloured: %q", worse)
+	// The gutter marker is coloured, the label after it is not.
+	if !strings.HasPrefix(worse, " \x1b[31m!\x1b[0m Resting HR") {
+		t.Errorf("red gutter marker, then a plain label: %q", worse)
 	}
 	if !strings.Contains(got, "\x1b[32m▲ +52% better\x1b[0m") {
 		t.Errorf("steps should be green and say better:\n%s", got)
@@ -426,7 +431,7 @@ func TestOverviewHeatmapFlags(t *testing.T) {
 // A device that tracks little must render cleanly: no empty rows.
 func TestOverviewStepsOnlyHasNoEmptyRows(t *testing.T) {
 	got := renderOverview(overviewReport(t, "steps-only"), termInfo{width: 80}, testView)
-	for _, bad := range []string{"stale", "HRV", "VITALS", "BODY"} {
+	for _, bad := range []string{"stale", "HRV", "== VITALS", "== BODY", "n/a"} {
 		if strings.Contains(got, bad) {
 			t.Errorf("unexpected %q in:\n%s", bad, got)
 		}
@@ -519,5 +524,65 @@ func TestHeatmapFlatLegend(t *testing.T) {
 	got := strings.Join(heatLegend(h, termInfo{width: 80}, style{}), "\n")
 	if !strings.Contains(got, "every day: 0") || strings.Contains(got, "<=0") {
 		t.Errorf("flat legend:\n%s", got)
+	}
+}
+
+func TestParseCategories(t *testing.T) {
+	got, err := parseCategories([]string{"Vitals", " SLEEP ", "vitals"})
+	if err != nil || strings.Join(got, ",") != "vitals,sleep" {
+		t.Errorf("got %v, %v", got, err)
+	}
+	_, err = parseCategories([]string{"heart"})
+	if err == nil || !strings.Contains(err.Error(), "sleep, workouts") {
+		t.Errorf("the error should list valid names: %v", err)
+	}
+}
+
+func TestOverviewCategoryAndCompactFlags(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return overviewNow }
+	defer func() { nowFunc = old }()
+	path := seedOverview(t, "full")
+
+	out, _, err := run(t, "--db", path, "overview", "--category", "vitals", "--heatmap", "sleep,workouts,steps")
+	if err != nil || !strings.Contains(out, "VITALS") || strings.Contains(out, "ACTIVITY 1") || strings.Contains(out, "DATA") {
+		t.Errorf("--category vitals: %v\n%s", err, out)
+	}
+	if _, _, err = run(t, "--db", path, "overview", "--category", "nope"); err == nil {
+		t.Error("an unknown category should fail")
+	}
+	if _, _, err = run(t, "--db", path, "overview", "--heatmap", "nope"); err == nil {
+		t.Error("an unknown heatmap should fail")
+	}
+	out, _, err = run(t, "--db", path, "overview", "--compact", "--full")
+	if err != nil || strings.Contains(out, "\n\n== ACTIVITY") {
+		t.Errorf("--compact has no blank line before a band: %v\n%s", err, out)
+	}
+}
+
+func TestCategorySummaries(t *testing.T) {
+	o := overviewReport(t, "full")
+	if len(o.Categories) != 3 || o.Categories[0].Name != "vitals" || o.Categories[0].Worse != 1 {
+		t.Errorf("categories: %+v", o.Categories)
+	}
+	for _, c := range o.Categories {
+		if sum := c.Better + c.Worse + c.Changed + c.Typical + c.Stale + c.NoBaseline + c.NoData; sum != c.Total {
+			t.Errorf("%s: parts add up to %d, total %d", c.Name, sum, c.Total)
+		}
+	}
+}
+
+// At 50 columns the table keeps the gutter, name, latest value and verdict.
+func TestOverviewTableFits50(t *testing.T) {
+	o := overviewReport(t, "full")
+	ti := termInfo{width: 50, unicode: true}
+	got := metricTable(o, ti, glyphsFor(true), style{}, overviewView{}) + tableFooter(o, style{}, ti, glyphsFor(true))
+	for _, line := range strings.Split(got, "\n") {
+		if runeLen(line) > 50 {
+			t.Errorf("line is %d wide: %q", runeLen(line), line)
+		}
+	}
+	if !strings.Contains(got, "! Resting HR") || !strings.Contains(got, "worse") {
+		t.Errorf("gutter, name and verdict word must survive:\n%s", got)
 	}
 }

@@ -1,10 +1,13 @@
  healthcli overview                             db: demo.db
  ----------------------------------------------------------
  1 typical vs your 28-day usual
+ ACTIVITY 1  (5 not tracked)
 
- METRIC  LATEST       VS 28-DAY USUAL               AGE
- Steps   4,000 steps  v -41%            ...*===...  today
- green better / red worse / cyan changed (no good direction)
+   METRIC  LATEST       VS 28-DAY USUAL
+
+ == ACTIVITY == 1 | all typical ===========================
+   Steps   4,000 steps  v -41%            ...*===...
+ green better red worse cyan changed
 
  SLEEP    no sleep recorded in the last 30 days
  WORKOUTS none in the last 30 days

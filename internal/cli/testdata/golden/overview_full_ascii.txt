@@ -1,17 +1,21 @@
  healthcli overview                              db: demo.db | imported 3 d ago
  ------------------------------------------------------------------------------
  1 better, 1 worse, 3 typical vs your 28-day usual | Resting HR +9%
+ VITALS 3 !1 | ACTIVITY 2 | BODY 1 | SLEEP | WORKOUTS  (not tracked: MOBILITY)
 
- METRIC          LATEST        VS 28-DAY USUAL               AGE
- VITALS
- Avg heart rate  67 bpm        v -3%             ...*===...  today
- Resting HR      66 bpm        ^ +9% worse       ...====..*  1 d
- HRV             55 ms         v -4%             ...=*==...  2 d
- ACTIVITY
- Steps           11,800 steps  ^ +52% better     ...====..*  today
- Active energy   640 kcal      ^ +14%            ...===*...  today
- BODY
- Weight          72.4 kg       stale                         9 d
+   METRIC          LATEST        VS 28-DAY USUAL               AGE
+
+ == VITALS == 3 metrics | 1 worse =============================================
+   Avg heart rate  67 bpm        v -3%             ...*===...
+ ! Resting HR      66 bpm        ^ +9% worse       ...====..*
+   HRV             55 ms         v -4%             ...=*==...  2 d
+
+ == ACTIVITY == 2 metrics | 1 better ==========================================
+ + Steps           11,800 steps  ^ +52% better     ...====..*
+   Active energy   640 kcal      ^ +14%            ...===*...
+
+ == BODY == 1 metric | 1 stale ================================================
+   Weight          72.4 kg       stale                         9 d
  green better / red worse / cyan changed (no good direction)
 
  SLEEP    7h 00m asleep | 8h 30m in bed | last night

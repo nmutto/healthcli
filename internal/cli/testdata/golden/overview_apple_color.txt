@@ -1,38 +1,43 @@
  [1mhealthcli overview[0m                              [2mdb: demo.db · imported 1 d ago[0m
  ──────────────────────────────────────────────────────────────────────────────
  3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
+ VITALS 9 !1 · ACTIVITY 8 · BODY 4 · MOBILITY 5 !2 · SLEEP · WORKOUTS
 
-[2m METRIC                      LATEST          VS 28-DAY USUAL               AGE[0m
- [2mVITALS[0m
- Avg heart rate              76 bpm          ▲ +2%             ···░░░●···  today
- Resting HR                  60 bpm          [31m▲ +6% worse[0m       ···░░░░[31m●[0m··  today
- HRV                         46 ms           ▼ -4%             ···░●░░···  today
- Respiratory rate            15.6/min        [36m▲ +9% changed[0m     ···░░░░[36m●[0m··  today
- Wrist temperature           36.0 °C         – 0%              ···░░●░···  today
- Blood oxygen                97%             – 0%              ···░░●░···  today
- VO2 max                     41.9 mL/kg/min  [33mstale                       [0m  [33m6 d[0m
- Walking heart rate          90 bpm          [32m▼ -4% better[0m      ···[32m●[0m░░░···  today
- Heart rate recovery         26 bpm          [2mneed 7d (have 6)            [0m  1 d
- [2mACTIVITY[0m
- Steps                       21,999 steps    [32m▲ +10% better[0m     ···░░░[32m●[0m···  today
- Active energy               880 kcal        [32m▲ +10% better[0m     ···░░░[32m●[0m···  today
- Resting energy              1,730 kcal      ▲ +2%             ···░░░●···  today
- Exercise time               43 min          ▲ +16%            ···░░●░···  today
- Stand time                  364 min         ▼ -12%            ···░●░░···  today
- Flights climbed             8 flights       ▼ -39%            ···●░░░···  today
- Walking + running distance  6.5 km          – 0%              ···░░●░···  today
- Time in daylight            53 min          ▲ +14%            ···░░●░···  today
- [2mBODY[0m
- Weight                      78.5 kg         [2mneed 7d (have 4)            [0m  1 d
- Body fat                    18.5%           [2mneed 7d (have 4)            [0m  1 d
- BMI                         24.0            [2mneed 7d (have 4)            [0m  1 d
- Lean body mass              63.2 kg         [2mneed 7d (have 4)            [0m  1 d
- [2mMOBILITY[0m
- Walking speed               5.5 km/h        ▲ +2%             ···░░●░···  today
- Step length                 73 cm           ▲ +2%             ···░░░●···  today
- Walking asymmetry           4.9%            [31m▲ +38% worse[0m      ···░░░░[31m●[0m··  today
- Double support time         30.7%           [31m▲ +7% worse[0m       ···░░░░[31m●[0m··  today
- Walking steadiness          94%             [33mstale                       [0m  [33m6 d[0m
+[2m   METRIC                      LATEST          VS 28-DAY USUAL               AGE[0m
+
+ [2m━━[0m [1mVITALS[0m [2m━━[0m 9 metrics · 1 better · 1 worse · 1 changed · 1 stale [2m━━━━━━━━━━━━[0m
+   Avg heart rate              76[2m bpm[0m          ▲ +2%             ···░░░●···
+ [31m![0m Resting HR                  60[2m bpm[0m          [31m▲ +6% worse[0m       ···░░░░[31m●[0m··
+   HRV                         46[2m ms[0m           ▼ -4%             ···░●░░···
+ [36m~[0m Respiratory rate            15.6[2m/min[0m        [36m▲ +9% changed[0m     ···░░░░[36m●[0m··
+   Wrist temperature           36.0[2m °C[0m         – 0%              ···░░●░···
+   Blood oxygen                97[2m%[0m             – 0%              ···░░●░···
+   VO2 max                     41.9[2m mL/kg/min[0m  [33mstale                       [0m  [33m6 d[0m
+ [32m+[0m Walking heart rate          90[2m bpm[0m          [32m▼ -4% better[0m      ···[32m●[0m░░░···
+   Heart rate recovery         26[2m bpm[0m          [2mneed 7d (have 6)            [0m
+
+ [2m━━[0m [1mACTIVITY[0m [2m━━[0m 8 metrics · 2 better [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+ [32m+[0m Steps                       21,999[2m steps[0m    [32m▲ +10% better[0m     ···░░░[32m●[0m···
+ [32m+[0m Active energy               880[2m kcal[0m        [32m▲ +10% better[0m     ···░░░[32m●[0m···
+   Resting energy              1,730[2m kcal[0m      ▲ +2%             ···░░░●···
+   Exercise time               43[2m min[0m          ▲ +16%            ···░░●░···
+   Stand time                  364[2m min[0m         ▼ -12%            ···░●░░···
+   Flights climbed             8[2m flights[0m       ▼ -39%            ···●░░░···
+   Walking + running distance  6.5[2m km[0m          – 0%              ···░░●░···
+   Time in daylight            53[2m min[0m          ▲ +14%            ···░░●░···
+
+ [2m━━[0m [1mBODY[0m [2m━━[0m 4 metrics · not enough data [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+   Weight                      78.5[2m kg[0m         [2mneed 7d (have 4)            [0m
+   Body fat                    18.5[2m%[0m           [2mneed 7d (have 4)            [0m
+   BMI                         24.0            [2mneed 7d (have 4)            [0m
+   Lean body mass              63.2[2m kg[0m         [2mneed 7d (have 4)            [0m
+
+ [2m━━[0m [1mMOBILITY[0m [2m━━[0m 5 metrics · 2 worse · 1 stale [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+   Walking speed               5.5[2m km/h[0m        ▲ +2%             ···░░●░···
+   Step length                 73[2m cm[0m           ▲ +2%             ···░░░●···
+ [31m![0m Walking asymmetry           4.9[2m%[0m            [31m▲ +38% worse[0m      ···░░░░[31m●[0m··
+ [31m![0m Double support time         30.7[2m%[0m           [31m▲ +7% worse[0m       ···░░░░[31m●[0m··
+   Walking steadiness          94[2m%[0m             [33mstale                       [0m  [33m6 d[0m
  [32mgreen[0m[2m better[0m[2m / [0m[31mred[0m[2m worse[0m[2m / [0m[36mcyan[0m[2m changed (no good direction)[0m
 
  [1mSLEEP   [0m 7h 01m asleep · 7h 30m in bed · last night
