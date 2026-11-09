@@ -64,6 +64,16 @@ func seedOverview(t *testing.T, scenario string) string {
 	midnight := time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC)
 	dayAt := func(back int) time.Time { return midnight.AddDate(0, 0, -(back + shift)) }
 
+	if scenario == "steps-long" { // 12 full weeks of steps, a few zero days
+		for back := 0; back < 90; back++ {
+			steps := 4000 + float64((back*37)%11)*700
+			if back%13 == 5 {
+				steps = 0
+			}
+			sample("step_count", dayAt(back), 12, steps, "Test Phone")
+		}
+		return path
+	}
 	if scenario == "steps-only" {
 		for back := 0; back < 20; back++ {
 			sample("step_count", dayAt(back), 12, 5000+float64((back*7)%9)*600, "Test Phone")
@@ -199,6 +209,8 @@ func TestOverviewGoldens(t *testing.T) {
 		{"overview_sparse_80.txt", "import:sparse", termInfo{width: 80, unicode: true}},
 		{"overview_sparse_60_ascii.txt", "import:sparse", termInfo{width: 60}},
 		{"overview_steps_only.txt", "steps-only", termInfo{width: 80, unicode: true}},
+		{"overview_steps_long_80.txt", "steps-long", termInfo{width: 80, unicode: true}},
+		{"overview_steps_long_60_ascii.txt", "steps-long", termInfo{width: 60}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -217,21 +229,6 @@ func TestOverviewGoldens(t *testing.T) {
 			}
 		})
 	}
-}
-
-// stripANSI removes colour codes, to measure the visible width of a line.
-func stripANSI(s string) string {
-	var b strings.Builder
-	for i := 0; i < len(s); i++ {
-		if s[i] == 0x1b {
-			for i < len(s) && s[i] != 'm' {
-				i++
-			}
-			continue
-		}
-		b.WriteByte(s[i])
-	}
-	return b.String()
 }
 
 func TestOverviewPlainOutputHasNoEscapes(t *testing.T) {
@@ -315,7 +312,7 @@ func TestOverviewHandBuiltStates(t *testing.T) {
 	got := renderOverview(o, termInfo{width: 80}, testView)
 	for _, want := range []string{
 		"Not enough history to compare yet",
-		"baseline 3/7 days",
+		"need 7d (have 3)",
 		"no data",
 		"in bed 7h 40m, no sleep stages",
 		"none in the last 30 days",
@@ -352,8 +349,8 @@ func TestVerdictColourTable(t *testing.T) {
 		{metrics.LowerBetter, stats.Below, ansiGreen, "better"},
 		{metrics.LowerBetter, stats.Above, ansiRed, "worse"},
 		{metrics.LowerBetter, stats.Typical, "", ""},
-		{metrics.Neutral, stats.Above, ansiCyan, ""},
-		{metrics.Neutral, stats.Below, ansiCyan, ""},
+		{metrics.Neutral, stats.Above, ansiCyan, "changed"},
+		{metrics.Neutral, stats.Below, ansiCyan, "changed"},
 		{metrics.Neutral, stats.Typical, "", ""},
 	}
 	for _, c := range cases {
@@ -460,5 +457,67 @@ func TestWithUnit(t *testing.T) {
 		if got := withUnit(c.v, c.metric, c.unit, c.unicode); got != c.want {
 			t.Errorf("withUnit(%v, %s) = %q, want %q", c.v, c.metric, got, c.want)
 		}
+	}
+}
+
+// Whatever the data, no row may be wider than the terminal: long labels,
+// freak numbers and a 1500-day-old reading are all cut or capped.
+func TestOverviewRowsNeverOverflow(t *testing.T) {
+	f := func(v float64) *float64 { return &v }
+	mk := func(metric, label string, state string, age int, v float64) stats.MetricRow {
+		return stats.MetricRow{Metric: metric, Label: label, Category: "vitals", Unit: "count", State: state,
+			AgeDays: age, Value: f(v), Spark: make([]*float64, 28), Mean: f(1), Stddev: f(1),
+			DeltaPct: f(1e300), Z: f(1e300), Comparison: new(string), Verdict: stats.VerdictChanged}
+	}
+	*(mk("x", "", "", 0, 0).Comparison) = ""
+	rows := []stats.MetricRow{
+		mk("step_count", "Walking + running distance", stats.StateStale, 1500, 12345),
+		mk("heart_rate", "A very long label indeed, far beyond any column", stats.StateOK, 0, 1.5e300),
+		mk("body_mass", "Weight", stats.StateStale, 400000, 80),
+	}
+	rows[1].Comparison = new(string)
+	*rows[1].Comparison = stats.Above
+	o := &stats.Overview{Today: "2026-11-08", Metrics: rows, NotTracked: []string{},
+		Sleep: stats.OverviewSleep{State: stats.StateNoData}, Workouts: stats.WorkoutsSummary{Days: 30},
+		Data: stats.DataHealth{Samples: 3, SourceCount: map[string]int64{"watch": 3}}}
+	for _, width := range []int{60, 70, 80, 90, 100} {
+		for _, uni := range []bool{true, false} {
+			got := renderOverview(o, termInfo{width: width, unicode: uni}, testView)
+			for _, line := range strings.Split(got, "\n") {
+				if n := runeLen(line); n > width {
+					t.Errorf("width %d unicode %v: line is %d wide: %q", width, uni, n, line)
+				}
+			}
+		}
+	}
+	if got := renderOverview(o, termInfo{width: 80}, testView); strings.Contains(got, "Inf") || strings.Contains(got, "NaN") {
+		t.Errorf("non-finite text leaked:\n%s", got)
+	}
+}
+
+// Month names above the grid: a later month must not vanish when it sits one
+// column after the first (partial) week's label.
+func TestHeatMonthLineKeepsSeptember(t *testing.T) {
+	var weeks [][]stats.HeatDay
+	start, _ := time.Parse(stats.DayLayout, "2026-08-25") // a Monday
+	for w := 0; w < 6; w++ {
+		var week []stats.HeatDay
+		for d := 0; d < 7; d++ {
+			week = append(week, stats.HeatDay{Day: start.AddDate(0, 0, w*7+d).Format(stats.DayLayout)})
+		}
+		weeks = append(weeks, week)
+	}
+	line := heatMonthLine(weeks)
+	if !strings.Contains(line, "Sep") || !strings.Contains(line, "Oct") {
+		t.Errorf("month line %q must show Sep and Oct", line)
+	}
+}
+
+// All-zero data: the lowest shade and a one-sentence legend, no "<=0 <=0 <=0".
+func TestHeatmapFlatLegend(t *testing.T) {
+	h := &stats.Heatmap{Metric: "step_count", Unit: "count", Today: "2026-11-08", Thresholds: []float64{0, 0, 0, 0}, Flat: true, DaysWithData: 3}
+	got := strings.Join(heatLegend(h, termInfo{width: 80}, style{}), "\n")
+	if !strings.Contains(got, "every day: 0") || strings.Contains(got, "<=0") {
+		t.Errorf("flat legend:\n%s", got)
 	}
 }

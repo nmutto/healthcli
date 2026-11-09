@@ -2,16 +2,16 @@
  ──────────────────────────────────────────────────────────────────────────────
  1 better, 1 worse, 3 typical vs your 28-day usual · Resting HR +9%
 
-[2m METRIC          LATEST        VS 28-DAY USUAL              AGE[0m
+[2m METRIC          LATEST        VS 28-DAY USUAL               AGE[0m
  [2mVITALS[0m
- Avg heart rate  67 bpm        ▼ -3%            ···●░░░···  today
- Resting HR      66 bpm        [31m▲ +9% worse[0m      ···░░░░··[31m●[0m  1 d
- HRV             55 ms         ▼ -4%            ···░●░░···  2 d
+ Avg heart rate  67 bpm        ▼ -3%             ···●░░░···  today
+ Resting HR      66 bpm        [31m▲ +9% worse[0m       ···░░░░··[31m●[0m  1 d
+ HRV             55 ms         ▼ -4%             ···░●░░···  2 d
  [2mACTIVITY[0m
- Steps           11,800 steps  [32m▲ +52% better[0m    ···░░░░··[32m●[0m  today
- Active energy   640 kcal      ▲ +14%           ···░░░●···  today
+ Steps           11,800 steps  [32m▲ +52% better[0m     ···░░░░··[32m●[0m  today
+ Active energy   640 kcal      ▲ +14%            ···░░░●···  today
  [2mBODY[0m
- Weight          72.4 kg       [33mstale                      [0m  [33m9 d[0m
+ Weight          72.4 kg       [33mstale                       [0m  [33m9 d[0m
  [32mgreen[0m[2m better[0m[2m / [0m[31mred[0m[2m worse[0m[2m / [0m[36mcyan[0m[2m changed (no good direction)[0m
 
  [1mSLEEP   [0m 7h 00m asleep · 8h 30m in bed · last night

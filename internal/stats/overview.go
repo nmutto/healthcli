@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"sort"
 	"time"
 
@@ -172,6 +173,34 @@ type Gap struct {
 	Span    int    `json:"span_days"`
 }
 
+// MinRelativeChange is the smallest relative change (percent) that counts as
+// better / worse / changed when the metric has no MinDelta of its own.
+const MinRelativeChange = 2.0
+
+// futureSlack is how far past "now" a sample may start and still count: a
+// device in another time zone can be a day ahead. Later samples are ignored.
+const futureSlack = 24 * time.Hour
+
+// meaningful says whether a change is big enough to matter, on top of being
+// beyond one standard deviation: a tiny wobble in a very steady metric is
+// still "typical".
+func meaningful(m metrics.Metric, c Comparison) bool {
+	if m.MinDelta > 0 {
+		return math.Abs(c.Delta) >= m.MinDelta
+	}
+	return math.Abs(c.DeltaPct) >= MinRelativeChange
+}
+
+// isFinite reports whether every number is a real, finite float.
+func isFinite(xs ...float64) bool {
+	for _, x := range xs {
+		if math.IsNaN(x) || math.IsInf(x, 0) {
+			return false
+		}
+	}
+	return true
+}
+
 // BuildOverview reads everything the overview shows. now decides what
 // "today" is (its own local calendar date), which keeps tests deterministic.
 func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time, opts OverviewOptions) (*Overview, error) {
@@ -179,7 +208,7 @@ func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time, opts Overvi
 	o := &Overview{Today: today, Metrics: []MetricRow{}, NotTracked: []string{}}
 
 	for _, name := range metrics.Names() {
-		row, err := buildRow(ctx, conn, name, today)
+		row, err := buildRow(ctx, conn, name, today, now.Add(futureSlack).Unix())
 		if err != nil {
 			return nil, err
 		}
@@ -203,7 +232,7 @@ func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time, opts Overvi
 	if o.Workouts, err = buildWorkouts(ctx, conn, today); err != nil {
 		return nil, err
 	}
-	if o.Data, err = buildDataHealth(ctx, conn, o.Metrics); err != nil {
+	if o.Data, err = buildDataHealth(ctx, conn, o.Metrics, now); err != nil {
 		return nil, err
 	}
 	if o.Heatmap, err = buildOverviewHeatmap(ctx, conn, o, now, opts); err != nil {
@@ -307,7 +336,7 @@ func ageOf(today, day string) (int, error) {
 	return max(n, 0), err
 }
 
-func buildRow(ctx context.Context, conn *sql.DB, name, today string) (MetricRow, error) {
+func buildRow(ctx context.Context, conn *sql.DB, name, today string, maxStart int64) (MetricRow, error) {
 	m, err := metrics.Lookup(name)
 	if err != nil {
 		return MetricRow{}, err
@@ -318,7 +347,7 @@ func buildRow(ctx context.Context, conn *sql.DB, name, today string) (MetricRow,
 	}
 	row := MetricRow{Metric: m.Name, Label: label, Category: string(m.Category), Polarity: string(m.Polarity), Unit: m.Unit, State: StateNoData, Spark: []*float64{}}
 
-	latest, err := LatestSample(ctx, conn, m.Name)
+	latest, err := latestSampleUpTo(ctx, conn, m.Name, maxStart)
 	if errors.Is(err, ErrNoData) {
 		return row, nil
 	}
@@ -339,7 +368,12 @@ func buildRow(ctx context.Context, conn *sql.DB, name, today string) (MetricRow,
 		return row, nil // cannot happen: the sample is on that day
 	}
 	v := daily[0].Value
-	row.Value, row.Source = &v, daily[0].Source
+	row.Source = daily[0].Source
+	if !isFinite(v) { // a sum that overflowed: no usable number to show or compare
+		row.State = StateNoBaseline
+		return row, nil
+	}
+	row.Value = &v
 
 	if row.Spark, err = sparkValues(ctx, conn, m.Name, today, latest.Day); err != nil {
 		return MetricRow{}, err
@@ -358,8 +392,15 @@ func buildRow(ctx context.Context, conn *sql.DB, name, today string) (MetricRow,
 	if err != nil {
 		return MetricRow{}, err
 	}
+	if !isFinite(b.Mean, b.Stddev) { // the baseline overflowed: cannot compare
+		row.State = StateNoBaseline
+		return row, nil
+	}
 	c := Compare(v, b)
 	lab := c.Label
+	if lab != Typical && !meaningful(m, c) {
+		lab = Typical // beyond one stddev, but too small a change to matter
+	}
 	row.State = StateOK
 	row.Mean, row.Stddev = &b.Mean, &b.Stddev
 	row.DeltaPct, row.Z, row.Comparison = &c.DeltaPct, &c.Z, &lab
@@ -389,7 +430,7 @@ func sparkValues(ctx context.Context, conn *sql.DB, metric, today, latestDay str
 		if err != nil {
 			return nil, err
 		}
-		if v, ok := byDay[day]; ok {
+		if v, ok := byDay[day]; ok && isFinite(v) {
 			out[i] = &v
 		}
 	}
@@ -451,7 +492,7 @@ func buildWorkouts(ctx context.Context, conn *sql.DB, today string) (WorkoutsSum
 	return w, nil
 }
 
-func buildDataHealth(ctx context.Context, conn *sql.DB, rows []MetricRow) (DataHealth, error) {
+func buildDataHealth(ctx context.Context, conn *sql.DB, rows []MetricRow, now time.Time) (DataHealth, error) {
 	d := DataHealth{SourceCount: map[string]int64{}, Gaps: []Gap{}}
 
 	// Rows per source, grouped into classes (a user can have several iPhones).
@@ -482,7 +523,7 @@ func buildDataHealth(ctx context.Context, conn *sql.DB, rows []MetricRow) (DataH
 	var first, last sql.NullString // NULL when the table is empty
 	err = conn.QueryRowContext(ctx, `
 		SELECT min(date(start_ts + tz_offset, 'unixepoch')), max(date(start_ts + tz_offset, 'unixepoch'))
-		FROM samples`).Scan(&first, &last)
+		FROM samples WHERE start_ts <= ?`, now.Add(futureSlack).Unix()).Scan(&first, &last)
 	if err != nil {
 		return d, fmt.Errorf("stats: sample range: %w", err)
 	}

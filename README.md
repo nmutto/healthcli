@@ -85,15 +85,15 @@ One screen with every metric, last night's sleep, recent workouts and how comple
 $ healthcli --db demo.db overview
  healthcli overview                              db: demo.db · imported 1 d ago
  ──────────────────────────────────────────────────────────────────────────────
- 1 changed, 2 typical vs your 28-day usual · Weight +1%
+ 3 typical vs your 28-day usual
 
- METRIC          LATEST        VS 28-DAY USUAL              AGE
+ METRIC          LATEST        VS 28-DAY USUAL               AGE
  VITALS
- Avg heart rate  79 bpm        ▼ -1%            ···░●░░···  today
+ Avg heart rate  79 bpm        ▼ -1%             ···░●░░···  today
  ACTIVITY
- Steps           19,415 steps  ▲ +2%            ···░░●░···  today
+ Steps           19,415 steps  ▲ +2%             ···░░●░···  today
  BODY
- Weight          83.6 kg       ▲ +1%            ···░░░░●··  today
+ Weight          83.6 kg       ▲ +1%             ···░░░░●··  today
  green better / red worse / cyan changed (no good direction)
 
  SLEEP    no sleep recorded in the last 30 days
@@ -122,7 +122,7 @@ $ healthcli --db demo.db overview
 
 This example is **synthetic**: it is the real output for the generated "sparse" fixture (a fitness band that records only heart rate, steps and weight), with dates shifted to look current. A device that records more gets more rows, grouped under small VITALS / ACTIVITY / BODY / MOBILITY headings; metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`).
 
-Each metric is compared with its own 28-day usual and shows its own newest day and age. When a value is beyond your usual (1+ standard deviation) it is coloured by which direction is generally healthy for that metric: **green** and the word "better", **red** and "worse". Metrics with no good direction (weight, respiratory rate, wrist temperature) are **cyan**, "changed". The words and arrows are printed even without colour. Stale readings are yellow. The legend is the line under the table.
+Each metric is compared with its own 28-day usual and shows its own newest day and age. When a value is beyond your usual (1+ standard deviation, and a change of at least 2% or a small per-metric minimum) it is coloured by which direction is generally healthy for that metric: **green** and the word "better", **red** and "worse". Metrics with no good direction (weight, respiratory rate, wrist temperature) are **cyan** and carry the word "changed". Every beyond-usual row has its word, so nothing depends on colour; typical rows are plain. Stale readings are yellow. The legend is the line under the table.
 
 > The better/worse direction is a general guide, not medical advice. What is healthy for one person (an athlete's low resting heart rate, deliberate weight change) can differ.
 

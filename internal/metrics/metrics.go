@@ -64,6 +64,11 @@ type Metric struct {
 	// metric (0 for most; 1 for weight, temperature, rates like 16.2/min).
 	// It is display only: stored values keep full precision.
 	Decimals int
+	// MinDelta, when above 0, is the smallest absolute change from the usual
+	// that counts as a real change for this metric (in its unit). Otherwise
+	// the overview wants a 2% relative change. It keeps tiny wobbles in
+	// narrow-range metrics from being called "better" or "worse".
+	MinDelta float64
 	// Polarity is the general-population guide described on the type.
 	Polarity Polarity
 	// Daily is how the samples of one local day become a single value.
@@ -125,8 +130,8 @@ var known = []Metric{
 
 	// Newer metrics, grouped by category.
 	// Vitals
-	{Name: "respiratory_rate", Label: "Respiratory rate", Category: Vitals, Unit: "breaths/min", Decimals: 1, Polarity: Neutral, Daily: Avg, Conversions: perMin},
-	{Name: "apple_sleeping_wrist_temperature", Label: "Wrist temperature", Category: Vitals, Unit: "degC", Decimals: 1, Polarity: Neutral, Daily: Avg, Conversions: map[string]float64{"c": 1, "°c": 1}},
+	{Name: "respiratory_rate", Label: "Respiratory rate", Category: Vitals, Unit: "breaths/min", Decimals: 1, MinDelta: 0.5, Polarity: Neutral, Daily: Avg, Conversions: perMin},
+	{Name: "apple_sleeping_wrist_temperature", Label: "Wrist temperature", Category: Vitals, Unit: "degC", Decimals: 1, MinDelta: 0.2, Polarity: Neutral, Daily: Avg, Conversions: map[string]float64{"c": 1, "°c": 1}},
 	{Name: "oxygen_saturation", Label: "Blood oxygen", Category: Vitals, Unit: "percent", Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
 	{Name: "vo2_max", Label: "VO2 max", Category: Vitals, Unit: "mL/kg/min", Decimals: 1, Polarity: HigherBetter, Daily: Latest, Conversions: vo2Spellings},
 	{Name: "walking_heart_rate_average", Label: "Walking heart rate", Category: Vitals, Unit: "bpm", Polarity: LowerBetter, Daily: Avg, Conversions: perMin},

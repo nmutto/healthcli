@@ -106,8 +106,8 @@ func todayMark(unicode bool) string {
 // heatMonthLine puts a three-letter month name above the first week column
 // of each month, skipping a name that would run into the previous one.
 func heatMonthLine(weeks [][]stats.HeatDay) string {
-	line := []rune(strings.Repeat(" ", heatLabelWidth+heatCellWidth*len(weeks)))
-	prev, end := -1, 0
+	line := []rune(strings.Repeat(" ", heatLabelWidth+heatCellWidth*len(weeks)+3)) // +3: room for a name in the last column
+	prev, end, lastPos := -1, 0, -1
 	for i, week := range weeks {
 		// The first Monday-to-Sunday column that contains day 1 of a month,
 		// or the very first column, carries the label.
@@ -127,8 +127,17 @@ func heatMonthLine(weeks [][]stats.HeatDay) string {
 		prev = month
 		pos := heatLabelWidth + heatCellWidth*i
 		if pos < end {
-			continue
+			// Too close to the previous label. The first column is only a
+			// partial month (its label is a guess), so the newer month wins
+			// there; otherwise the new label is skipped.
+			if lastPos != heatLabelWidth {
+				continue
+			}
+			for k := lastPos; k < end; k++ {
+				line[k] = ' '
+			}
 		}
+		lastPos = pos
 		name := t.Format("Jan")
 		copy(line[pos:], []rune(name))
 		end = pos + len(name) + 1
@@ -145,6 +154,17 @@ func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
 		le = "<="
 	}
 	unit := unitLabel(h.Metric, h.Unit)
+	if h.Flat && len(h.Thresholds) > 0 {
+		// Every day has the same value: one shade, one sentence, no "≤0 ≤0 ≤0".
+		level := 3
+		if h.Thresholds[0] == 0 {
+			level = 1
+		}
+		return []string{
+			st.wrap(heatColors[level-1], string(g.shade(level))) + " every day: " + formatValue(h.Thresholds[0], h.Metric),
+			st.dim(string(g.gap)) + " no data   " + todayMark(ti.unicode) + " today   " + unit + " per day",
+		}
+	}
 	var parts []string
 	for i := 1; i <= stats.HeatLevels; i++ {
 		glyph := st.wrap(heatColors[i-1], string(g.shade(i)))

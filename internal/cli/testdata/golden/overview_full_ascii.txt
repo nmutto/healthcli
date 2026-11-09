@@ -2,16 +2,16 @@
  ------------------------------------------------------------------------------
  1 better, 1 worse, 3 typical vs your 28-day usual | Resting HR +9%
 
- METRIC          LATEST        VS 28-DAY USUAL              AGE
+ METRIC          LATEST        VS 28-DAY USUAL               AGE
  VITALS
- Avg heart rate  67 bpm        v -3%            ...*===...  today
- Resting HR      66 bpm        ^ +9% worse      ...====..*  1 d
- HRV             55 ms         v -4%            ...=*==...  2 d
+ Avg heart rate  67 bpm        v -3%             ...*===...  today
+ Resting HR      66 bpm        ^ +9% worse       ...====..*  1 d
+ HRV             55 ms         v -4%             ...=*==...  2 d
  ACTIVITY
- Steps           11,800 steps  ^ +52% better    ...====..*  today
- Active energy   640 kcal      ^ +14%           ...===*...  today
+ Steps           11,800 steps  ^ +52% better     ...====..*  today
+ Active energy   640 kcal      ^ +14%            ...===*...  today
  BODY
- Weight          72.4 kg       stale                        9 d
+ Weight          72.4 kg       stale                         9 d
  green better / red worse / cyan changed (no good direction)
 
  SLEEP    7h 00m asleep | 8h 30m in bed | last night

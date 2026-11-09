@@ -61,6 +61,9 @@ func (st style) red(s string) string    { return st.wrap(ansiRed, s) }
 
 // formatInt prints a whole number with thousands separators: 12345 -> "12,345".
 func formatInt(v float64) string {
+	if huge(v) {
+		return formatHuge(v)
+	}
 	n := int64(math.Round(v))
 	neg := n < 0
 	if neg {
@@ -81,6 +84,22 @@ func formatInt(v float64) string {
 	return b.String()
 }
 
+// maxPlain is the largest magnitude printed in full; beyond it numbers switch
+// to scientific notation so a freak value cannot widen a column (and int64
+// conversion cannot overflow).
+const maxPlain = 1e15
+
+// huge reports a number that cannot be printed in full: too big, NaN or Inf.
+func huge(v float64) bool { return math.IsNaN(v) || math.IsInf(v, 0) || math.Abs(v) >= maxPlain }
+
+// formatHuge prints such a number: "1.00e+300", or "-" for NaN and Inf.
+func formatHuge(v float64) string {
+	if math.IsNaN(v) || math.IsInf(v, 0) {
+		return "-"
+	}
+	return strconv.FormatFloat(v, 'e', 2, 64)
+}
+
 // formatDuration prints "45m" under an hour and "7h 12m" from an hour up.
 // Rounding to whole minutes first avoids "6h 60m".
 func formatDuration(d time.Duration) string {
@@ -94,6 +113,9 @@ func formatDuration(d time.Duration) string {
 // formatValue prints a metric value with the digits its registry entry calls
 // for (Metric.Decimals) and thousands separators (no unit suffix).
 func formatValue(v float64, metric string) string {
+	if huge(v) {
+		return formatHuge(v)
+	}
 	if d := decimals(metric); d > 0 {
 		return strconv.FormatFloat(v, 'f', d, 64)
 	}

@@ -1,14 +1,14 @@
  healthcli overview          db: demo.db | imported 1 d ago
  ----------------------------------------------------------
- 1 changed, 2 typical vs your 28-day usual | Weight +1%
+ 3 typical vs your 28-day usual
 
- METRIC          LATEST        VS 28-DAY USUAL  AGE
+ METRIC          LATEST        VS 28-DAY USUAL   AGE
  VITALS
- Avg heart rate  79 bpm        v -1%            today
+ Avg heart rate  79 bpm        v -1%             today
  ACTIVITY
- Steps           19,415 steps  ^ +2%            today
+ Steps           19,415 steps  ^ +2%             today
  BODY
- Weight          83.6 kg       ^ +1%            today
+ Weight          83.6 kg       ^ +1%             today
  green better / red worse / cyan changed (no good direction)
 
  SLEEP    no sleep recorded in the last 30 days

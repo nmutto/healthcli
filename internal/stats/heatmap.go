@@ -35,9 +35,13 @@ type Heatmap struct {
 	// Thresholds are the 4 upper bounds of levels 1..4: level 1 is
 	// value <= Thresholds[0], level 2 is <= Thresholds[1], ... and level 5 is
 	// everything above Thresholds[3]. Empty when there is no data.
-	Thresholds   []float64   `json:"thresholds"`
-	DaysWithData int         `json:"days_with_data"`
-	Weeks        [][]HeatDay `json:"weeks"`
+	Thresholds   []float64 `json:"thresholds"`
+	DaysWithData int       `json:"days_with_data"`
+	// Flat is true when every day with data has the same value (nothing is
+	// high or low). Zero everywhere gets the lowest shade, anything else the
+	// middle one.
+	Flat  bool        `json:"flat,omitempty"`
+	Weeks [][]HeatDay `json:"weeks"`
 }
 
 // Empty reports whether no day in the window has data.
@@ -69,7 +73,9 @@ func BuildHeatmap(ctx context.Context, conn *sql.DB, metric string, weeks int, n
 	}
 	byDay := make(map[string]float64, len(series))
 	for _, dv := range series {
-		byDay[dv.Day] = dv.Value
+		if isFinite(dv.Value) { // an overflowed sum cannot be drawn or printed
+			byDay[dv.Day] = dv.Value
+		}
 	}
 	return layoutHeatmap(m.Name, m.Unit, today, from, weeks, byDay), nil
 }
@@ -84,6 +90,7 @@ func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string
 	h.Thresholds = QuintileThresholds(values)
 	h.DaysWithData = len(values)
 	flat := allEqual(values)
+	h.Flat = flat
 
 	for w := 0; w < weeks; w++ {
 		week := make([]HeatDay, 7)
@@ -97,6 +104,9 @@ func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string
 				cell.Level = HeatLevel(v, h.Thresholds)
 				if flat {
 					cell.Level = flatLevel
+					if v == 0 {
+						cell.Level = 1 // a wall of zeros is "none", not "medium"
+					}
 				}
 			}
 			week[d] = cell

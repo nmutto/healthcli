@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"math"
 	"sort"
 	"time"
 
@@ -131,6 +132,12 @@ type Sample struct {
 // No per-day source rule here: "latest" means the newest reading, from
 // whichever device took it.
 func LatestSample(ctx context.Context, conn *sql.DB, metric string) (Sample, error) {
+	return latestSampleUpTo(ctx, conn, metric, math.MaxInt64)
+}
+
+// latestSampleUpTo is LatestSample ignoring samples that start after maxStart
+// (Unix seconds). The overview uses it to skip future-dated samples.
+func latestSampleUpTo(ctx context.Context, conn *sql.DB, metric string, maxStart int64) (Sample, error) {
 	m, err := metrics.Lookup(metric)
 	if err != nil {
 		return Sample{}, err
@@ -141,8 +148,8 @@ func LatestSample(ctx context.Context, conn *sql.DB, metric string) (Sample, err
 		SELECT start_ts, end_ts, value, unit, tz_offset, source
 		FROM samples
 		WHERE metric = ?
-		  AND start_ts = (SELECT MAX(start_ts) FROM samples WHERE metric = ?)`,
-		m.Name, m.Name)
+		  AND start_ts = (SELECT MAX(start_ts) FROM samples WHERE metric = ? AND start_ts <= ?)`,
+		m.Name, m.Name, maxStart)
 	if err != nil {
 		return Sample{}, fmt.Errorf("stats: latest %s: %w", m.Name, err)
 	}

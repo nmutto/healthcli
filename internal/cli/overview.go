@@ -33,16 +33,26 @@ recorded today still shows its last reading, with its age. A metric is "stale"
 when that reading is more than 3 days old.
 
 Only metrics that have data are listed; the rest are counted in a footer line.
-A value outside your usual range (1+ standard deviation) is coloured by what
-direction is generally healthy for that metric: green "better", red "worse".
-Metrics with no good direction (weight, respiratory rate, ...) are cyan
+A value is "beyond your usual" when it is 1+ standard deviation from your
+28-day usual and the change is big enough to matter (2%, or a per-metric
+minimum such as 0.2 degC for wrist temperature); anything smaller is typical.
+
+Beyond-usual values are coloured by which direction is generally healthy for
+that metric: green with the word "better", red with "worse". Metrics with no
+good direction (weight, respiratory rate, ...) are cyan with the word
 "changed". That direction is a general guide, not medical advice. Stale data
-is yellow. Every colour is backed by an arrow and a word. A calendar heatmap of
-daily activity (steps, else exercise time, else active energy) follows the
-sleep and workouts; --weeks and --heatmap control it. The output is 60-100 columns wide
-($COLUMNS or the terminal width). On a pipe, or with --ascii, only plain ASCII
-characters are used. NO_COLOR and --no-color switch colours off; FORCE_COLOR
-switches them on even for a pipe.
+is yellow. Colour is never the only signal: every row has an arrow, and
+beyond-usual rows also carry the word.
+
+After the sleep and workouts lines comes a calendar heatmap of daily activity:
+steps if you have them, else exercise time, else active energy (no calendar if
+you have none of these). --weeks sets its length (default 12, 0 hides it) and
+--heatmap picks another metric.
+
+The output is 60-100 columns wide ($COLUMNS or the terminal width). On a pipe,
+or with --ascii, only plain ASCII characters are used. NO_COLOR and --no-color
+switch colours off; FORCE_COLOR switches them on even for a pipe. Samples dated
+more than a day in the future are ignored.
 
 JSON output (--json) is the same report:
   today, empty (true when the database has no data)

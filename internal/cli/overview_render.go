@@ -23,11 +23,12 @@ type overviewView struct {
 // Fixed column widths of the metric table. The label, value and sparkline
 // columns are sized from the data and the terminal width instead.
 const (
-	deltaW   = 15 // "▲ +17% better", at most "▼ <-999% worse"; also fits the header
-	bandW    = 10 // the baseline band
-	ageW     = 5  // "today", "12 d"
-	minSpark = 14 // a trend line shorter than two weeks is not worth drawing
-	indent   = " "
+	deltaW     = 16 // "▲ +17% better", at most "▼ <-999% changed"; also fits the header
+	bandW      = 10 // the baseline band
+	minAgeW    = 5  // "today", "12 d"; wider when an age needs it
+	maxLatestW = 18 // longer values are cut, so one freak number cannot widen the table
+	minSpark   = 14 // a trend line shorter than two weeks is not worth drawing
+	indent     = " "
 )
 
 // sectionLabelW pads SLEEP / WORKOUTS / DATA so their text lines up.
@@ -165,6 +166,9 @@ func pctText(pct float64) string {
 	case r < -999:
 		return "<-999%"
 	}
+	if math.IsNaN(r) {
+		return "-"
+	}
 	return fmt.Sprintf("%+d%%", int(r))
 }
 
@@ -179,7 +183,13 @@ func metricTable(o *stats.Overview, ti termInfo, g glyphSet, st style) string {
 			latest[i] = withUnit(*r.Value, r.Metric, r.Unit, ti.unicode)
 		}
 		labelW = max(labelW, runeLen(r.Label))
+		latest[i] = fit(latest[i], maxLatestW, g)
 		latestW = max(latestW, runeLen(latest[i]))
+	}
+	// The age column is as wide as its widest text ("1500 d" needs 6).
+	ageW := minAgeW
+	for _, r := range o.Metrics {
+		ageW = max(ageW, runeLen(ageText(r)))
 	}
 
 	// Long registry labels ("Walking + running distance") must not push the
@@ -262,10 +272,10 @@ func verdictPaint(st style, verdict string) func(string) string {
 	return func(s string) string { return s }
 }
 
-// verdictWord is the text that backs the colour up. Only metrics with a good
-// direction get one; "changed" is already clear from the arrow and the legend.
+// verdictWord is the text that backs the colour up: better, worse or changed
+// (typical rows are plain). Colour is never the only signal.
 func verdictWord(verdict string) string {
-	if verdict == stats.VerdictBetter || verdict == stats.VerdictWorse {
+	if verdict == stats.VerdictBetter || verdict == stats.VerdictWorse || verdict == stats.VerdictChanged {
 		return verdict
 	}
 	return ""
@@ -293,7 +303,7 @@ func deltaArea(r stats.MetricRow, g glyphSet, st style, showBand bool, areaW int
 		}
 		return out + strings.Repeat(" ", max(areaW-used, 0))
 	case stats.StateNoBaseline:
-		return st.dim(padRight(fit(fmt.Sprintf("baseline %d/%d days", r.BaselineDays, stats.MinBaselineDays), areaW, g), areaW))
+		return st.dim(padRight(fit(fmt.Sprintf("need %dd (have %d)", stats.MinBaselineDays, r.BaselineDays), areaW, g), areaW))
 	case stats.StateStale:
 		return st.yellow(padRight("stale", areaW))
 	}
@@ -323,6 +333,11 @@ func heatmapBlock(h *stats.Heatmap, ti termInfo, st style) string {
 	var b strings.Builder
 	b.WriteString("\n" + indent + st.bold("CALENDAR") + " " + lines[0] + "\n")
 	for _, l := range lines[1:] {
+		// A very wide legend (huge numbers) loses its colours rather than
+		// running past the terminal.
+		if plain := stripANSI(l); runeLen(plain) > inner.width {
+			l = fit(plain, inner.width, glyphsFor(ti.unicode))
+		}
 		b.WriteString(strings.TrimRight(indent+l, " ") + "\n")
 	}
 	return b.String()
@@ -349,6 +364,8 @@ func ageText(r stats.MetricRow) string {
 	switch {
 	case r.AgeDays == 0:
 		return "today"
+	case r.AgeDays > 9999:
+		return ">9999 d"
 	}
 	return fmt.Sprintf("%d d", r.AgeDays)
 }
@@ -571,6 +588,21 @@ func plural(n int64, noun string) string {
 		return "1 " + noun
 	}
 	return formatInt(float64(n)) + " " + noun + "s"
+}
+
+// stripANSI removes colour codes, to measure the visible width of a line.
+func stripANSI(s string) string {
+	var b strings.Builder
+	for i := 0; i < len(s); i++ {
+		if s[i] == 0x1b {
+			for i < len(s) && s[i] != 'm' {
+				i++
+			}
+			continue
+		}
+		b.WriteByte(s[i])
+	}
+	return b.String()
 }
 
 func runeLen(s string) int { return len([]rune(s)) }
