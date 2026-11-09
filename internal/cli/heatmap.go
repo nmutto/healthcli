@@ -34,16 +34,29 @@ var (
 	heatOrange = [stats.HeatLevels]string{"38;5;94", "38;5;130", "38;5;166", "38;5;208", "38;5;214"} // steps and other activity
 	heatGreen  = [stats.HeatLevels]string{"38;5;22", "38;5;28", "38;5;34", "38;5;40", "38;5;46"}     // workouts
 	heatBlue   = [stats.HeatLevels]string{"38;5;18", "38;5;25", "38;5;33", "38;5;39", "38;5;45"}     // sleep
+	heatRed    = [stats.HeatLevels]string{"38;5;52", "38;5;88", "38;5;124", "38;5;160", "38;5;196"}  // heart rate
+	heatCyan   = [stats.HeatLevels]string{"38;5;23", "38;5;30", "38;5;37", "38;5;44", "38;5;51"}     // respiratory rate
+	heatPurple = [stats.HeatLevels]string{"38;5;54", "38;5;91", "38;5;128", "38;5;165", "38;5;201"}  // wrist temperature
+	heatViolet = [stats.HeatLevels]string{"38;5;53", "38;5;56", "38;5;61", "38;5;93", "38;5;99"}     // body mass (deep violet)
 )
 
 // heatColorsFor picks the ramp from the heatmap's hue: workouts are green,
-// sleep is blue, and everything else (steps, energy, ...) is orange.
+// sleep is blue, heart rate red, respiratory rate cyan, wrist temperature
+// purple, body mass deep violet, and everything else (steps, energy, ...) is orange.
 func heatColorsFor(h *stats.Heatmap) [stats.HeatLevels]string {
 	switch h.Hue {
 	case stats.HueGreen:
 		return heatGreen
 	case stats.HueBlue:
 		return heatBlue
+	case stats.HueRed:
+		return heatRed
+	case stats.HueCyan:
+		return heatCyan
+	case stats.HuePurple:
+		return heatPurple
+	case stats.HueViolet:
+		return heatViolet
 	}
 	return heatOrange
 }

@@ -230,6 +230,10 @@ func TestHeatmapAndStageColours(t *testing.T) {
 	}{
 		{stats.HueGreen, heatGreen},
 		{stats.HueBlue, heatBlue},
+		{stats.HueRed, heatRed},
+		{stats.HueCyan, heatCyan},
+		{stats.HuePurple, heatPurple},
+		{stats.HueViolet, heatViolet},
 		{stats.HueOrange, heatOrange},
 		{"", heatOrange},
 	}

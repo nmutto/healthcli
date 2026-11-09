@@ -131,3 +131,23 @@ func TestSleepHeatmapsAreBlue(t *testing.T) {
 		}
 	}
 }
+
+// The metrics with their own colour keep it; everything else stays orange.
+func TestMetricHues(t *testing.T) {
+	want := map[string]string{
+		"heart_rate": HueRed, "resting_heart_rate": HueRed, "walking_heart_rate_average": HueRed,
+		"heart_rate_recovery_one_minute": HueRed, "hrv_sdnn": HueRed, "vo2_max": HueRed,
+		"respiratory_rate": HueCyan, "oxygen_saturation": HueCyan,
+		"apple_sleeping_wrist_temperature": HuePurple, "body_fat_percentage": HuePurple, "body_mass": HueViolet,
+	}
+	for name, hue := range want {
+		if metricHues[name] != hue {
+			t.Errorf("%s: hue %q, want %q", name, metricHues[name], hue)
+		}
+	}
+	for _, m := range []string{"step_count", "walking_speed", "active_energy"} {
+		if metricHues[m] != "" {
+			t.Errorf("%s must stay orange", m)
+		}
+	}
+}
