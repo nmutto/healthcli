@@ -1,0 +1,18 @@
+ healthcli overview                                                 db: demo.db
+ ──────────────────────────────────────────────────────────────────────────────
+ No metric readings yet · slept 7h 00m
+
+ METRIC          LATEST  VS 28-DAY USUAL       26 DAYS                     AGE
+ Avg heart rate  -       no data                                           -
+ Resting HR      -       no data                                           -
+ Steps           -       no data                                           -
+ HRV             -       no data                                           -
+ Weight          -       no data                                           -
+ Active energy   -       no data                                           -
+
+ SLEEP    7h 00m asleep · 8h 30m in bed · last night
+ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓████████████████░░░
+ core 4h 50m   REM 40m   deep 1h 30m   awake 15m
+ WORKOUTS none in the last 30 days
+
+ DATA     0 samples, 1 sleep night

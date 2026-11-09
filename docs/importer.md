@@ -14,7 +14,7 @@ Code: `internal/importer` (`importer.go` = parse loop, `convert.go` = record -> 
    - `<Workout>` -> `workouts` in seconds, kcal, metres. Energy and distance come from the `totalEnergyBurned`/`totalDistance` attributes; if an attribute is absent, from the `<WorkoutStatistics>` children (`ActiveEnergyBurned`, first `Distance*` with a sum; kJ, km, mi, ft, yd converted). Attributes win. A missing duration falls back to end - start; missing distance/energy are stored as NULL. Activity names are snake_case without Apple's prefix.
    - Dates become UTC unix seconds; `tz_offset` is the `+ZZZZ` written in that record.
 4. `store.go` writes with prepared statements, `INSERT ... ON CONFLICT DO NOTHING`, 5000 rows per transaction. `RowsAffected() == 0` means duplicate.
-5. At the end `meta.last_import_ts` is set to the import start time.
+5. At the end `meta.last_import_ts` is set to the import start time, and `meta.last_import_summary` (JSON: read, inserted, duplicates, skipped) is written. A re-import replaces the summary: it always describes the most recent run, so importing the same file again shows 0 inserted.
 
 ## Rules worth knowing
 

@@ -4,6 +4,7 @@ go 1.27.3
 
 require (
 	github.com/spf13/cobra v1.10.2
+	golang.org/x/term v0.47.0
 	modernc.org/sqlite v1.62.0
 )
 

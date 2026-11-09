@@ -1,0 +1,23 @@
+ healthcli overview                              db: demo.db · imported 3 d ago
+ ──────────────────────────────────────────────────────────────────────────────
+ No recent readings: the newest is 12 d old
+
+ METRIC          LATEST        VS 28-DAY USUAL       20 DAYS               AGE
+ Avg heart rate  67 bpm        stale                 ▂▆▁▅█▃▇▂············  12 d
+ Resting HR      66 bpm        stale                 ▂▄▁▃▅▂█·············  13 d
+ Steps           11,800 steps  stale                 ▄▃▂▁▅▄▃█············  12 d
+ HRV             55 ms         stale                 ·▃█▂·▁··············  14 d
+ Weight          72.4 kg       stale                                       21 d
+ Active energy   640 kcal      stale                 ▆▂█▅▁▇▃▆············  12 d
+
+ SLEEP    7h 00m asleep · 8h 30m in bed · 12 d ago (stale)
+ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓████████████████░░░
+ core 4h 50m   REM 40m   deep 1h 30m   awake 15m
+ WORKOUTS 3 in 30 d · 2h 18m · 1,560 kcal · latest: running 5.2 km, 15 d ago
+
+ DATA     232 samples, 1 sleep night
+          range: 2026-09-18 → 2026-10-27
+          sources: Watch 81%, iPhone 17%, manual 2%
+          last import: 1,230 added · 40 duplicates
+          skipped: 5 (unknown_type 3, bad_date 1, bad_value 1)
+          days missing: HRV 3 of 13, Weight 2 of 4

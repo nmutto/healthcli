@@ -3,6 +3,7 @@ package importer
 import (
 	"archive/zip"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -109,14 +110,33 @@ func (w *writer) exec(st *sql.Stmt, args ...any) error {
 	return nil
 }
 
-// finish records last_import_ts and commits the final batch.
+// finish records last_import_ts and a JSON summary of this import (read by
+// "healthcli overview"), then commits the final batch.
 func (w *writer) finish(started time.Time) error {
-	_, err := w.tx.Exec(`INSERT INTO meta (key, value) VALUES ('last_import_ts', ?)
-		ON CONFLICT(key) DO UPDATE SET value = excluded.value`, strconv.FormatInt(started.Unix(), 10))
+	if err := w.setMeta("last_import_ts", strconv.FormatInt(started.Unix(), 10)); err != nil {
+		return err
+	}
+	summary, err := json.Marshal(map[string]any{
+		"at":         started.Unix(),
+		"read":       w.sum.Read,
+		"inserted":   w.sum.Inserted,
+		"duplicates": w.sum.Duplicates,
+		"skipped":    w.sum.Skipped,
+	})
 	if err != nil {
 		return err
 	}
+	if err := w.setMeta("last_import_summary", string(summary)); err != nil {
+		return err
+	}
 	return w.tx.Commit()
+}
+
+// setMeta inserts or replaces one key of the meta table.
+func (w *writer) setMeta(key, value string) error {
+	_, err := w.tx.Exec(`INSERT INTO meta (key, value) VALUES (?, ?)
+		ON CONFLICT(key) DO UPDATE SET value = excluded.value`, key, value)
+	return err
 }
 
 func (w *writer) rollback() { w.tx.Rollback() }
