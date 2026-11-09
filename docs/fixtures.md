@@ -11,6 +11,13 @@ go run ./tools/genfixtures --size small --seed 1 --out testdata/small --flat
 go run ./tools/genfixtures --size large --out testdata/large
 ```
 
+```
+# a non-Apple-Watch device: only steps, heart rate and weight (28 days)
+go run ./tools/genfixtures --profile sparse --out testdata/sparse --flat
+```
+
+`--profile` (small, large or sparse) overrides `--size`.
+
 Output is `DIR/apple_health_export/export.xml` plus `DIR/export.zip` (same layout as a
 real export; `--flat` drops the subfolder). Same `--seed` gives byte-identical files.
 The XML is streamed to disk, never built in memory.
@@ -29,6 +36,20 @@ The XML is streamed to disk, never built in memory.
 | `MetadataEntry` / `HeartRateVariabilityMetadataList` children inside some `Record`s | A Record is not always self-closing. |
 | Byte-identical resting-HR record repeated on some days | Re-importing / exact duplicates must be harmless. |
 | Malformed records: missing `value`, impossible date (`2024-13-45 99:99:99`), unknown type, non-numeric value (`"fast"`) | Still well-formed XML; the importer must skip them and carry on. Small has three (days 2, 7, 12). |
+
+## Profiles
+
+| Profile | Contains |
+|---|---|
+| `small`, `large` | A recent Apple Watch + iPhone: heart rate, resting HR, HRV, steps, active energy, weight, sleep stages, workouts, **and** respiratory rate, wrist temperature, blood oxygen, VO2 max, walking heart rate / speed / step length / asymmetry / double support / steadiness, heart rate recovery, exercise and stand time, flights, distance, basal energy, daylight time, body fat, BMI and lean mass. |
+| `sparse` | One fitness band and one scale ("FitBand 3", "SmartScale"): **only** steps, heart rate and weight. No sleep, no workouts, no malformed records. Used to check that nothing errors or shows empty rows for data a device never records. |
+
+The newer vitals use their own random stream, so adding them did not change the
+values of the older metrics. They also carry Apple's unit quirks: percentages are
+0..1 fractions under the unit `%` (blood oxygen, body fat, asymmetry, double support,
+steadiness), VO2 max is `mL/min·kg` with a middle dot, walking speed is `km/hr`, and
+BMI is a plain `count`. The importer must turn these into percent, `mL/kg/min`,
+`km/h` and `kg/m2`.
 
 ## Gotchas
 

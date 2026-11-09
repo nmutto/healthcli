@@ -146,6 +146,12 @@ type Gap struct {
 	Span    int    `json:"span_days"`
 }
 
+// alwaysShown are the metrics every overview lists, even with no data yet.
+var alwaysShown = map[string]bool{
+	"heart_rate": true, "resting_heart_rate": true, "hrv_sdnn": true,
+	"step_count": true, "active_energy": true, "body_mass": true,
+}
+
 // BuildOverview reads everything the overview shows. now decides what
 // "today" is (its own local calendar date), which keeps tests deterministic.
 func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time) (*Overview, error) {
@@ -156,6 +162,12 @@ func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time) (*Overview,
 		row, err := buildRow(ctx, conn, name, today)
 		if err != nil {
 			return nil, err
+		}
+		// Show only what the user's data contains: a device that never records
+		// (say) respiratory rate gets no empty row for it. The original six
+		// metrics keep their "no data" rows.
+		if row.State == StateNoData && !alwaysShown[name] {
+			continue
 		}
 		o.Metrics = append(o.Metrics, row)
 	}

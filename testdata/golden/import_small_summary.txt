@@ -1,23 +1,46 @@
 # import summary
 {
   "duplicates": 9,
-  "inserted": 1232,
-  "read": 1244,
+  "inserted": 1468,
+  "read": 1480,
   "skipped": {
     "bad_date": 1,
     "missing_value": 1,
     "unknown_type": 1
+  },
+  "skipped_types": {
+    "HKQuantityTypeIdentifierSomethingFromTheFuture": 1
   }
 }
 
 # samples per metric
-metric              unit   n    sources  min    avg     max
-active_energy       kcal   224  1        0.28   50.25   95.56
-body_mass           kg     5    1        78.5   79.16   79.7
-heart_rate          bpm    330  1        58     75.02   99
-hrv_sdnn            ms     14   1        36.29  47.75   63.38
-resting_heart_rate  bpm    14   1        54     57      60
-step_count          count  448  2        6      1193.3  2389
+metric                            unit         n    sources  min     avg      max
+active_energy                     kcal         224  1        0.28    50.25    95.56
+apple_exercise_time               min          14   1        17      37.43    59
+apple_sleeping_wrist_temperature  degC         14   1        35.28   35.92    36.25
+apple_stand_time                  min          14   1        314     407.93   531
+apple_walking_steadiness          percent      2    1        89      91.5     94
+basal_energy                      kcal         14   1        1651.3  1703.12  1747.8
+body_fat_percentage               percent      5    1        18.5    19.12    19.5
+body_mass                         kg           5    1        78.5    79.16    79.7
+body_mass_index                   kg/m2        5    1        24      24.2     24.3
+distance_walking_running          km           14   1        3.22    6.5      9.95
+flights_climbed                   count        14   1        4       12.79    21
+heart_rate                        bpm          330  1        58      75.02    99
+heart_rate_recovery_one_minute    bpm          7    1        23      28       34
+hrv_sdnn                          ms           14   1        36.29   47.75    63.38
+lean_body_mass                    kg           5    1        63      63.54    64.4
+oxygen_saturation                 percent      28   1        95      96.79    99
+respiratory_rate                  breaths/min  14   1        13.1    14.39    15.9
+resting_heart_rate                bpm          14   1        54      57       60
+step_count                        count        448  2        6       1193.3   2389
+time_in_daylight                  min          14   1        25      47       91
+vo2_max                           mL/kg/min    2    1        41      41.45    41.9
+walking_asymmetry                 percent      14   1        2.2     3.64     5.1
+walking_double_support            percent      14   1        26.7    28.72    30.9
+walking_heart_rate_average        bpm          14   1        89      93.64    99
+walking_speed                     km/h         14   1        4.93    5.39     5.74
+walking_step_length               cm           14   1        69.2    71.85    73.9
 
 # sleep per stage
 stage               n   hours
@@ -36,5 +59,5 @@ walking   2  100.1    8.34   375.5
 
 # time zones seen
 tz_offset  n
--18000     372
-3600       663
+-18000     457
+3600       814

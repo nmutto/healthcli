@@ -12,6 +12,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -35,7 +36,11 @@ type Summary struct {
 	Inserted   int64            `json:"inserted"`   // new rows written
 	Duplicates int64            `json:"duplicates"` // rows that already existed
 	Skipped    map[string]int64 `json:"skipped"`    // reason -> count
-	ElapsedSec float64          `json:"elapsed_seconds"`
+	// SkippedTypes counts unknown_type records by Apple identifier, so the
+	// user can see what was left out. Capped at maxSkippedTypes distinct
+	// identifiers; anything beyond that is only counted in Skipped.
+	SkippedTypes map[string]int64 `json:"skipped_types,omitempty"`
+	ElapsedSec   float64          `json:"elapsed_seconds"`
 }
 
 // SkippedTotal adds up all skip reasons.
@@ -56,6 +61,35 @@ type Options struct {
 
 const progressEvery = 100_000
 
+// maxSkippedTypes bounds the SkippedTypes map. A real export has well under a
+// hundred identifiers; the cap only matters for a hostile or corrupt file.
+const maxSkippedTypes = 500
+
+// TopSkippedTypes returns up to n skipped Apple identifiers, most frequent
+// first (ties broken alphabetically so output is stable).
+func (s *Summary) TopSkippedTypes(n int) []SkippedType {
+	out := make([]SkippedType, 0, len(s.SkippedTypes))
+	for id, c := range s.SkippedTypes {
+		out = append(out, SkippedType{Type: id, Count: c})
+	}
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Count != out[j].Count {
+			return out[i].Count > out[j].Count
+		}
+		return out[i].Type < out[j].Type
+	})
+	if len(out) > n {
+		out = out[:n]
+	}
+	return out
+}
+
+// SkippedType is one Apple identifier we did not import and how often it appeared.
+type SkippedType struct {
+	Type  string
+	Count int64
+}
+
 // Import streams the export at path into conn. path may be export.xml or a
 // zip containing it.
 func Import(conn *sql.DB, path string, opts Options) (*Summary, error) {
@@ -66,7 +100,7 @@ func Import(conn *sql.DB, path string, opts Options) (*Summary, error) {
 	}
 	defer src.Close()
 
-	sum := &Summary{Skipped: map[string]int64{}}
+	sum := &Summary{Skipped: map[string]int64{}, SkippedTypes: map[string]int64{}}
 	w, err := newWriter(conn, sum)
 	if err != nil {
 		return nil, err
@@ -156,9 +190,19 @@ func handleRecord(el xml.StartElement, sum *Summary, w *writer) error {
 	row, reason := sampleRow(a)
 	if reason != "" {
 		sum.Skipped[reason]++
+		if reason == reasonUnknownType {
+			sum.noteSkippedType(typ)
+		}
 		return nil
 	}
 	return w.addSample(row)
+}
+
+// noteSkippedType remembers an unknown Apple identifier (up to the cap).
+func (s *Summary) noteSkippedType(typ string) {
+	if _, seen := s.SkippedTypes[typ]; seen || len(s.SkippedTypes) < maxSkippedTypes {
+		s.SkippedTypes[typ]++
+	}
 }
 
 // workoutStatistics reads the rest of a <Workout> (the decoder is just past its
