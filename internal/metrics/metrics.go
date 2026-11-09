@@ -219,6 +219,7 @@ var aliases = map[string]string{
 	"weight": "body_mass",
 	"hr":     "heart_rate",
 	"hrv":    "hrv_sdnn",
+	"rhr":    "resting_heart_rate",
 	"steps":  "step_count",
 	"rr":     "respiratory_rate",
 	"spo2":   "oxygen_saturation",
