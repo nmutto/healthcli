@@ -228,6 +228,36 @@ Sun @ # + . @ # + - . # +
 _ no data   < today   steps per day
 ```
 
+### Workouts
+
+`healthcli workouts [--days N] [--weeks N] [--by type]` shows totals per activity type with a share bar, weekly training time (the current week is marked and gets no change figure), personal bests over 90 days (an activity needs 3 sessions), the newest sessions and a calendar of workout minutes per day, where empty days after your first workout are rest days. `--by type` draws each day's main activity as a letter. Columns with no data (no calories or distance recorded) disappear, and with no workouts you get one line, not an error. `--json` prints the report.
+
+Synthetic data, not real:
+
+```console
+$ healthcli workouts
+ WORKOUTS ─────────────────────────────────────────────────────────────────────
+ 28 d  16 sessions  16h 44m  6,820 kcal  187.5 km  active 16 of 28 days
+
+ TYPE      N TIME       KCAL     KM SHARE
+ cycling   6 7h 57m    3,450  126.0 ██████████░░░░░░░░░░  48%
+ running   5 5h 00m    2,740   49.6 ██████░░░░░░░░░░░░░░  30%
+ walking   3 2h 09m      630   11.9 ███░░░░░░░░░░░░░░░░░  13%
+ yoga      2 1h 38m        -      - ██░░░░░░░░░░░░░░░░░░  10%
+
+ RECENT
+ Sat Nov 07 cycling  1h 07m 21.0 km 18.8 km/h 550 kcal
+ Fri Nov 06 walking     33m  4.3 km 7:40 /km  210 kcal
+ Wed Nov 04 running  1h 10m 11.0 km 6:22 /km  580 kcal
+
+ BESTS (90 d)
+ longest   cycling 1h 32m, Oct 13 *new*
+ fastest   running 3:11 /km, Sep 30
+ furthest  cycling 21.0 km, Sep 03
+ biggest   cycling 700 kcal, Sep 23
+...
+```
+
 ### Where is my data?
 
 If you don't pass `--db`, the database is `healthcli.db` in:
