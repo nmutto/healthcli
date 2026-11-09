@@ -2,6 +2,7 @@ package cli
 
 import (
 	"encoding/json"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -186,5 +187,56 @@ func TestTodayIndexLineAndWorkoutsSeparator(t *testing.T) {
 	}
 	if !strings.Contains(got, "1 session  31m  410 kcal  5.2 km") {
 		t.Errorf("workouts band should use the overview's separator:\n%s", got)
+	}
+}
+
+// The README example is the golden it claims to be (trailing spaces aside).
+func TestReadmeTodayExampleMatchesGolden(t *testing.T) {
+	readme, err := os.ReadFile("../../README.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	golden, err := os.ReadFile("testdata/golden/today_apple_80.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	const head = "$ healthcli --db demo.db today --date 2026-11-08\n"
+	text := string(readme)
+	i := strings.Index(text, head)
+	if i < 0 {
+		t.Fatal("README today example not found")
+	}
+	block := text[i+len(head):]
+	block = block[:strings.Index(block, "\n```")]
+	norm := func(s string) string {
+		lines := strings.Split(strings.TrimRight(s, "\n"), "\n")
+		for i, l := range lines {
+			lines[i] = strings.TrimRight(l, " ")
+		}
+		return strings.Join(lines, "\n")
+	}
+	if norm(block) != norm(string(golden)) {
+		t.Error("README today example differs from testdata/golden/today_apple_80.txt")
+	}
+}
+
+// The long label shows in full wherever it fits, in overview and today, and is
+// shortened (never cut) where it does not.
+func TestLongLabelOverviewAndToday(t *testing.T) {
+	for _, width := range []int{60, 80, 100} {
+		ti := termInfo{width: width, unicode: true}
+		for name, text := range map[string]string{
+			"overview": renderOverview(overviewReport(t, "import:small"), ti, testView),
+			"today":    todayPage(t, seedOverview(t, "import:small"), "2026-11-08", ti, overviewView{}),
+		} {
+			full := strings.Contains(text, "Walking + running distance")
+			short := strings.Contains(text, "Walk + run distance")
+			if strings.Contains(text, "Walking + running d…") || full == short {
+				t.Errorf("%s at %d: want the full or the short label, never a cut one", name, width)
+			}
+			if width >= 80 && !full {
+				t.Errorf("%s at %d: full label should fit", name, width)
+			}
+		}
 	}
 }
