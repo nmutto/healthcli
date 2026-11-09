@@ -121,6 +121,7 @@ type LatestWorkout struct {
 // DataHealth says how much data there is and how complete it looks.
 type DataHealth struct {
 	Samples     int64            `json:"samples"`
+	SleepNights int64            `json:"sleep_nights"` // distinct nights with sleep rows
 	FirstDay    string           `json:"first_day,omitempty"`
 	LastDay     string           `json:"last_day,omitempty"`
 	SourceCount map[string]int64 `json:"source_samples"` // by source class: watch, iphone, manual, other
@@ -358,6 +359,12 @@ func buildDataHealth(ctx context.Context, conn *sql.DB, rows []MetricRow) (DataH
 	}
 	if err := res.Err(); err != nil {
 		return d, err
+	}
+
+	err = conn.QueryRowContext(ctx, `
+		SELECT count(DISTINCT date(end_ts + tz_offset + ?, 'unixepoch')) FROM sleep_stages`, nightShift).Scan(&d.SleepNights)
+	if err != nil {
+		return d, fmt.Errorf("stats: count sleep nights: %w", err)
 	}
 
 	var first, last sql.NullString // NULL when the table is empty

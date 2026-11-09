@@ -15,7 +15,8 @@
  core 4h 50m   REM 40m   deep 1h 30m   awake 15m
  WORKOUTS 3 in 30 d · 2h 18m · 1,560 kcal · latest: running 5.2 km, 3 d ago
 
- DATA     232 samples · 2026-09-30 → 2026-11-08
+ DATA     232 samples, 1 sleep night
+          range: 2026-09-30 → 2026-11-08
           sources: Watch 81%, iPhone 17%, manual 2%
           last import: 1,230 added · 40 duplicates
           skipped: 5 (unknown_type 3, bad_date 1, bad_value 1)

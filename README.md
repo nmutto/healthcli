@@ -1,6 +1,6 @@
 # healthcli
 
-Import your Apple Health export into a SQLite database on your own machine, then look at it from the terminal: today's numbers against your baseline, trends over time, and plain SQL for everything else.
+Import your Apple Health export into a SQLite database on your own machine, then look at it from the terminal: a one-screen overview, today's numbers against your baseline, trends over time, and plain SQL for everything else.
 
 > **Status: v0.1.0, not yet released.** Built and tested on synthetic data only. It has **not been tried on a real Apple Health export yet**, so expect rough edges and please report them.
 
@@ -78,6 +78,37 @@ Log a reading by hand:
 $ healthcli --db demo.db log weight 72.5
 Logged body_mass = 72.5 kg at 2026-11-08 17:47
 ```
+
+One screen with every metric, last night's sleep, recent workouts and how complete your data is (`overview`):
+
+```console
+$ healthcli --db demo.db overview
+ healthcli overview                            db: demo.db · imported today
+ ──────────────────────────────────────────────────────────────────────────────
+ 4 of 5 readings differ from your 28-day usual · Resting HR +6% · slept 7h 01m
+
+ METRIC          LATEST        VS 28-DAY USUAL       20 DAYS               AGE
+ Avg heart rate  76 bpm        ▲ +2%     ···░░░●···  ······▄▁▄▄▇▆▆▅▇▆█▆▆█  today
+ Resting HR      60 bpm        ▲ +6%     ···░░░░●··  ······▁▂▃▅▆▇█▁▂▃▅▆▇█  today
+ Steps           21,999 steps  ▲ +10%    ···░░░●···  ······▁▇▆▅▆▃▂▂▅▄▄█▇▇  today
+ HRV             46 ms         ▼ -4%     ···░●░░···  ······▂▅▃▁▁▂▆▆▄▄█▃█▃  today
+ Weight          78.5 kg       baseline 4/7 days     ······▆··▆··▃··█··▁·  1 d
+ Active energy   880 kcal      ▲ +10%    ···░░░●···  ······▁▇▆▅▆▃▂▂▅▄▄█▇▇  today
+
+ SLEEP    7h 01m asleep · 7h 30m in bed · last night
+ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████░░░
+ core 4h 16m   REM 1h 18m   deep 1h 27m   awake 17m
+ WORKOUTS 7 in 30 d · 6h 13m · 3,243 kcal · latest: running 8.5 km, 1 d ago
+
+ DATA     1,035 samples, 14 sleep nights
+          range: 2026-10-27 → 2026-11-09
+          sources: Watch 78%, iPhone 22%
+          last import: 1,232 added · 9 duplicates
+          skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
+          days missing: Weight 8 of 13
+```
+
+This example is **synthetic** (generated fixture data, with dates shifted to look current). Each metric is compared with its own 28-day usual and shows its own newest day and age. Colour, when your terminal supports it, only marks "unusual", never "good" or "bad". On a pipe, or with `--ascii`, it uses plain ASCII; `--no-color` and `NO_COLOR` turn colour off, and `--json` prints the same report as JSON.
 
 A day's summary against your recent baseline:
 

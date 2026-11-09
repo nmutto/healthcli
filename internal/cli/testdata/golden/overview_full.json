@@ -306,6 +306,7 @@
   },
   "data": {
     "samples": 232,
+    "sleep_nights": 1,
     "first_day": "2026-09-30",
     "last_day": "2026-11-08",
     "source_samples": {

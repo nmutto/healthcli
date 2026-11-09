@@ -267,6 +267,13 @@ func TestOverviewHandBuiltStates(t *testing.T) {
 			t.Errorf("missing %q in:\n%s", want, got)
 		}
 	}
+	if !strings.Contains(got, "DATA     3 samples") {
+		t.Errorf("want plural samples:\n%s", got)
+	}
+	o.Data.Samples, o.Data.SleepNights = 1, 1
+	if got := renderOverview(o, termInfo{width: 80}, testView); !strings.Contains(got, "1 sample, 1 sleep night") {
+		t.Errorf("want singular forms:\n%s", got)
+	}
 	if strings.Contains(got, "0m asleep") {
 		t.Errorf("an in-bed-only night must not say '0m asleep':\n%s", got)
 	}

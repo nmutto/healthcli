@@ -349,12 +349,13 @@ func dataBlock(d stats.DataHealth, ti termInfo, g glyphSet, st style, v overview
 	label := indent + st.bold(padRight("DATA", sectionLabelW)) + " "
 	cont := strings.Repeat(" ", len(indent)+sectionLabelW+1) // lines after the first
 	room := ti.width - len(cont) - 1
-	sep := " " + g.dot + " "
 
-	lines := []string{formatInt(float64(d.Samples)) + " samples"}
+	lines := []string{plural(d.Samples, "sample")}
+	if d.SleepNights > 0 {
+		lines[0] += ", " + plural(d.SleepNights, "sleep night")
+	}
 	if d.Samples > 0 {
-		lines[0] += sep + d.FirstDay + " " + g.arrow + " " + d.LastDay
-		lines = append(lines, "sources: "+sourcesText(d.SourceCount))
+		lines = append(lines, "range: "+d.FirstDay+" "+g.arrow+" "+d.LastDay, "sources: "+sourcesText(d.SourceCount))
 	}
 	if li := d.LastImport; li != nil {
 		lines = append(lines, importLines(li, g, room)...)
@@ -478,6 +479,14 @@ func emptyBox(ti termInfo, g glyphSet, st style) string {
 	}
 	b.WriteString(indent + string(g.box[2]) + strings.Repeat(h, inner+2) + string(g.box[3]) + "\n")
 	return b.String()
+}
+
+// plural is "1 sample" or "2 samples" (with thousands separators).
+func plural(n int64, noun string) string {
+	if n == 1 {
+		return "1 " + noun
+	}
+	return formatInt(float64(n)) + " " + noun + "s"
 }
 
 func runeLen(s string) int { return len([]rune(s)) }

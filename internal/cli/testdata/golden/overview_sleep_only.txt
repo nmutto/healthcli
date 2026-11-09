@@ -15,4 +15,4 @@
  core 4h 50m   REM 40m   deep 1h 30m   awake 15m
  WORKOUTS none in the last 30 days
 
- DATA     0 samples
+ DATA     0 samples, 1 sleep night
