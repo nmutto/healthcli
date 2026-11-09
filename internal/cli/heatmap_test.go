@@ -41,6 +41,31 @@ func seedHeat(t *testing.T, scenario string) string {
 		return path
 	}
 	for back := 0; back < 20*7; back++ {
+		switch scenario {
+		case "sleep": // a night every day but each 6th, 5h to 9h, as "asleep" only
+			if back%6 != 5 {
+				mins := 300 + (back*53)%241
+				end := midnight.AddDate(0, 0, -back).Add(7 * time.Hour).Unix()
+				if _, err := conn.Exec(`INSERT INTO sleep_stages (stage, start_ts, end_ts, tz_offset, source)
+					VALUES ('asleep_unspecified', ?, ?, 0, 'Test Apple Watch')`, end-int64(mins)*60, end); err != nil {
+					t.Fatal(err)
+				}
+			}
+			continue
+		case "workouts": // from 8 weeks back, a session on about every third day
+			if back < 56 && back%3 != 1 {
+				continue
+			}
+			if back < 56 {
+				start := midnight.AddDate(0, 0, -back).Add(18 * time.Hour).Unix()
+				dur := int64(20+(back*7)%70) * 60
+				if _, err := conn.Exec(`INSERT INTO workouts (activity, start_ts, end_ts, duration_s, tz_offset, source)
+					VALUES ('running', ?, ?, ?, 0, 'Test Apple Watch')`, start, start+dur, dur); err != nil {
+					t.Fatal(err)
+				}
+			}
+			continue
+		}
 		d := midnight.AddDate(0, 0, -back)
 		switch scenario {
 		case "full":
@@ -57,13 +82,17 @@ func seedHeat(t *testing.T, scenario string) string {
 }
 
 func heatLines(t *testing.T, scenario string, weeks int, ti termInfo) string {
+	return heatLinesFor(t, scenario, "step_count", weeks, ti)
+}
+
+func heatLinesFor(t *testing.T, scenario, name string, weeks int, ti termInfo) string {
 	t.Helper()
 	conn, err := db.Open(seedHeat(t, scenario))
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer conn.Close()
-	h, err := stats.BuildHeatmap(context.Background(), conn, "step_count", min(weeks, heatWeeksFit(ti.width)), heatNow)
+	h, err := buildNamedHeatmap(context.Background(), conn, name, min(weeks, heatWeeksFit(ti.width)), heatNow)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,6 +129,52 @@ func TestHeatmapGoldens(t *testing.T) {
 				t.Error("plain output has escape codes")
 			}
 		})
+	}
+}
+
+func TestHeatmapSleepAndWorkoutsGoldens(t *testing.T) {
+	cases := []struct{ file, scenario, name string }{
+		{"heatmap_sleep.txt", "sleep", "sleep"},
+		{"heatmap_workouts.txt", "workouts", "workouts"},
+	}
+	for _, c := range cases {
+		got := heatLinesFor(t, c.scenario, c.name, 12, termInfo{width: 80, unicode: true})
+		checkViewGolden(t, c.file, got)
+	}
+	// ASCII: rest days are dots, no gap underscores inside the filled span.
+	got := heatLinesFor(t, "workouts", "workouts", 12, termInfo{width: 80})
+	if !strings.Contains(got, "rest day") || strings.ContainsFunc(got, func(r rune) bool { return r > 127 }) {
+		t.Errorf("ascii workouts:\n%s", got)
+	}
+	checkViewGolden(t, "heatmap_workouts_ascii.txt", got)
+}
+
+func TestHeatmapCommandSleepWorkouts(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return heatNow }
+	defer func() { nowFunc = old }()
+
+	// No data: friendly line, exit 0.
+	for _, name := range []string{"sleep", "workouts"} {
+		out, _, err := run(t, "--db", seedHeat(t, "empty"), "heatmap", name)
+		if err != nil || !strings.HasPrefix(out, "No "+name+" data") {
+			t.Errorf("%s empty: %q, %v", name, out, err)
+		}
+	}
+	out, _, err := run(t, "--db", seedHeat(t, "workouts"), "heatmap", "workouts", "--json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var h stats.Heatmap
+	if err := json.Unmarshal([]byte(out), &h); err != nil {
+		t.Fatal(err)
+	}
+	if h.Metric != "workouts" || len(h.Thresholds) != 4 || h.DaysWithData == 0 {
+		t.Errorf("json = %+v", h)
+	}
+	_, _, err = run(t, "--db", seedHeat(t, "full"), "heatmap", "nope")
+	if err == nil || !strings.Contains(err.Error(), "sleep, workouts") {
+		t.Errorf("unknown name should also list sleep and workouts: %v", err)
 	}
 }
 

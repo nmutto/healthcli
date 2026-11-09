@@ -25,6 +25,7 @@ type glyphSet struct {
 	marker   rune // band: where the value is
 	stages   map[string]rune
 	rule     rune
+	bandRule rune   // the heavy line of a category band
 	arrow    string // "2024-12-01 → 2024-12-15"
 	dot      string // separator between facts
 	ellipsis string
@@ -36,7 +37,7 @@ var unicodeGlyphs = glyphSet{
 	up: "▲", down: "▼", flat: "–",
 	track: '·', usual: '░', marker: '●',
 	stages: map[string]rune{"core": '▒', "rem": '▓', "deep": '█', "unspecified": '▒', "awake": '░'},
-	rule:   '─', arrow: "→", dot: "·", ellipsis: "…",
+	rule:   '─', bandRule: '━', arrow: "→", dot: "·", ellipsis: "…",
 	box: [6]rune{'┌', '┐', '└', '┘', '─', '│'},
 }
 
@@ -44,8 +45,8 @@ var asciiGlyphs = glyphSet{
 	bars: []rune(".:-=+*#@"), gap: '_',
 	up: "^", down: "v", flat: "-",
 	track: '.', usual: '=', marker: '*',
-	stages: map[string]rune{"core": '-', "rem": '+', "deep": '#', "unspecified": '-', "awake": '.'},
-	rule:   '-', arrow: "->", dot: "|", ellipsis: "...",
+	stages: map[string]rune{"core": ':', "rem": '+', "deep": '#', "unspecified": '~', "awake": '.'},
+	rule:   '-', bandRule: '=', arrow: "->", dot: "|", ellipsis: "...",
 	box: [6]rune{'+', '+', '+', '+', '-', '|'},
 }
 

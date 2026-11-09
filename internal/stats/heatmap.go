@@ -20,8 +20,8 @@ const HeatLevels = 5
 // HeatDay is one calendar cell.
 type HeatDay struct {
 	Day    string   `json:"day"`
-	Value  *float64 `json:"value"` // null: no data that day (a gap) or a future day
-	Level  int      `json:"level"` // 1..5 (5 = highest fifth); 0 = no level: gap or future
+	Value  *float64 `json:"value,omitempty"` // left out: no data that day (a gap) or a future day
+	Level  int      `json:"level"`           // 1..5 (5 = highest fifth); 0 = no level: gap, future, or a rest day (Value is 0)
 	Future bool     `json:"future,omitempty"`
 }
 
@@ -30,8 +30,13 @@ type HeatDay struct {
 type Heatmap struct {
 	Metric string `json:"metric"`
 	Unit   string `json:"unit"`
-	Today  string `json:"today"`
-	From   string `json:"from"` // Monday of the first week
+	// Title, Format and ZeroIsRest come from the HeatSpec; the renderer uses
+	// them instead of looking at the metric name.
+	Title      string               `json:"-"`
+	Format     func(float64) string `json:"-"`
+	ZeroIsRest bool                 `json:"-"`
+	Today      string               `json:"today"`
+	From       string               `json:"from"` // Monday of the first week
 	// Thresholds are the 4 upper bounds of levels 1..4: level 1 is
 	// value <= Thresholds[0], level 2 is <= Thresholds[1], ... and level 5 is
 	// everything above Thresholds[3]. Empty when there is no data.
@@ -59,11 +64,7 @@ func BuildHeatmap(ctx context.Context, conn *sql.DB, metric string, weeks int, n
 	if err != nil {
 		return nil, err
 	}
-	today := now.Format(DayLayout)
-	t, _ := time.Parse(DayLayout, today)
-	// Go counts Sunday as 0; shift so Monday is 0.
-	sinceMonday := (int(t.Weekday()) + 6) % 7
-	from, err := AddDays(today, -(sinceMonday + 7*(weeks-1)))
+	today, from, err := heatmapWindow(now, weeks)
 	if err != nil {
 		return nil, err
 	}
@@ -73,19 +74,88 @@ func BuildHeatmap(ctx context.Context, conn *sql.DB, metric string, weeks int, n
 	}
 	byDay := make(map[string]float64, len(series))
 	for _, dv := range series {
-		if isFinite(dv.Value) { // an overflowed sum cannot be drawn or printed
-			byDay[dv.Day] = dv.Value
-		}
+		byDay[dv.Day] = dv.Value
 	}
-	return layoutHeatmap(m.Name, m.Unit, today, from, weeks, byDay), nil
+	// No Format here: the renderer formats a registry metric by name.
+	spec := HeatSpec{Title: m.Name, Unit: m.Unit}
+	return HeatmapFromDays(spec, now, weeks, byDay)
 }
 
-// layoutHeatmap is the pure part of BuildHeatmap: values in, grid out.
-func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string]float64) *Heatmap {
+// HeatSpec says how to title, label and shade one heatmap. Any source of
+// "a number per day" (steps, sleep, workouts) can use the same engine.
+type HeatSpec struct {
+	Title  string // "step_count", "sleep", "workouts"
+	Unit   string
+	Format func(float64) string // how a value is written in the legend
+	// ZeroIsRest: a day without a value after the first real one is a rest
+	// day (value 0, drawn dim), not missing data. Quintiles then use the
+	// non-zero days only. Days before the first value stay blank, so a new
+	// device does not look like weeks of rest.
+	ZeroIsRest bool
+}
+
+// heatmapWindow returns today's date and the Monday of the first week.
+func heatmapWindow(now time.Time, weeks int) (today, from string, err error) {
+	today = now.Format(DayLayout)
+	t, _ := time.Parse(DayLayout, today)
+	// Go counts Sunday as 0; shift so Monday is 0.
+	sinceMonday := (int(t.Weekday()) + 6) % 7
+	from, err = AddDays(today, -(sinceMonday + 7*(weeks-1)))
+	return today, from, err
+}
+
+// HeatmapFromDays lays out `weeks` calendar weeks ending with the week of
+// now, from values keyed by local day ("2006-01-02"). Days outside the
+// window are ignored; non-finite values (an overflowed sum) are dropped
+// because they cannot be drawn or printed.
+func HeatmapFromDays(spec HeatSpec, now time.Time, weeks int, byDay map[string]float64) (*Heatmap, error) {
+	if weeks < 1 || weeks > MaxHeatmapWeeks {
+		return nil, fmt.Errorf("stats: weeks must be between 1 and %d, got %d", MaxHeatmapWeeks, weeks)
+	}
+	today, from, err := heatmapWindow(now, weeks)
+	if err != nil {
+		return nil, err
+	}
+	days := make(map[string]float64, len(byDay))
+	for day, v := range byDay {
+		if isFinite(v) && day >= from && day <= today {
+			days[day] = v
+		}
+	}
+	h := layoutHeatmap(spec.Title, spec.Unit, today, from, weeks, days, spec.ZeroIsRest)
+	h.Title, h.Format, h.ZeroIsRest = spec.Title, spec.Format, spec.ZeroIsRest
+	return h, nil
+}
+
+// layoutHeatmap is the pure part: values in, grid out.
+func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string]float64, zeroIsRest bool) *Heatmap {
 	h := &Heatmap{Metric: metric, Unit: unit, Today: today, From: from, Thresholds: []float64{}}
 	var values []float64
-	for _, v := range byDay {
-		values = append(values, v)
+	if zeroIsRest {
+		// Every day from the first non-zero one to today has a value; the
+		// ones nobody wrote are real zeros (rest). Rests do not count when
+		// cutting the shades.
+		first := ""
+		for day, v := range byDay {
+			if v > 0 && (first == "" || day < first) {
+				first = day
+			}
+		}
+		filled := map[string]float64{}
+		for day := first; first != "" && day <= today; {
+			filled[day] = byDay[day]
+			day, _ = AddDays(day, 1)
+		}
+		byDay = filled
+		for _, v := range byDay {
+			if v > 0 {
+				values = append(values, v)
+			}
+		}
+	} else {
+		for _, v := range byDay {
+			values = append(values, v)
+		}
 	}
 	h.Thresholds = QuintileThresholds(values)
 	h.DaysWithData = len(values)
@@ -101,12 +171,16 @@ func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string
 				cell.Future = true
 			} else if v, ok := byDay[day]; ok {
 				cell.Value = &v
-				cell.Level = HeatLevel(v, h.Thresholds)
-				if flat {
+				switch {
+				case zeroIsRest && v == 0:
+					// rest day: a value, but no shade
+				case flat:
 					cell.Level = flatLevel
 					if v == 0 {
 						cell.Level = 1 // a wall of zeros is "none", not "medium"
 					}
+				default:
+					cell.Level = HeatLevel(v, h.Thresholds)
 				}
 			}
 			week[d] = cell

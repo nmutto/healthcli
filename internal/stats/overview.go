@@ -52,22 +52,94 @@ type Overview struct {
 	Today   string      `json:"today"`   // the local day the report is relative to
 	Empty   bool        `json:"empty"`   // true when the database holds no data at all
 	Metrics []MetricRow `json:"metrics"` // only metrics that have samples
+	// Categories has one summary per category that has at least one metric,
+	// in display order. Empty categories are left out.
+	Categories []CategorySummary `json:"categories"`
 	// NotTracked lists the registry metrics with no samples at all. The text
 	// output prints just their count.
 	NotTracked []string        `json:"not_tracked"`
 	Sleep      OverviewSleep   `json:"sleep"`
 	Workouts   WorkoutsSummary `json:"workouts"`
-	// Heatmap is the activity calendar, or null when there is no activity
+	// Heatmap is the activity calendar, left out when there is no activity
 	// metric with data (or the caller asked for 0 weeks).
-	Heatmap *Heatmap   `json:"heatmap"`
+	Heatmap *Heatmap   `json:"heatmap,omitempty"`
 	Data    DataHealth `json:"data"`
+
+	// The rich reports behind the SLEEP and WORKOUTS sections. They are left
+	// out (not null) when the database has no sleep or no workouts.
+	SleepSummary   *SleepReport    `json:"sleep_summary,omitempty"`
+	WorkoutsReport *WorkoutsReport `json:"workouts_report,omitempty"`
+	// Heatmaps holds the metric calendars asked for with HeatMetrics, by
+	// metric name; metrics with no data are left out.
+	Heatmaps map[string]*Heatmap `json:"heatmaps,omitempty"`
+}
+
+// CategorySummary counts the metric rows of one category by outcome. Typical,
+// Better, Worse and Changed add up to the rows with a baseline; Stale,
+// NoBaseline and NoData cover the rest, so the six add up to Total.
+type CategorySummary struct {
+	Name       string `json:"name"`
+	Total      int    `json:"total"`
+	Better     int    `json:"better"`
+	Worse      int    `json:"worse"`
+	Changed    int    `json:"changed"`
+	Typical    int    `json:"typical"`
+	Stale      int    `json:"stale"`
+	NoBaseline int    `json:"no_baseline"`
+	NoData     int    `json:"no_data"`
+}
+
+// CategorySummaries counts the rows per category, in the order the categories
+// first appear (BuildOverview sorts rows by category, so that is display order).
+func CategorySummaries(rows []MetricRow) []CategorySummary {
+	out := []CategorySummary{}
+	idx := map[string]int{}
+	for _, r := range rows {
+		i, ok := idx[r.Category]
+		if !ok {
+			i = len(out)
+			idx[r.Category] = i
+			out = append(out, CategorySummary{Name: r.Category})
+		}
+		c := &out[i]
+		c.Total++
+		switch r.State {
+		case StateOK:
+			switch r.Verdict {
+			case VerdictBetter:
+				c.Better++
+			case VerdictWorse:
+				c.Worse++
+			case VerdictChanged:
+				c.Changed++
+			default:
+				c.Typical++
+			}
+		case StateStale:
+			c.Stale++
+		case StateNoBaseline:
+			c.NoBaseline++
+		default:
+			c.NoData++
+		}
+	}
+	return out
 }
 
 // OverviewOptions are the knobs of BuildOverview.
 type OverviewOptions struct {
 	HeatWeeks  int    // weeks of heatmap; 0 leaves the heatmap out
 	HeatMetric string // metric for the heatmap; "" picks one automatically
+	// HeatMetrics are further metric calendars to build (Overview.Heatmaps).
+	HeatMetrics []string
 }
+
+// workoutsReportDays and workoutsReportWeeks are the windows of the workouts
+// report inside the overview (the same defaults as "healthcli workouts").
+const (
+	workoutsReportDays  = 28
+	workoutsReportWeeks = 8
+)
 
 // DefaultOverviewOptions is what "healthcli overview" does without flags.
 func DefaultOverviewOptions() OverviewOptions { return OverviewOptions{HeatWeeks: 12} }
@@ -86,17 +158,17 @@ type MetricRow struct {
 	State     string   `json:"state"`
 	LatestDay string   `json:"latest_day,omitempty"` // empty for no_data
 	AgeDays   int      `json:"age_days"`             // today minus LatestDay
-	Value     *float64 `json:"value"`                // daily value of LatestDay
+	Value     *float64 `json:"value,omitempty"`      // daily value of LatestDay
 	Source    string   `json:"source,omitempty"`
 
 	// Baseline fields: DaysWithData is always set (for "needs 7 days"),
 	// Mean and Stddev only when the baseline is usable.
 	BaselineDays int      `json:"baseline_days_with_data"`
-	Mean         *float64 `json:"baseline_mean"`
-	Stddev       *float64 `json:"baseline_stddev"`
-	DeltaPct     *float64 `json:"delta_pct"`
-	Z            *float64 `json:"z"`
-	Comparison   *string  `json:"comparison"` // above, below or typical
+	Mean         *float64 `json:"baseline_mean,omitempty"`
+	Stddev       *float64 `json:"baseline_stddev,omitempty"`
+	DeltaPct     *float64 `json:"delta_pct,omitempty"`
+	Z            *float64 `json:"z,omitempty"`
+	Comparison   *string  `json:"comparison,omitempty"` // above, below or typical
 	// Verdict is Comparison seen through Polarity: better, worse, changed
 	// (beyond usual, but the metric has no good direction) or typical.
 	// Empty unless State is ok. See Verdict for the caveat.
@@ -134,7 +206,7 @@ type WorkoutsSummary struct {
 	Count           int            `json:"count"`
 	DurationSeconds int64          `json:"duration_seconds"`
 	EnergyKcal      float64        `json:"energy_kcal"`
-	Latest          *LatestWorkout `json:"latest"` // null when there are none
+	Latest          *LatestWorkout `json:"latest,omitempty"` // left out when there are none
 }
 
 // LatestWorkout is the newest workout in the window.
@@ -142,7 +214,7 @@ type LatestWorkout struct {
 	Activity  string   `json:"activity"`
 	Day       string   `json:"day"`
 	AgeDays   int      `json:"age_days"`
-	DistanceM *float64 `json:"distance_m"`
+	DistanceM *float64 `json:"distance_m,omitempty"`
 }
 
 // DataHealth says how much data there is and how complete it looks.
@@ -151,8 +223,8 @@ type DataHealth struct {
 	SleepNights int64            `json:"sleep_nights"` // distinct nights with sleep rows
 	FirstDay    string           `json:"first_day,omitempty"`
 	LastDay     string           `json:"last_day,omitempty"`
-	SourceCount map[string]int64 `json:"source_samples"` // by source class: watch, iphone, manual, other
-	LastImport  *ImportInfo      `json:"last_import"`    // null if nothing was imported yet
+	SourceCount map[string]int64 `json:"source_samples"`        // by source class: watch, iphone, manual, other
+	LastImport  *ImportInfo      `json:"last_import,omitempty"` // left out if nothing was imported yet
 	Gaps        []Gap            `json:"gaps"`
 }
 
@@ -205,7 +277,7 @@ func isFinite(xs ...float64) bool {
 // "today" is (its own local calendar date), which keeps tests deterministic.
 func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time, opts OverviewOptions) (*Overview, error) {
 	today := now.Format(DayLayout)
-	o := &Overview{Today: today, Metrics: []MetricRow{}, NotTracked: []string{}}
+	o := &Overview{Today: today, Metrics: []MetricRow{}, Categories: []CategorySummary{}, NotTracked: []string{}}
 
 	for _, name := range metrics.Names() {
 		row, err := buildRow(ctx, conn, name, today, now.Add(futureSlack).Unix())
@@ -225,6 +297,8 @@ func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time, opts Overvi
 		return categoryRank(o.Metrics[i].Category) < categoryRank(o.Metrics[j].Category)
 	})
 
+	o.Categories = CategorySummaries(o.Metrics)
+
 	var err error
 	if o.Sleep, err = buildSleep(ctx, conn, today); err != nil {
 		return nil, err
@@ -238,8 +312,64 @@ func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time, opts Overvi
 	if o.Heatmap, err = buildOverviewHeatmap(ctx, conn, o, now, opts); err != nil {
 		return nil, err
 	}
+	if o.Heatmaps, err = buildMetricHeatmaps(ctx, conn, o, now, opts); err != nil {
+		return nil, err
+	}
+	if err := o.buildRichSections(ctx, conn, now, opts); err != nil {
+		return nil, err
+	}
 	o.Empty = o.Data.Samples == 0 && o.Sleep.State == StateNoData && o.Workouts.Count == 0
 	return o, nil
+}
+
+// buildRichSections fills SleepSummary and WorkoutsReport; a section with
+// nothing to show stays nil.
+func (o *Overview) buildRichSections(ctx context.Context, conn *sql.DB, now time.Time, opts OverviewOptions) error {
+	sleep, err := BuildSleepReport(ctx, conn, now, SleepOptions{Weeks: min(opts.HeatWeeks, MaxHeatmapWeeks)})
+	if err != nil {
+		return err
+	}
+	if !sleep.Empty {
+		o.SleepSummary = sleep
+	}
+	wk, err := BuildWorkoutsReport(ctx, conn, o.Today, workoutsReportDays, workoutsReportWeeks)
+	if err != nil {
+		return err
+	}
+	if wk.Count > 0 {
+		o.WorkoutsReport = wk
+	}
+	return nil
+}
+
+// buildMetricHeatmaps builds the calendars of opts.HeatMetrics, skipping
+// metrics with no data. It returns nil when there are none.
+func buildMetricHeatmaps(ctx context.Context, conn *sql.DB, o *Overview, now time.Time, opts OverviewOptions) (map[string]*Heatmap, error) {
+	if opts.HeatWeeks <= 0 {
+		return nil, nil
+	}
+	has := map[string]bool{}
+	for _, r := range o.Metrics {
+		has[r.Metric] = true
+	}
+	var out map[string]*Heatmap
+	for _, name := range opts.HeatMetrics {
+		if !has[name] || out[name] != nil {
+			continue
+		}
+		h, err := BuildHeatmap(ctx, conn, name, min(opts.HeatWeeks, MaxHeatmapWeeks), now)
+		if err != nil {
+			return nil, err
+		}
+		if h.Empty() {
+			continue
+		}
+		if out == nil {
+			out = map[string]*Heatmap{}
+		}
+		out[name] = h
+	}
+	return out, nil
 }
 
 // categoryRank is the display order of the groups.

@@ -1,0 +1,43 @@
+ ━━ WORKOUTS ━━ 16 sessions  16h 44m  6,820 kcal  187.5 km  active 16 of 28 d ━
+
+ TYPE      N TIME       KCAL     KM SHARE
+ cycling   6 7h 57m    3,450  126.0 ██████████░░░░░░░░░░  48%
+ running   5 5h 00m    2,740   49.6 ██████░░░░░░░░░░░░░░  30%
+ walking   3 2h 09m      630   11.9 ███░░░░░░░░░░░░░░░░░  13%
+ yoga      2 1h 38m        -      - ██░░░░░░░░░░░░░░░░░░  10%
+
+ RECENT
+ Sat Nov 07 cycling  1h 07m 21.0 km 18.8 km/h 550 kcal
+ Fri Nov 06 walking     33m  4.3 km 7:40 /km  210 kcal
+ Wed Nov 04 running  1h 10m 11.0 km 6:22 /km  580 kcal
+ Mon Nov 02 cycling  1h 12m 21.0 km 17.5 km/h 500 kcal
+ Sat Oct 31 yoga        49m
+
+ WEEK OF TIME                                    N VS AVG
+ Sep 21  █████████████░░░░░░░░░░░ 3h 00m         3 ▼ -23%
+ Sep 28  ██████████████░░░░░░░░░░ 3h 13m         4 ▼ -12%
+ Oct 05  ████████████░░░░░░░░░░░░ 2h 50m         4 ▼ -24%
+ Oct 12  ████████████████████████ 5h 31m         5 ▲ +62%
+ Oct 19  ██████████████░░░░░░░░░░ 3h 17m         3 ▼ -10%
+ Oct 26  █████████████████░░░░░░░ 3h 54m         4 ▲ +5%
+ Nov 02  ██████████████████░░░░░░ 4h 02m         4 ▲ +4%
+ Nov 09  ░░░░░░░░░░░░░░░░░░░░░░░░ 0m (1 d)       0 – so far
+
+ BESTS (90 d)
+ longest   cycling 1h 32m, Oct 13 *new*
+ fastest   running 3:11 /km, Sep 30
+ furthest  cycling 21.0 km, Sep 03
+ biggest   cycling 700 kcal, Sep 23
+
+ ━━ CALENDAR ━━ workout minutes per day, 8 weeks to 2026-11-09 ━━━━━━━━━━━━━━━━
+       Oct     Nov
+ Mon   ▅ ▁ · · · █ · ◂
+ Tue   · · █ ▅ ▁ ·
+ Wed ▇ ▁ ▁ · · █ ▇
+ Thu · ▃ ▃ ▅ · · ·
+ Fri ▇ · · ▃ █ ▇ ▁
+ Sat · ▅ ▁ ▅ · ▃ ▇
+ Sun ▃ · · █ ▅ · ·
+
+ ▁ ≤45m  ▃ ≤49m  ▅ ≤1h 00m  ▇ ≤1h 10m  █ >1h 10m
+ · rest day   ◂ today   per day

@@ -1,0 +1,122 @@
+ healthcli overview          db: demo.db | imported 1 d ago
+ ----------------------------------------------------------
+ 3 better, 3 worse, 1 changed, 12 typical vs usual
+ VITALS 9 !1 | ACTIVITY 8 | BODY 4 | MOBILITY 5 !2 | SLEEP
+ WORKOUTS
+
+   METRIC                   LATEST          VS 28-DAY USUAL
+
+ == VITALS == 9 | 1 better | 1 worse | 1 changed | 1 stale
+   Avg heart rate           76 bpm          ^ +2%
+ ! Resting HR               60 bpm          ^ +6% worse
+   HRV                      46 ms           v -4%
+ ~ Respiratory rate         15.6/min        ^ +9% changed
+   Wrist temperature        36.0 C          - 0%
+   Blood oxygen             97%             - 0%
+   VO2 max                  41.9 mL/kg/min  stale 6 d
+ + Walking heart rate       90 bpm          v -4% better
+   Heart rate recovery      26 bpm          need 7d (have 6)
+
+ == ACTIVITY == 8 | 2 better ==============================
+ + Steps                    21,999 steps    ^ +10% better
+ + Active energy            880 kcal        ^ +10% better
+   Resting energy           1,730 kcal      ^ +2%
+   Exercise time            43 min          ^ +16%
+   Stand time               364 min         v -12%
+   Flights climbed          8 flights       v -39%
+   Walking + running di...  6.5 km          - 0%
+   Time in daylight         53 min          ^ +14%
+
+ == BODY == 4 | not enough data ===========================
+   Weight                   78.5 kg         need 7d (have 4)
+   Body fat                 18.5%           need 7d (have 4)
+   BMI                      24.0            need 7d (have 4)
+   Lean body mass           63.2 kg         need 7d (have 4)
+
+ == MOBILITY == 5 | 2 worse | 1 stale =====================
+   Walking speed            5.5 km/h        ^ +2%
+   Step length              73 cm           ^ +2%
+ ! Walking asymmetry        4.9%            ^ +38% worse
+ ! Double support time      30.7%           ^ +7% worse
+   Walking steadiness       94%             stale 6 d
+ green better red worse cyan changed
+
+ == SLEEP == Sun 8 Nov | Watch stages, iPhone in bed ======
+       23:12                                          06:30
+ awake                 ..                 ..               
+ REM               ++++                +++                +
+ core  ::::::   :::      ::::::    ::::     ::::::   ::::: 
+ deep        ###               ####               ###      
+            00     01     02      03     04     05     06
+
+ STAT       LAST NIGHT  7 NIGHTS    VS 13-NIGHT USUAL
+ Asleep     7h 01m      7h 08m      - typical
+ In bed     7h 30m      7h 37m      - typical
+ Efficiency 94%         94%         - typical
+ Awake      17m 2 wakes 20m 3 wakes - typical
+ Latency    ~12m        12m         - typical
+ Deep       1h 27m 21%  1h 30m      - typical
+ REM        1h 18m 19%  1h 17m      - typical
+ Core       4h 16m 61%  4h 18m      - typical
+ Bedtime    23:12       23:12       - typical
+ Wake       06:30       06:37       - typical
+ Midpoint   02:51       02:54       - typical
+ Regularity +/-1m bed +/-8m mid (13 nights)
+ Sleep debt 59m short, 7 nights: 6h 05m short (8h target)
+ green better red worse cyan changed
+
+ == CALENDAR == time asleep per day, last 13 nights =======
+ Tue Wed Thu Fri Sat Sun Mon Tue Wed Thu Fri Sat Sun
+ 7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h
+ *** *** *** *** *** *** *** *** *** *** *** *** ***
+
+ == WORKOUTS == 7 sessions  6h 13m  3,243 kcal ============
+
+ TYPE      N TIME       KCAL     KM SHARE
+ running   3 2h 49m    1,828   28.1 ########..........  45%
+ cycling   2 1h 44m    1,039   34.6 #####.............  28%
+ walking   2 1h 40m      375    8.3 #####.............  27%
+
+ RECENT
+ Sat Nov 07 running     51m  8.5 km 6:00 /km  551 kcal
+ Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
+
+ BESTS (90 d)
+ longest   running 1h 00m, Oct 26 *new*
+ fastest   running 6:00 /km, Oct 26 *new*
+ furthest  running 9.9 km, Oct 26 *new*
+ biggest   running 645 kcal, Oct 26 *new*
+
+ == CALENDAR == workout minutes per day, 12 weeks =========
+     Aug Sep     Oct     Nov
+ Mon                     + :
+ Tue                     : .
+ Wed                     @ :
+ Thu                     : #
+ Fri                     . :
+ Sat                     : -
+ Sun                     + : <
+
+ . <=40m  - <=51m  + <=1h 00m  # <=1h 04m  @ >1h 04m
+ : rest day   < today   per day
+
+ == CALENDAR == step count per day, 12 weeks to 2026-11-08
+     Aug Sep     Oct     Nov
+ Mon _ _ _ _ _ _ _ _ _ _ . .
+ Tue _ _ _ _ _ _ _ _ _ _ # +
+ Wed _ _ _ _ _ _ _ _ _ _ # -
+ Thu _ _ _ _ _ _ _ _ _ _ + -
+ Fri _ _ _ _ _ _ _ _ _ _ + @
+ Sat _ _ _ _ _ _ _ _ _ _ - @
+ Sun _ _ _ _ _ _ _ _ _ _ . # <
+
+ . <=17,731  - <=19,464  + <=20,972  # <=21,999  @ >21,999
+ _ no data   < today   steps per day
+
+ == DATA == 1,271 samples, 14 sleep nights ================
+ range: 2026-10-26 -> 2026-11-08
+ sources: Watch 74%, iPhone 26%
+ last import: 1,468 added | 9 duplicates
+ skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
+ days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 o...
+ not tracked in your data: 4 metrics

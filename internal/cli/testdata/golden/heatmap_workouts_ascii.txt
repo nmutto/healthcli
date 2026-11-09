@@ -1,0 +1,12 @@
+== CALENDAR == workouts per day, 12 weeks to 2026-11-04 =======================
+    Aug Sep     Oct     Nov
+Mon         : : # : : # : :
+Tue         : - : : - : : .
+Wed         @ : : @ : : # : <
+Thu       + : : + : : - :
+Fri       : : . : : @ : :
+Sat       : # : : + : : +
+Sun       - : : . : : . :
+
+. <=27m  - <=41m  + <=55m  # <=1h 09m  @ >1h 09m
+: rest day   < today   per day

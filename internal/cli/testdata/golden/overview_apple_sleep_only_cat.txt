@@ -1,0 +1,33 @@
+ healthcli overview                              db: demo.db · imported 1 d ago
+ ──────────────────────────────────────────────────────────────────────────────
+ slept 7h 01m
+ SLEEP
+
+ ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
+       23:12                                                              06:30
+ awake                       ░░░                        ░░                     
+ REM                    ▓▓▓▓▓                      ▓▓▓▓▓                     ▓▓
+ core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒  
+ deep          ████                     █████                      ████        
+              00        01        02        03        04        05        06
+
+ STAT         LAST NIGHT          7 NIGHTS            VS 13-NIGHT USUAL
+ Asleep       7h 01m              7h 08m              – typical
+ In bed       7h 30m              7h 37m              – typical
+ Efficiency   94%                 94%                 – typical
+ Awake        17m / 2 awakenings  20m / 3 awakenings  – typical
+ Latency      ~12m                12m                 – typical
+ Deep         1h 27m 21%          1h 30m              – typical
+ REM          1h 18m 19%          1h 17m              – typical
+ Core         4h 16m 61%          4h 18m              – typical
+ Bedtime      23:12               23:12               – typical
+ Wake         06:30               06:37               – typical
+ Midpoint     02:51               02:54               – typical
+ Regularity   ±1m bed ±8m mid (13 nights)
+ Sleep debt   59m short last night, 7 nights: 6h 05m short vs 8h target
+ green better / red worse / cyan changed (no good direction)
+
+ ━━ CALENDAR ━━ time asleep per day, last 13 nights ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Tue Wed Thu Fri Sat Sun Mon Tue Wed Thu Fri Sat Sun
+ 7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h
+ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆

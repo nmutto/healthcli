@@ -259,11 +259,6 @@
       "value": 72.4,
       "source": "manual",
       "baseline_days_with_data": 0,
-      "baseline_mean": null,
-      "baseline_stddev": null,
-      "delta_pct": null,
-      "z": null,
-      "comparison": null,
       "spark": [
         null,
         null,
@@ -294,6 +289,41 @@
         null,
         null
       ]
+    }
+  ],
+  "categories": [
+    {
+      "name": "vitals",
+      "total": 3,
+      "better": 0,
+      "worse": 1,
+      "changed": 0,
+      "typical": 2,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    },
+    {
+      "name": "activity",
+      "total": 2,
+      "better": 1,
+      "worse": 0,
+      "changed": 0,
+      "typical": 1,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    },
+    {
+      "name": "body",
+      "total": 1,
+      "better": 0,
+      "worse": 0,
+      "changed": 0,
+      "typical": 0,
+      "stale": 1,
+      "no_baseline": 0,
+      "no_data": 0
     }
   ],
   "not_tracked": [
@@ -363,234 +393,190 @@
       [
         {
           "day": "2026-08-17",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-18",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-19",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-20",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-21",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-22",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-23",
-          "value": null,
           "level": 0
         }
       ],
       [
         {
           "day": "2026-08-24",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-25",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-26",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-27",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-28",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-29",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-08-30",
-          "value": null,
           "level": 0
         }
       ],
       [
         {
           "day": "2026-08-31",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-01",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-02",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-03",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-04",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-05",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-06",
-          "value": null,
           "level": 0
         }
       ],
       [
         {
           "day": "2026-09-07",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-08",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-09",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-10",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-11",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-12",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-13",
-          "value": null,
           "level": 0
         }
       ],
       [
         {
           "day": "2026-09-14",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-15",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-16",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-17",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-18",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-19",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-20",
-          "value": null,
           "level": 0
         }
       ],
       [
         {
           "day": "2026-09-21",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-22",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-23",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-24",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-25",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-26",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-27",
-          "value": null,
           "level": 0
         }
       ],
       [
         {
           "day": "2026-09-28",
-          "value": null,
           "level": 0
         },
         {
           "day": "2026-09-29",
-          "value": null,
           "level": 0
         },
         {
@@ -839,6 +825,583 @@
         "label": "Weight",
         "missing_days": 9,
         "span_days": 13
+      }
+    ]
+  },
+  "sleep_summary": {
+    "today": "2026-11-08",
+    "empty": false,
+    "age_days": 0,
+    "kind": "stages",
+    "night": {
+      "night": "2026-11-08",
+      "source": "Test Apple Watch",
+      "in_bed_source": "Test iPhone",
+      "asleep_seconds": 25200,
+      "core_seconds": 17400,
+      "deep_seconds": 5400,
+      "rem_seconds": 2400,
+      "unspecified_seconds": 0,
+      "awake_seconds": 900,
+      "in_bed_seconds": 30600,
+      "efficiency_pct": 82.35294117647058,
+      "awakenings": 0,
+      "latency_seconds": 1800,
+      "bedtime": "23:00",
+      "wake": "06:00",
+      "midpoint": "02:30",
+      "stages": [
+        {
+          "stage": "core",
+          "start": "2026-11-07T23:00:00Z",
+          "end": "2026-11-08T03:50:00Z"
+        },
+        {
+          "stage": "rem",
+          "start": "2026-11-08T03:50:00Z",
+          "end": "2026-11-08T04:30:00Z"
+        },
+        {
+          "stage": "deep",
+          "start": "2026-11-08T04:30:00Z",
+          "end": "2026-11-08T06:00:00Z"
+        }
+      ]
+    },
+    "seven_nights": {
+      "nights": 1,
+      "asleep_seconds": 25200,
+      "in_bed_seconds": 30600,
+      "efficiency_pct": 82.35294117647058,
+      "awake_seconds": 900,
+      "awakenings": 0,
+      "latency_seconds": 1800,
+      "deep_seconds": 5400,
+      "rem_seconds": 2400,
+      "core_seconds": 17400,
+      "bedtime_min_since_18h": 300,
+      "wake_min_since_18h": 720,
+      "midpoint_min_since_18h": 510
+    },
+    "fourteen_nights": {
+      "nights": 1,
+      "asleep_seconds": 25200,
+      "in_bed_seconds": 30600,
+      "efficiency_pct": 82.35294117647058,
+      "awake_seconds": 900,
+      "awakenings": 0,
+      "latency_seconds": 1800,
+      "deep_seconds": 5400,
+      "rem_seconds": 2400,
+      "core_seconds": 17400,
+      "bedtime_min_since_18h": 300,
+      "wake_min_since_18h": 720,
+      "midpoint_min_since_18h": 510
+    },
+    "usual": {
+      "nights": 1,
+      "asleep_seconds": 25200,
+      "in_bed_seconds": 30600,
+      "efficiency_pct": 82.35294117647058,
+      "awake_seconds": 900,
+      "awakenings": 0,
+      "latency_seconds": 1800,
+      "deep_seconds": 5400,
+      "rem_seconds": 2400,
+      "core_seconds": 17400,
+      "bedtime_min_since_18h": 300,
+      "wake_min_since_18h": 720,
+      "midpoint_min_since_18h": 510
+    },
+    "debt": {
+      "target_seconds": 28800,
+      "last_night_seconds": 3600,
+      "nights": 1,
+      "window_seconds": 3600
+    },
+    "heatmap": {
+      "metric": "sleep_asleep",
+      "unit": "",
+      "today": "2026-11-08",
+      "from": "2026-08-17",
+      "thresholds": [
+        420,
+        420,
+        420,
+        420
+      ],
+      "days_with_data": 1,
+      "flat": true,
+      "weeks": [
+        [
+          {
+            "day": "2026-08-17",
+            "level": 0
+          },
+          {
+            "day": "2026-08-18",
+            "level": 0
+          },
+          {
+            "day": "2026-08-19",
+            "level": 0
+          },
+          {
+            "day": "2026-08-20",
+            "level": 0
+          },
+          {
+            "day": "2026-08-21",
+            "level": 0
+          },
+          {
+            "day": "2026-08-22",
+            "level": 0
+          },
+          {
+            "day": "2026-08-23",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-08-24",
+            "level": 0
+          },
+          {
+            "day": "2026-08-25",
+            "level": 0
+          },
+          {
+            "day": "2026-08-26",
+            "level": 0
+          },
+          {
+            "day": "2026-08-27",
+            "level": 0
+          },
+          {
+            "day": "2026-08-28",
+            "level": 0
+          },
+          {
+            "day": "2026-08-29",
+            "level": 0
+          },
+          {
+            "day": "2026-08-30",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-08-31",
+            "level": 0
+          },
+          {
+            "day": "2026-09-01",
+            "level": 0
+          },
+          {
+            "day": "2026-09-02",
+            "level": 0
+          },
+          {
+            "day": "2026-09-03",
+            "level": 0
+          },
+          {
+            "day": "2026-09-04",
+            "level": 0
+          },
+          {
+            "day": "2026-09-05",
+            "level": 0
+          },
+          {
+            "day": "2026-09-06",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-07",
+            "level": 0
+          },
+          {
+            "day": "2026-09-08",
+            "level": 0
+          },
+          {
+            "day": "2026-09-09",
+            "level": 0
+          },
+          {
+            "day": "2026-09-10",
+            "level": 0
+          },
+          {
+            "day": "2026-09-11",
+            "level": 0
+          },
+          {
+            "day": "2026-09-12",
+            "level": 0
+          },
+          {
+            "day": "2026-09-13",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-14",
+            "level": 0
+          },
+          {
+            "day": "2026-09-15",
+            "level": 0
+          },
+          {
+            "day": "2026-09-16",
+            "level": 0
+          },
+          {
+            "day": "2026-09-17",
+            "level": 0
+          },
+          {
+            "day": "2026-09-18",
+            "level": 0
+          },
+          {
+            "day": "2026-09-19",
+            "level": 0
+          },
+          {
+            "day": "2026-09-20",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-21",
+            "level": 0
+          },
+          {
+            "day": "2026-09-22",
+            "level": 0
+          },
+          {
+            "day": "2026-09-23",
+            "level": 0
+          },
+          {
+            "day": "2026-09-24",
+            "level": 0
+          },
+          {
+            "day": "2026-09-25",
+            "level": 0
+          },
+          {
+            "day": "2026-09-26",
+            "level": 0
+          },
+          {
+            "day": "2026-09-27",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-28",
+            "level": 0
+          },
+          {
+            "day": "2026-09-29",
+            "level": 0
+          },
+          {
+            "day": "2026-09-30",
+            "level": 0
+          },
+          {
+            "day": "2026-10-01",
+            "level": 0
+          },
+          {
+            "day": "2026-10-02",
+            "level": 0
+          },
+          {
+            "day": "2026-10-03",
+            "level": 0
+          },
+          {
+            "day": "2026-10-04",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-05",
+            "level": 0
+          },
+          {
+            "day": "2026-10-06",
+            "level": 0
+          },
+          {
+            "day": "2026-10-07",
+            "level": 0
+          },
+          {
+            "day": "2026-10-08",
+            "level": 0
+          },
+          {
+            "day": "2026-10-09",
+            "level": 0
+          },
+          {
+            "day": "2026-10-10",
+            "level": 0
+          },
+          {
+            "day": "2026-10-11",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-12",
+            "level": 0
+          },
+          {
+            "day": "2026-10-13",
+            "level": 0
+          },
+          {
+            "day": "2026-10-14",
+            "level": 0
+          },
+          {
+            "day": "2026-10-15",
+            "level": 0
+          },
+          {
+            "day": "2026-10-16",
+            "level": 0
+          },
+          {
+            "day": "2026-10-17",
+            "level": 0
+          },
+          {
+            "day": "2026-10-18",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-19",
+            "level": 0
+          },
+          {
+            "day": "2026-10-20",
+            "level": 0
+          },
+          {
+            "day": "2026-10-21",
+            "level": 0
+          },
+          {
+            "day": "2026-10-22",
+            "level": 0
+          },
+          {
+            "day": "2026-10-23",
+            "level": 0
+          },
+          {
+            "day": "2026-10-24",
+            "level": 0
+          },
+          {
+            "day": "2026-10-25",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-26",
+            "level": 0
+          },
+          {
+            "day": "2026-10-27",
+            "level": 0
+          },
+          {
+            "day": "2026-10-28",
+            "level": 0
+          },
+          {
+            "day": "2026-10-29",
+            "level": 0
+          },
+          {
+            "day": "2026-10-30",
+            "level": 0
+          },
+          {
+            "day": "2026-10-31",
+            "level": 0
+          },
+          {
+            "day": "2026-11-01",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-11-02",
+            "level": 0
+          },
+          {
+            "day": "2026-11-03",
+            "level": 0
+          },
+          {
+            "day": "2026-11-04",
+            "level": 0
+          },
+          {
+            "day": "2026-11-05",
+            "level": 0
+          },
+          {
+            "day": "2026-11-06",
+            "level": 0
+          },
+          {
+            "day": "2026-11-07",
+            "level": 0
+          },
+          {
+            "day": "2026-11-08",
+            "value": 420,
+            "level": 3
+          }
+        ]
+      ]
+    }
+  },
+  "workouts_report": {
+    "today": "2026-11-08",
+    "days": 28,
+    "count": 3,
+    "duration_seconds": 8280,
+    "energy_kcal": 1560,
+    "distance_km": 31.2,
+    "active_days": 3,
+    "by_type": [
+      {
+        "activity": "running",
+        "count": 2,
+        "duration_seconds": 4980,
+        "energy_kcal": 1040,
+        "distance_km": 13.2
+      },
+      {
+        "activity": "cycling",
+        "count": 1,
+        "duration_seconds": 3300,
+        "energy_kcal": 520,
+        "distance_km": 18
+      }
+    ],
+    "weeks": [
+      {
+        "start": "2026-09-14",
+        "duration_seconds": 0,
+        "count": 0,
+        "days": 7
+      },
+      {
+        "start": "2026-09-21",
+        "duration_seconds": 0,
+        "count": 0,
+        "days": 7
+      },
+      {
+        "start": "2026-09-28",
+        "duration_seconds": 0,
+        "count": 0,
+        "days": 7
+      },
+      {
+        "start": "2026-10-05",
+        "duration_seconds": 0,
+        "count": 0,
+        "days": 7
+      },
+      {
+        "start": "2026-10-12",
+        "duration_seconds": 0,
+        "count": 0,
+        "days": 7
+      },
+      {
+        "start": "2026-10-19",
+        "duration_seconds": 0,
+        "count": 0,
+        "days": 7
+      },
+      {
+        "start": "2026-10-26",
+        "duration_seconds": 3120,
+        "count": 1,
+        "days": 7
+      },
+      {
+        "start": "2026-11-02",
+        "duration_seconds": 5160,
+        "count": 2,
+        "partial": true,
+        "days": 7
+      }
+    ],
+    "recent": [
+      {
+        "day": "2026-11-05",
+        "activity": "running",
+        "start": "2026-11-05T18:00:00Z",
+        "end": "2026-11-05T18:31:00Z",
+        "duration_seconds": 1860,
+        "energy_kcal": 410,
+        "distance_km": 5.2,
+        "source": "Test Apple Watch"
+      },
+      {
+        "day": "2026-11-02",
+        "activity": "cycling",
+        "start": "2026-11-02T18:00:00Z",
+        "end": "2026-11-02T18:55:00Z",
+        "duration_seconds": 3300,
+        "energy_kcal": 520,
+        "distance_km": 18,
+        "source": "Test Apple Watch"
+      },
+      {
+        "day": "2026-10-30",
+        "activity": "running",
+        "start": "2026-10-30T18:00:00Z",
+        "end": "2026-10-30T18:52:00Z",
+        "duration_seconds": 3120,
+        "energy_kcal": 630,
+        "distance_km": 8,
+        "source": "Test Apple Watch"
       }
     ]
   }

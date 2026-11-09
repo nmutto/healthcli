@@ -59,7 +59,7 @@ and lets you log, review and query your data. Nothing leaves your machine.`,
 
 	// Persistent flags are inherited by all subcommands.
 	root.PersistentFlags().BoolVar(&opts.jsonOutput, "json", false, "output JSON instead of human-readable text")
-	root.PersistentFlags().StringVar(&opts.dbPath, "db", "", "path to the SQLite database (default: per-user data directory)")
+	root.PersistentFlags().StringVar(&opts.dbPath, "db", "", "SQLite database path (default: per-user data dir)")
 
 	root.AddCommand(
 		newLogCmd(opts),
@@ -67,6 +67,8 @@ and lets you log, review and query your data. Nothing leaves your machine.`,
 		newTrendCmd(opts),
 		newOverviewCmd(opts),
 		newHeatmapCmd(opts),
+		newSleepCmd(opts),
+		newWorkoutsCmd(opts),
 		newQueryCmd(opts),
 		newImportCmd(opts),
 		newVersionCmd(opts),

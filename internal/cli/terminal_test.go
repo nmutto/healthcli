@@ -21,7 +21,7 @@ func TestDetectTermWidth(t *testing.T) {
 	cases := []struct {
 		columns string
 		want    int
-	}{{"", 80}, {"120", 100}, {"40", 60}, {"72", 72}, {"abc", 80}, {"0", 80}, {"-5", 80}}
+	}{{"", 80}, {"120", 100}, {"40", 50}, {"50", 50}, {"72", 72}, {"abc", 80}, {"0", 80}, {"-5", 80}}
 	for _, c := range cases {
 		ti := detectTerm(&bytes.Buffer{}, fakeEnv(map[string]string{"COLUMNS": c.columns}), false, false)
 		if ti.width != c.want {

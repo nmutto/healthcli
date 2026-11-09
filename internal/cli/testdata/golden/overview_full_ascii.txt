@@ -1,25 +1,54 @@
  healthcli overview                              db: demo.db | imported 3 d ago
  ------------------------------------------------------------------------------
  1 better, 1 worse, 3 typical vs your 28-day usual | Resting HR +9%
+ VITALS 3 !1 | ACTIVITY 2 | BODY 1 | SLEEP | WORKOUTS  (not tracked: MOBILITY)
 
- METRIC          LATEST        VS 28-DAY USUAL               AGE
- VITALS
- Avg heart rate  67 bpm        v -3%             ...*===...  today
- Resting HR      66 bpm        ^ +9% worse       ...====..*  1 d
- HRV             55 ms         v -4%             ...=*==...  2 d
- ACTIVITY
- Steps           11,800 steps  ^ +52% better     ...====..*  today
- Active energy   640 kcal      ^ +14%            ...===*...  today
- BODY
- Weight          72.4 kg       stale                         9 d
+   METRIC          LATEST        VS 28-DAY USUAL               AGE
+
+ == VITALS == 3 metrics | 1 worse =============================================
+   Avg heart rate  67 bpm        v -3%             ...*===...
+ ! Resting HR      66 bpm        ^ +9% worse       ...====..*
+   HRV             55 ms         v -4%             ...=*==...  2 d
+
+ == ACTIVITY == 2 metrics | 1 better ==========================================
+ + Steps           11,800 steps  ^ +52% better     ...====..*
+   Active energy   640 kcal      ^ +14%            ...===*...
+
+ == BODY == 1 metric | 1 stale ================================================
+   Weight          72.4 kg       stale                         9 d
  green better / red worse / cyan changed (no good direction)
 
- SLEEP    7h 00m asleep | 8h 30m in bed | last night
- ----------------------------------------------------+++++++################...
- core 4h 50m   REM 40m   deep 1h 30m   awake 15m
- WORKOUTS 3 in 30 d | 2h 18m | 1,560 kcal | latest: running 5.2 km, 3 d ago
+ == SLEEP == Sun 8 Nov | Watch stages, iPhone in bed ==========================
+       23:00                                                              06:00
+ awake                                                                         
+ REM                                                     +++++++               
+ core  ::::::::::::::::::::::::::::::::::::::::::::::::::                      
+ deep                                                           ###############
+       23        00        01        02         03        04        05
 
- CALENDAR step count per day, 12 weeks to 2026-11-08
+ STAT         LAST NIGHT          1 NIGHT             VS USUAL
+ Asleep       7h 00m              7h 00m              need 7 nights (have 1)
+ In bed       8h 30m              8h 30m              need 7 nights (have 1)
+ Efficiency   82%                 82%                 need 7 nights (have 1)
+ Awake        15m / 0 awakenings  15m / 0 awakenings  need 7 nights (have 1)
+ Deep         1h 30m 21%          1h 30m              need 7 nights (have 1)
+ REM          40m 10%             40m                 need 7 nights (have 1)
+ Bedtime      23:00               23:00               need 7 nights (have 1)
+ Midpoint     02:30               02:30               need 7 nights (have 1)
+ Sleep debt   1h 00m short last night vs 8h target
+
+ == WORKOUTS == 3 sessions  2h 18m  1,560 kcal  31.2 km  active 3 of 28 d =====
+
+ TYPE      N TIME       KCAL     KM SHARE
+ running   2 1h 23m    1,040   13.2 ############........  60%
+ cycling   1 55m         520   18.0 ########............  40%
+
+ RECENT
+ Thu Nov 05 running     31m  5.2 km 5:58 /km  410 kcal
+ Mon Nov 02 cycling     55m 18.0 km 19.6 km/h 520 kcal
+ Fri Oct 30 running     52m  8.0 km 6:30 /km  630 kcal
+
+ == CALENDAR == step count per day, 12 weeks to 2026-11-08 ====================
      Aug Sep     Oct     Nov
  Mon _ _ _ _ _ _ _ # . + . +
  Tue _ _ _ _ _ _ _ + @ - # -
@@ -32,10 +61,10 @@
  . <=6,450  - <=7,350  + <=8,250  # <=9,150  @ >9,150
  _ no data   < today   steps per day
 
- DATA     232 samples, 1 sleep night
-          range: 2026-09-30 -> 2026-11-08
-          sources: Watch 81%, iPhone 17%, manual 2%
-          last import: 1,230 added | 40 duplicates
-          skipped: 5 (unknown_type 3, bad_date 1, bad_value 1)
-          days missing: Weight 9 of 13, HRV 6 of 25
+ == DATA == 232 samples, 1 sleep night ========================================
+ range: 2026-09-30 -> 2026-11-08
+ sources: Watch 81%, iPhone 17%, manual 2%
+ last import: 1,230 added | 40 duplicates
+ skipped: 5 (unknown_type 3, bad_date 1, bad_value 1)
+ days missing: Weight 9 of 13, HRV 6 of 25
  not tracked in your data: 24 metrics

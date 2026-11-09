@@ -1,15 +1,15 @@
  healthcli overview                             db: demo.db
  ----------------------------------------------------------
  1 typical vs your 28-day usual
+ ACTIVITY 1  (5 not tracked)
 
- METRIC  LATEST       VS 28-DAY USUAL               AGE
- Steps   4,000 steps  v -41%            ...*===...  today
- green better / red worse / cyan changed (no good direction)
+   METRIC  LATEST       VS 28-DAY USUAL
 
- SLEEP    no sleep recorded in the last 30 days
- WORKOUTS none in the last 30 days
+ == ACTIVITY == 1 | all typical ===========================
+   Steps   4,000 steps  v -41%            ...*===...
+ green better red worse cyan changed
 
- CALENDAR step count per day, 12 weeks to 2026-11-08
+ == CALENDAR == step count per day, 12 weeks to 2026-11-08
      Aug Sep     Oct     Nov
  Mon . # . + . + @ + @ - # -
  Tue @ - # - # . + . + @ + .
@@ -22,7 +22,7 @@
  . <=4,700  - <=6,100  + <=8,200  # <=9,600  @ >9,600
  _ no data   < today   steps per day
 
- DATA     90 samples
-          range: 2026-08-11 -> 2026-11-08
-          sources: other 100%
+ == DATA == 90 samples ====================================
+ range: 2026-08-11 -> 2026-11-08
+ sources: other 100%
  not tracked in your data: 29 metrics

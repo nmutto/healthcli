@@ -1,0 +1,12 @@
+━━ CALENDAR ━━ sleep per day, 12 weeks to 2026-11-04 ━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Aug Sep     Oct     Nov
+Mon ▃ █ · ▇ ▃ ▇ ▁ ▅ · ▅ █ ▅
+Tue ▁ · ▁ ▅ █ ▅ █ · █ ▃ ▇ ▃
+Wed · ▃ █ ▃ ▇ ▃ · ▁ ▇ ▁ ▅ ▁ ◂
+Thu ▇ ▁ ▇ ▁ ▅ · ▅ █ ▃ █ ▃
+Fri ▅ █ ▅ █ · ▇ ▃ ▇ ▁ ▇ ·
+Sat ▃ ▇ ▁ · ▁ ▅ ▁ ▅ █ · █
+Sun ▁ ▅ · ▅ █ ▃ ▇ ▃ · ▁ ▇
+
+▁ ≤5h 48m  ▃ ≤6h 36m  ▅ ≤7h 24m  ▇ ≤8h 17m  █ >8h 17m
+· no data   ◂ today   per day

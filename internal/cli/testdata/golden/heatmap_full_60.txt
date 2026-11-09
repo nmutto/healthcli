@@ -1,4 +1,4 @@
-step count per day, 27 weeks to 2026-11-04
+━━ CALENDAR ━━ step count per day, 27 weeks to 2026-11-04 ━
     May     Jun     Jul     Aug       Sep     Oct     Nov
 Mon · · · · · · · █ ▇ ▃ ▁ █ ▇ ▅ ▁ █ ▇ ▅ ▃ ▁ ▇ ▅ ▃ ▁ █ ▇ ▃
 Tue · · · · · · · ▇ ▅ ▁ █ ▇ ▅ ▃ ▁ ▇ ▅ ▃ ▁ █ ▇ ▃ ▁ █ ▇ ▅ ▁
