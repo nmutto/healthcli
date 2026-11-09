@@ -52,6 +52,12 @@ func runImportApple(cmd *cobra.Command, opts *options, file string) error {
 	for _, r := range reasons {
 		fmt.Fprintf(out, "  %-20s %d\n", r, sum.Skipped[r])
 	}
+	if top := sum.TopSkippedTypes(5); len(top) > 0 {
+		fmt.Fprintln(out, "Most common types not imported:")
+		for _, t := range top {
+			fmt.Fprintf(out, "  %-50s %d\n", t.Type, t.Count)
+		}
+	}
 	fmt.Fprintf(out, "Elapsed:    %.1fs\n", sum.ElapsedSec)
 	return nil
 }

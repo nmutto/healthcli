@@ -25,6 +25,10 @@ type profile struct {
 	tripDays     []int // day numbers (0-based) spent in the trip timezone
 	malformFrom  int   // a malformed record is emitted when day%malformEvery == malformFrom
 	malformEvery int
+	// sparse mimics a simple non-Apple-Watch device (a fitness band and a
+	// smart scale): only steps, heart rate and weight, no sleep, no workouts,
+	// no malformed records.
+	sparse bool
 }
 
 var profiles = map[string]profile{
@@ -39,6 +43,11 @@ var profiles = map[string]profile{
 		hrEvery: 1, stepEvery: 5,
 		tripDays:     tripsEveryYear(4),
 		malformEvery: 30, malformFrom: 2,
+	},
+	"sparse": {
+		start: time.Date(2024, 12, 1, 0, 0, 0, 0, time.UTC), days: 28,
+		hrEvery: 30, stepEvery: 60,
+		sparse: true,
 	},
 }
 
@@ -60,17 +69,22 @@ type source struct{ name, version string }
 var (
 	iphone = source{"Alex’s iPhone", "17.2"}
 	watch  = source{"Alex’s Apple Watch", "10.2"}
+	band   = source{"FitBand 3", "2.1"} // the non-Apple device of the sparse profile
+	scale  = source{"SmartScale", "1.0"}
 )
 
 type gen struct {
 	w    *bufio.Writer
 	prof profile
 	rng  *rand.Rand
+	// vrng feeds only the newer vitals, so adding metrics never changes the
+	// values of the older ones (the committed small fixture stays stable).
+	vrng *rand.Rand
 	trip map[int]bool
 }
 
 func newGen(w *bufio.Writer, prof profile, seed int64) *gen {
-	g := &gen{w: w, prof: prof, rng: rand.New(rand.NewSource(seed)), trip: map[int]bool{}}
+	g := &gen{w: w, prof: prof, rng: rand.New(rand.NewSource(seed)), vrng: rand.New(rand.NewSource(seed + 7919)), trip: map[int]bool{}}
 	for _, d := range prof.tripDays {
 		g.trip[d] = true
 	}
@@ -98,6 +112,10 @@ func (g *gen) at(day, hour, min int) time.Time {
 }
 
 func (g *gen) writeDay(day int) {
+	if g.prof.sparse {
+		g.writeSparseDay(day)
+		return
+	}
 	// Sample times are bucketed through the day; hours 7-22 count as "awake".
 	for m := 0; m < 24*60; m += g.prof.hrEvery {
 		start := g.at(day, 0, m)
@@ -136,9 +154,77 @@ func (g *gen) writeDay(day int) {
 			`<MetadataEntry key="HKWasUserEntered" value="1"/>`)
 	}
 
+	g.writeVitals(day)
 	g.writeSleep(day)
 	g.writeWorkout(day)
 	g.writeMalformed(day)
+}
+
+// writeSparseDay is a whole day for the sparse profile: heart rate and steps
+// from one band, and a weigh-in every third day from a scale. Nothing else.
+func (g *gen) writeSparseDay(day int) {
+	for m := 0; m < 24*60; m += g.prof.hrEvery {
+		start := g.at(day, 0, m)
+		bpm := 60 + g.rng.Intn(10)
+		if m >= 7*60 && m < 23*60 {
+			bpm = 68 + g.rng.Intn(40)
+		}
+		g.record("HKQuantityTypeIdentifierHeartRate", band, "count/min", start, start.Add(time.Minute), fmt.Sprint(bpm), "")
+	}
+	for m := 7 * 60; m < 23*60; m += g.prof.stepEvery {
+		start, end := g.at(day, 0, m), g.at(day, 0, m+g.prof.stepEvery)
+		g.record("HKQuantityTypeIdentifierStepCount", band, "count", start, end, fmt.Sprint(g.rng.Intn(40*g.prof.stepEvery)), "")
+	}
+	if day%3 == 0 {
+		w := g.at(day, 7, 30)
+		g.record("HKQuantityTypeIdentifierBodyMass", scale, "kg", w, w, fmt.Sprintf("%.1f", 82+g.rng.Float64()*2), "")
+	}
+}
+
+// writeVitals emits the once-a-day (or occasional) readings a recent Apple
+// Watch adds beyond heart rate and steps. They also exercise Apple's unit
+// quirks: percentages as 0..1 fractions under "%", VO2 max with a middle dot,
+// speed as "km/hr", BMI as a plain "count".
+func (g *gen) writeVitals(day int) {
+	const id = "HKQuantityTypeIdentifier"
+	night := g.at(day, 5, 30)
+	g.record(id+"RespiratoryRate", watch, "count/min", night, night, fmt.Sprintf("%.1f", 13+g.vrng.Float64()*3), "")
+	g.record(id+"AppleSleepingWristTemperature", watch, "degC", night, night, fmt.Sprintf("%.2f", 35.2+g.vrng.Float64()*1.2), "")
+	for _, h := range []int{3, 14} { // blood oxygen is a fraction, not a percent
+		t := g.at(day, h, 10)
+		g.record(id+"OxygenSaturation", watch, "%", t, t, fmt.Sprintf("%.2f", 0.95+g.vrng.Float64()*0.04), "")
+	}
+
+	noon := g.at(day, 12, 30)
+	g.record(id+"WalkingHeartRateAverage", watch, "count/min", noon, noon, fmt.Sprint(88+g.vrng.Intn(12)), "")
+	g.record(id+"WalkingSpeed", iphone, "km/hr", noon, noon, fmt.Sprintf("%.2f", 4.8+g.vrng.Float64()*1.0), "")
+	g.record(id+"WalkingStepLength", iphone, "cm", noon, noon, fmt.Sprintf("%.1f", 68+g.vrng.Float64()*6), "")
+	g.record(id+"WalkingAsymmetryPercentage", iphone, "%", noon, noon, fmt.Sprintf("%.3f", 0.02+g.vrng.Float64()*0.04), "")
+	g.record(id+"WalkingDoubleSupportPercentage", iphone, "%", noon, noon, fmt.Sprintf("%.3f", 0.26+g.vrng.Float64()*0.05), "")
+	if day%7 == 0 {
+		g.record(id+"AppleWalkingSteadiness", iphone, "%", noon, noon, fmt.Sprintf("%.2f", 0.85+g.vrng.Float64()*0.1), "")
+		g.record(id+"VO2Max", watch, "mL/min·kg", noon, noon, fmt.Sprintf("%.1f", 40+g.vrng.Float64()*3), "")
+	}
+	if day%2 == 0 { // workout days: heart rate recovery after the run
+		t := g.at(day, 18, 50)
+		g.record(id+"HeartRateRecoveryOneMinute", watch, "count/min", t, t, fmt.Sprint(22+g.vrng.Intn(14)), "")
+	}
+
+	// Whole-day totals are written as one record each, like Apple's rings.
+	dayStart, dayEnd := g.at(day, 0, 0), g.at(day, 23, 59)
+	g.record(id+"AppleExerciseTime", watch, "min", dayStart, dayEnd, fmt.Sprint(15+g.vrng.Intn(45)), "")
+	g.record(id+"AppleStandTime", watch, "min", dayStart, dayEnd, fmt.Sprint(300+g.vrng.Intn(240)), "")
+	g.record(id+"FlightsClimbed", iphone, "count", dayStart, dayEnd, fmt.Sprint(4+g.vrng.Intn(20)), "")
+	g.record(id+"DistanceWalkingRunning", iphone, "km", dayStart, dayEnd, fmt.Sprintf("%.3f", 3+g.vrng.Float64()*7), "")
+	g.record(id+"BasalEnergyBurned", watch, "kcal", dayStart, dayEnd, fmt.Sprintf("%.1f", 1650+g.vrng.Float64()*100), "")
+	g.record(id+"TimeInDaylight", watch, "min", dayStart, dayEnd, fmt.Sprint(20+g.vrng.Intn(90)), "")
+
+	if day%3 == 0 { // body composition arrives with a weigh-in
+		w := g.at(day, 7, 6)
+		g.record(id+"BodyFatPercentage", iphone, "%", w, w, fmt.Sprintf("%.3f", 0.18+g.vrng.Float64()*0.02), "")
+		g.record(id+"BodyMassIndex", iphone, "count", w, w, fmt.Sprintf("%.1f", 24+g.vrng.Float64()*0.6), "")
+		g.record(id+"LeanBodyMass", iphone, "kg", w, w, fmt.Sprintf("%.1f", 63+g.vrng.Float64()*1.5), "")
+	}
 }
 
 // writeSleep emits a night starting at 23:00 on `day`: an iPhone InBed span

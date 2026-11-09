@@ -264,3 +264,85 @@ func TestBatchBoundaries(t *testing.T) {
 		t.Errorf("inserted %d, want 12000", sum.Inserted)
 	}
 }
+
+// record builds one Apple <Record> line for the unit-conversion tests.
+func record(typ, unit, value string) string {
+	return fmt.Sprintf(`<Record type="HKQuantityTypeIdentifier%s" sourceName="Watch" unit="%s" startDate="2024-12-01 07:00:00 +0100" endDate="2024-12-01 07:00:00 +0100" value="%s"/>`, typ, unit, value)
+}
+
+func TestImportNewTypesConvertUnits(t *testing.T) {
+	conn := newDB(t)
+	path := writeFile(t, "export.xml", wrap(
+		record("OxygenSaturation", "%", "0.97")+
+			record("RespiratoryRate", "count/min", "14.5")+
+			record("VO2Max", "mL/min·kg", "41.2")+
+			record("AppleSleepingWristTemperature", "degF", "97.7")+
+			record("WalkingAsymmetryPercentage", "%", "0.03")+
+			record("BodyMassIndex", "count", "24.1")+
+			record("WalkingSpeed", "km/hr", "5.1")))
+	sum, err := Import(conn, path, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Inserted != 7 || sum.SkippedTotal() != 0 {
+		t.Fatalf("inserted %d, skipped %v; want 7 and none", sum.Inserted, sum.Skipped)
+	}
+	want := map[string]struct {
+		unit  string
+		value float64
+	}{
+		"oxygen_saturation":                {"percent", 97},
+		"respiratory_rate":                 {"breaths/min", 14.5},
+		"vo2_max":                          {"mL/kg/min", 41.2},
+		"apple_sleeping_wrist_temperature": {"degC", 36.5},
+		"walking_asymmetry":                {"percent", 3},
+		"body_mass_index":                  {"kg/m2", 24.1},
+		"walking_speed":                    {"km/h", 5.1},
+	}
+	for metric, w := range want {
+		var unit string
+		var value float64
+		if err := conn.QueryRow("SELECT unit, value FROM samples WHERE metric = ?", metric).Scan(&unit, &value); err != nil {
+			t.Errorf("%s: %v", metric, err)
+			continue
+		}
+		if unit != w.unit || value < w.value-1e-3 || value > w.value+1e-3 {
+			t.Errorf("%s stored as %v %s, want %v %s", metric, value, unit, w.value, w.unit)
+		}
+	}
+}
+
+func TestImportNewTypesIdempotent(t *testing.T) {
+	conn := newDB(t)
+	path := writeFile(t, "export.xml", wrap(record("OxygenSaturation", "%", "0.97")))
+	if _, err := Import(conn, path, Options{}); err != nil {
+		t.Fatal(err)
+	}
+	sum, err := Import(conn, path, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Inserted != 0 || sum.Duplicates != 1 {
+		t.Errorf("re-import: inserted %d, duplicates %d; want 0 and 1", sum.Inserted, sum.Duplicates)
+	}
+}
+
+func TestImportRecordsSkippedTypes(t *testing.T) {
+	conn := newDB(t)
+	path := writeFile(t, "export.xml", wrap(
+		record("AudioExposure", "dBASPL", "70")+
+			record("AudioExposure", "dBASPL", "71")+
+			record("WalkingSpeed", "furlongs", "5")+ // known type, bad unit: not an unknown_type
+			record("UVExposure", "count", "1")))
+	sum, err := Import(conn, path, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Skipped[reasonUnknownType] != 3 || sum.Skipped[reasonBadUnit] != 1 {
+		t.Fatalf("skipped = %v", sum.Skipped)
+	}
+	top := sum.TopSkippedTypes(5)
+	if len(top) != 2 || top[0].Type != "HKQuantityTypeIdentifierAudioExposure" || top[0].Count != 2 {
+		t.Errorf("top skipped types = %+v", top)
+	}
+}
