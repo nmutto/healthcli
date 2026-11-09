@@ -213,6 +213,16 @@ func TestOverviewGoldens(t *testing.T) {
 		{"overview_steps_long_80.txt", "steps-long", termInfo{width: 80, unicode: true}, overviewView{}},
 		{"overview_steps_long_60_ascii.txt", "steps-long", termInfo{width: 60}, overviewView{}},
 		{"overview_apple_compact.txt", "import:small", termInfo{width: 80, unicode: true}, overviewView{compact: true}},
+		{"overview_apple_full_80.txt", "import:small", termInfo{width: 80, unicode: true}, overviewView{full: true}},
+		{"overview_apple_full_60.txt", "import:small", termInfo{width: 60, unicode: true}, overviewView{full: true}},
+		{"overview_apple_full_100.txt", "import:small", termInfo{width: 100, unicode: true}, overviewView{full: true}},
+		{"overview_apple_full_ascii_60.txt", "import:small", termInfo{width: 60}, overviewView{full: true}},
+		{"overview_apple_compact_60.txt", "import:small", termInfo{width: 60, unicode: true}, overviewView{compact: true}},
+		{"overview_apple_compact_100.txt", "import:small", termInfo{width: 100, unicode: true}, overviewView{compact: true}},
+		{"overview_apple_heatmaps_80.txt", "import:small", termInfo{width: 80, unicode: true},
+			overviewView{categories: []string{"vitals"}, heatmaps: []string{"workouts", "sleep", "step_count"}}},
+		{"overview_apple_sleep_only_cat.txt", "import:small", termInfo{width: 80, unicode: true}, overviewView{categories: []string{"sleep"}}},
+		{"overview_apple_workouts_only_cat.txt", "import:small", termInfo{width: 80, unicode: true}, overviewView{categories: []string{"workouts"}}},
 		{"overview_apple_vitals.txt", "import:small", termInfo{width: 80, unicode: true}, overviewView{categories: []string{"vitals"}}},
 		{"overview_apple_sleep_activity.txt", "import:small", termInfo{width: 80, unicode: true}, overviewView{categories: []string{"sleep", "activity"}}},
 	}
@@ -311,7 +321,9 @@ func TestOverviewHandBuiltStates(t *testing.T) {
 		},
 		Sleep:    stats.OverviewSleep{State: stats.StateOK, AsleepSecs: 0, InBedSecs: 7*3600 + 40*60},
 		Workouts: stats.WorkoutsSummary{Days: 30},
-		Data:     stats.DataHealth{Samples: 3, SourceCount: map[string]int64{"watch": 3}},
+		// An in-bed-only night: the section says so instead of "0m asleep".
+		SleepSummary: &stats.SleepReport{Kind: "in_bed", Last: stats.SleepNight{InBed: 7*time.Hour + 40*time.Minute}},
+		Data:         stats.DataHealth{Samples: 3, SourceCount: map[string]int64{"watch": 3}},
 	}
 	got := renderOverview(o, termInfo{width: 80}, testView)
 	for _, want := range []string{
@@ -319,7 +331,6 @@ func TestOverviewHandBuiltStates(t *testing.T) {
 		"need 7d (have 3)",
 		"no data",
 		"in bed 7h 40m, no sleep stages",
-		"none in the last 30 days",
 		"sources: Watch 100%",
 	} {
 		if !strings.Contains(got, want) {
@@ -332,6 +343,9 @@ func TestOverviewHandBuiltStates(t *testing.T) {
 	o.Data.Samples, o.Data.SleepNights = 1, 1
 	if got := renderOverview(o, termInfo{width: 80}, testView); !strings.Contains(got, "1 sample, 1 sleep night") {
 		t.Errorf("want singular forms:\n%s", got)
+	}
+	if strings.Contains(got, "none in") || strings.Contains(got, "TYPE ") {
+		t.Errorf("no workouts: the section must not appear:\n%s", got)
 	}
 	if strings.Contains(got, "0m asleep") {
 		t.Errorf("an in-bed-only night must not say '0m asleep':\n%s", got)
@@ -584,5 +598,70 @@ func TestOverviewTableFits50(t *testing.T) {
 	}
 	if !strings.Contains(got, "! Resting HR") || !strings.Contains(got, "worse") {
 		t.Errorf("gutter, name and verdict word must survive:\n%s", got)
+	}
+}
+
+// --heatmap draws exactly the named calendars in the order given; --full adds
+// the sleep and workouts versions; a database without them shows neither.
+func TestOverviewHeatmapListAndFull(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return overviewNow }
+	defer func() { nowFunc = old }()
+	path := seedOverview(t, "import:small")
+
+	out, _, err := run(t, "--db", path, "overview", "--heatmap", "workouts,steps,active_energy", "--weeks", "8")
+	if err != nil {
+		t.Fatal(err)
+	}
+	w, s, a := strings.Index(out, "workout minutes per day"), strings.Index(out, "step count per day"), strings.Index(out, "active energy per day")
+	if w < 0 || s < w || a < s {
+		t.Errorf("want workouts, steps, active energy in that order (%d %d %d):\n%s", w, s, a, out)
+	}
+	if strings.Contains(out, "per night") || strings.Count(out, "step count per day") != 1 {
+		t.Errorf("only the named heatmaps:\n%s", out)
+	}
+
+	// Default: one heatmap. --full: also the sleep and workouts ones.
+	def, _, _ := run(t, "--db", path, "overview")
+	if strings.Count(def, " per day,") != 1 {
+		t.Errorf("default shows one heatmap:\n%s", def)
+	}
+	full, _, _ := run(t, "--db", path, "overview", "--full")
+	for _, want := range []string{"workout minutes per day", "step count per day", "BESTS", "STAT"} {
+		if !strings.Contains(full, want) {
+			t.Errorf("--full lacks %q", want)
+		}
+	}
+	one, _, _ := run(t, "--db", path, "overview", "--category", "workouts")
+	if !strings.Contains(one, "BESTS") || strings.Contains(one, "SLEEP  ") || strings.Contains(one, "DATA") {
+		t.Errorf("--category workouts is the full workouts section only:\n%s", one)
+	}
+
+	// Steps only: no sleep, no workouts, no empty sections.
+	bare, _, _ := run(t, "--db", seedOverview(t, "steps-only"), "overview", "--full")
+	if strings.Contains(bare, "SLEEP  ") || strings.Contains(bare, "WORKOUTS ─") || strings.Contains(bare, "WORKOUTS --") {
+		t.Errorf("no sleep or workouts section expected:\n%s", bare)
+	}
+}
+
+func TestOverviewJSONRichSections(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return overviewNow }
+	defer func() { nowFunc = old }()
+
+	out, _, _ := run(t, "--db", seedOverview(t, "full"), "overview", "--json")
+	for _, key := range []string{`"sleep_summary"`, `"workouts_report"`} {
+		if !strings.Contains(out, key) {
+			t.Errorf("missing %s", key)
+		}
+	}
+	out, _, _ = run(t, "--db", seedOverview(t, "steps-only"), "overview", "--json", "--heatmap", "steps")
+	for _, key := range []string{`"sleep_summary"`, `"workouts_report"`} {
+		if strings.Contains(out, key) {
+			t.Errorf("%s must be omitted when there is no data", key)
+		}
+	}
+	if !strings.Contains(out, `"heatmaps"`) || strings.Contains(out, ": null,\n  \"sleep") {
+		t.Errorf("heatmaps map expected:\n%s", out)
 	}
 }

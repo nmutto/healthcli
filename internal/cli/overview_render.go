@@ -24,6 +24,8 @@ type overviewView struct {
 	categories []string // --category: only these (canonical names); nil = all
 	heatmaps   []string // --heatmap: steps/sleep/workouts/metric names asked for
 	full       bool     // --full: every section and heatmap
+	heatWeeks  int      // weeks of every heatmap; 0 = the default (12)
+	noHeat     bool     // --weeks 0: no heatmaps at all
 }
 
 // section is one named block of the overview. renderOverview builds the list
@@ -63,15 +65,20 @@ func renderOverview(o *stats.Overview, ti termInfo, v overviewView) string {
 	if idx := indexLine(o, v, ti, g, st); idx != "" {
 		b.WriteString(indent + idx + "\n")
 	}
-	b.WriteString("\n")
-	for _, sec := range overviewSections(o, ti, g, st, v) {
-		b.WriteString(sec.text())
+	for i, sec := range overviewSections(o, ti, g, st, v) {
+		text := sec.text()
+		if v.compact && i > 0 { // --compact: no blank line between sections
+			text = strings.TrimPrefix(text, "\n")
+		}
+		b.WriteString(text)
 	}
 	return b.String()
 }
 
-// overviewSections lists the blocks to print, in order. --category hides every
-// block it does not name, and also the heatmap and DATA unless asked for.
+// overviewSections lists the blocks to print, in order: metric tables, sleep,
+// workouts, heatmaps, data. Every block starts with its own blank line.
+// --category hides every block it does not name, and also the heatmaps and
+// DATA unless asked for.
 func overviewSections(o *stats.Overview, ti termInfo, g glyphSet, st style, v overviewView) []section {
 	filtered := len(v.categories) > 0
 	secs := []section{
@@ -79,17 +86,29 @@ func overviewSections(o *stats.Overview, ti termInfo, g glyphSet, st style, v ov
 			if len(o.Metrics) == 0 { // e.g. a database with only sleep has no table
 				return ""
 			}
-			return metricTable(o, ti, g, st, v) + tableFooter(o, st, ti, g) + "\n"
+			return "\n" + metricTable(o, ti, g, st, v) + tableFooter(o, st, ti, g)
 		}},
 	}
+	// A single section picked with --category gets its full version.
+	alone := len(v.categories) == 1 && (v.wants("sleep") != v.wants("workouts"))
+	full := v.full || alone
 	if v.wants("sleep") {
-		secs = append(secs, section{"sleep", func() string { return sleepBlock(o.Sleep, ti, g, st) }})
+		secs = append(secs, section{"sleep", func() string {
+			opts := sleepOpts{Full: full, NoHeatmap: v.ownHeatmapsHidden()}
+			return linesBlock(renderSleepSection(o.SleepSummary, ti, ti.width, opts))
+		}})
 	}
 	if v.wants("workouts") {
-		secs = append(secs, section{"workouts", func() string { return workoutsBlock(o.Workouts, ti, g, st) }})
+		secs = append(secs, section{"workouts", func() string {
+			opts := workoutsOpts{Full: full, Weeks: v.weeks(ti), NoHeatmap: v.ownHeatmapsHidden()}
+			if o.WorkoutsReport == nil { // no workouts: no section, not even a "none" line
+				return ""
+			}
+			return linesBlock(renderWorkoutsSection(o.WorkoutsReport, ti, ti.width, opts))
+		}})
 	}
 	if !filtered || len(v.heatmaps) > 0 {
-		secs = append(secs, section{"heatmap", func() string { return heatmapBlock(o.Heatmap, ti, st) }})
+		secs = append(secs, section{"heatmap", func() string { return heatmapBlocks(o, ti, g, st, v) }})
 	}
 	if !filtered {
 		secs = append(secs, section{"data", func() string {
@@ -101,6 +120,56 @@ func overviewSections(o *stats.Overview, ti termInfo, g glyphSet, st style, v ov
 		}})
 	}
 	return secs
+}
+
+// ownHeatmapsHidden is true when the full sleep and workouts sections must not
+// draw their own heatmap: it was asked for (--heatmap) and is drawn in the
+// heatmap area instead, or heatmaps are off (--weeks 0).
+func (v overviewView) ownHeatmapsHidden() bool { return v.noHeat || len(v.heatmaps) > 0 }
+
+// weeks is the length of the heatmaps the renderer draws itself.
+func (v overviewView) weeks(ti termInfo) int {
+	w := v.heatWeeks
+	if w == 0 {
+		w = defaultHeatWeeks
+	}
+	return min(w, heatWeeksFit(ti.width-len(indent)))
+}
+
+// linesBlock is a section made of lines, led by a blank line; nothing for no lines.
+func linesBlock(lines []string) string {
+	if len(lines) == 0 {
+		return ""
+	}
+	return "\n" + strings.Join(lines, "\n") + "\n"
+}
+
+// heatmapBlocks draws the heatmap area. With --heatmap it draws exactly the
+// named calendars, in the order given; without it the activity calendar, and
+// in --full also the sleep and workouts calendars (inside their sections).
+func heatmapBlocks(o *stats.Overview, ti termInfo, g glyphSet, st style, v overviewView) string {
+	if v.noHeat {
+		return ""
+	}
+	if len(v.heatmaps) == 0 {
+		return heatmapBlock(o.Heatmap, ti, st)
+	}
+	var out string
+	for _, name := range v.heatmaps {
+		switch name {
+		case sleepName:
+			if o.SleepSummary != nil {
+				out += linesBlock(sleepCalendar(o.SleepSummary, ti, ti.width))
+			}
+		case workoutsName:
+			if o.WorkoutsReport != nil {
+				out += linesBlock(wkHeatmap(o.WorkoutsReport, ti, ti.width, workoutsOpts{Weeks: v.weeks(ti)}))
+			}
+		default:
+			out += heatmapBlock(o.Heatmaps[name], ti, st)
+		}
+	}
+	return out
 }
 
 // wants reports whether a category (or sleep / workouts) is selected.
@@ -338,81 +407,6 @@ func ageText(r stats.MetricRow) string {
 		return ">9999 d"
 	}
 	return fmt.Sprintf("%d d", r.AgeDays)
-}
-
-// sleepBlock shows the latest night: totals, a stacked bar and a legend.
-func sleepBlock(s stats.OverviewSleep, ti termInfo, g glyphSet, st style) string {
-	label := indent + st.bold(padRight("SLEEP", sectionLabelW)) + " "
-	if s.State == stats.StateNoData {
-		return label + st.dim(fmt.Sprintf("no sleep recorded in the last %d days", stats.RecentDays)) + "\n"
-	}
-
-	when := "last night"
-	if s.AgeDays > 0 {
-		when = fmt.Sprintf("%d d ago", s.AgeDays)
-	}
-	if s.State == stats.StateStale {
-		when = st.yellow(when + " (stale)")
-	}
-
-	// A night with only in-bed rows has no stages: say so instead of "0m asleep".
-	if s.AsleepSecs == 0 {
-		return label + fmt.Sprintf("in bed %s, no sleep stages %s %s\n", formatDuration(sec(s.InBedSecs)), g.dot, when)
-	}
-	head := formatDuration(sec(s.AsleepSecs)) + " asleep"
-	if s.InBedSecs > 0 {
-		head += " " + g.dot + " " + formatDuration(sec(s.InBedSecs)) + " in bed"
-	}
-
-	stages := []struct {
-		key, name string
-		secs      int64
-	}{
-		{"core", "core", s.CoreSecs}, {"rem", "REM", s.REMSecs}, {"deep", "deep", s.DeepSecs},
-		{"unspecified", "unspecified", s.UnspecSecs}, {"awake", "awake", s.AwakeSecs},
-	}
-	var segs []segment
-	var legend []string
-	for _, x := range stages {
-		if x.secs > 0 {
-			segs = append(segs, segment{x.key, x.secs})
-			legend = append(legend, x.name+" "+formatDuration(sec(x.secs)))
-		}
-	}
-
-	out := label + head + " " + g.dot + " " + when + "\n"
-	if len(segs) > 0 {
-		out += indent + g.stackedBar(segs, ti.width-2) + "\n"
-		out += indent + fit(strings.Join(legend, "   "), ti.width-2, g) + "\n"
-	}
-	return out
-}
-
-func workoutsBlock(w stats.WorkoutsSummary, ti termInfo, g glyphSet, st style) string {
-	label := indent + st.bold(padRight("WORKOUTS", sectionLabelW)) + " "
-	if w.Count == 0 {
-		return label + st.dim(fmt.Sprintf("none in the last %d days", w.Days)) + "\n"
-	}
-	parts := []string{
-		fmt.Sprintf("%d in %d d", w.Count, w.Days),
-		formatDuration(sec(w.DurationSeconds)),
-	}
-	if w.EnergyKcal > 0 {
-		parts = append(parts, formatInt(w.EnergyKcal)+" kcal")
-	}
-	if l := w.Latest; l != nil {
-		text := "latest: " + l.Activity
-		if l.DistanceM != nil {
-			text += fmt.Sprintf(" %.1f km", *l.DistanceM/1000)
-		}
-		if l.AgeDays == 0 {
-			text += ", today"
-		} else {
-			text += fmt.Sprintf(", %d d ago", l.AgeDays)
-		}
-		parts = append(parts, text)
-	}
-	return label + joinFit(parts, ti.width-2-sectionLabelW-1, g) + "\n"
 }
 
 // dataBlock is the "how complete is this data" footer.

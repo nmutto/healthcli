@@ -64,6 +64,14 @@ type Overview struct {
 	// metric with data (or the caller asked for 0 weeks).
 	Heatmap *Heatmap   `json:"heatmap"`
 	Data    DataHealth `json:"data"`
+
+	// The rich reports behind the SLEEP and WORKOUTS sections. They are left
+	// out (not null) when the database has no sleep or no workouts.
+	SleepSummary   *SleepReport    `json:"sleep_summary,omitempty"`
+	WorkoutsReport *WorkoutsReport `json:"workouts_report,omitempty"`
+	// Heatmaps holds the metric calendars asked for with HeatMetrics, by
+	// metric name; metrics with no data are left out.
+	Heatmaps map[string]*Heatmap `json:"heatmaps,omitempty"`
 }
 
 // CategorySummary counts the metric rows of one category by outcome. Typical,
@@ -122,7 +130,16 @@ func CategorySummaries(rows []MetricRow) []CategorySummary {
 type OverviewOptions struct {
 	HeatWeeks  int    // weeks of heatmap; 0 leaves the heatmap out
 	HeatMetric string // metric for the heatmap; "" picks one automatically
+	// HeatMetrics are further metric calendars to build (Overview.Heatmaps).
+	HeatMetrics []string
 }
+
+// workoutsReportDays and workoutsReportWeeks are the windows of the workouts
+// report inside the overview (the same defaults as "healthcli workouts").
+const (
+	workoutsReportDays  = 28
+	workoutsReportWeeks = 8
+)
 
 // DefaultOverviewOptions is what "healthcli overview" does without flags.
 func DefaultOverviewOptions() OverviewOptions { return OverviewOptions{HeatWeeks: 12} }
@@ -295,8 +312,64 @@ func BuildOverview(ctx context.Context, conn *sql.DB, now time.Time, opts Overvi
 	if o.Heatmap, err = buildOverviewHeatmap(ctx, conn, o, now, opts); err != nil {
 		return nil, err
 	}
+	if o.Heatmaps, err = buildMetricHeatmaps(ctx, conn, o, now, opts); err != nil {
+		return nil, err
+	}
+	if err := o.buildRichSections(ctx, conn, now, opts); err != nil {
+		return nil, err
+	}
 	o.Empty = o.Data.Samples == 0 && o.Sleep.State == StateNoData && o.Workouts.Count == 0
 	return o, nil
+}
+
+// buildRichSections fills SleepSummary and WorkoutsReport; a section with
+// nothing to show stays nil.
+func (o *Overview) buildRichSections(ctx context.Context, conn *sql.DB, now time.Time, opts OverviewOptions) error {
+	sleep, err := BuildSleepReport(ctx, conn, now, SleepOptions{Weeks: min(opts.HeatWeeks, MaxHeatmapWeeks)})
+	if err != nil {
+		return err
+	}
+	if !sleep.Empty {
+		o.SleepSummary = sleep
+	}
+	wk, err := BuildWorkoutsReport(ctx, conn, o.Today, workoutsReportDays, workoutsReportWeeks)
+	if err != nil {
+		return err
+	}
+	if wk.Count > 0 {
+		o.WorkoutsReport = wk
+	}
+	return nil
+}
+
+// buildMetricHeatmaps builds the calendars of opts.HeatMetrics, skipping
+// metrics with no data. It returns nil when there are none.
+func buildMetricHeatmaps(ctx context.Context, conn *sql.DB, o *Overview, now time.Time, opts OverviewOptions) (map[string]*Heatmap, error) {
+	if opts.HeatWeeks <= 0 {
+		return nil, nil
+	}
+	has := map[string]bool{}
+	for _, r := range o.Metrics {
+		has[r.Metric] = true
+	}
+	var out map[string]*Heatmap
+	for _, name := range opts.HeatMetrics {
+		if !has[name] || out[name] != nil {
+			continue
+		}
+		h, err := BuildHeatmap(ctx, conn, name, min(opts.HeatWeeks, MaxHeatmapWeeks), now)
+		if err != nil {
+			return nil, err
+		}
+		if h.Empty() {
+			continue
+		}
+		if out == nil {
+			out = map[string]*Heatmap{}
+		}
+		out[name] = h
+	}
+	return out, nil
 }
 
 // categoryRank is the display order of the groups.

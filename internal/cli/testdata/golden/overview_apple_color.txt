@@ -40,10 +40,38 @@
    Walking steadiness          94[2m%[0m             [33mstale                       [0m  [33m6 d[0m
  [32mgreen[0m[2m better[0m[2m / [0m[31mred[0m[2m worse[0m[2m / [0m[36mcyan[0m[2m changed (no good direction)[0m
 
- [1mSLEEP   [0m 7h 01m asleep · 7h 30m in bed · last night
- ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████░░░
- core 4h 16m   REM 1h 18m   deep 1h 27m   awake 17m
- [1mWORKOUTS[0m 7 in 30 d · 6h 13m · 3,243 kcal · latest: running 8.5 km, 1 d ago
+ [1mSLEEP[0m  Sun 8 Nov · Watch stages, iPhone in bed
+ ──────────────────────────────────────────────────────────────────────────────
+[2m       23:12                                                              06:30[0m
+ awake [33m                      ░░░                        ░░                     [0m
+ REM   [36m                 ▓▓▓▓▓                      ▓▓▓▓▓                     ▓▓[0m
+ core  [36m▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒  [0m
+ deep  [36m        ████                     █████                      ████        [0m
+[2m              0         1         2         3         4         5         6[0m
+
+[2m STAT         LAST NIGHT      7 NIGHTS      VS 28-NIGHT USUAL[0m
+ Asleep       7h 01m          7h 08m        [2m– typical[0m
+ In bed       7h 30m          7h 37m        [2m– typical[0m
+ Efficiency   94%             94%           [2m– typical[0m
+ Awake        17m 2x          20m 2x        [2m– typical[0m
+ Deep         1h 27m 21%      1h 30m        [2m– typical[0m
+ REM          1h 18m 19%      1h 17m        [2m– typical[0m
+ Bedtime      23:12           23:12         [2m– typical[0m
+ Midpoint     02:51           02:54         [2m– typical[0m
+ Sleep debt   59m short last night, 7 n: 6h 05m short vs 8h target
+
+ [1mWORKOUTS[0m ─────────────────────────────────────────────────────────────────────
+ 28 d  7 sessions  6h 13m  3,243 kcal  71.1 km  active 7 of 28 days
+
+[2m TYPE      N TIME       KCAL     KM SHARE[0m
+ running   3 2h 49m    1,828   28.1 █████████░░░░░░░░░░░  45%
+ cycling   2 1h 44m    1,039   34.6 ██████░░░░░░░░░░░░░░  28%
+ walking   2 1h 40m      375    8.3 █████░░░░░░░░░░░░░░░  27%
+
+ [2mRECENT[0m
+ Sat Nov 07 running     51m  8.5 km 6:00 /km  551 kcal
+ Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
+ Tue Nov 03 walking     28m  2.3 km 12:00 /km 104 kcal
 
  [1mCALENDAR[0m step count per day, 12 weeks to 2026-11-08
      Aug Sep     Oct     Nov

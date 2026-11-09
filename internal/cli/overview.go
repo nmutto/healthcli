@@ -28,7 +28,7 @@ func newOverviewCmd(opts *options) *cobra.Command {
 		Short: "One-screen summary of every metric, sleep, workouts and data health",
 		Long: `Show the latest value of each metric next to your 28-day usual, a band that
 shows where it sits, a 28-day trend line and how old the reading is; then last
-night's sleep, recent workouts and a data-health summary.
+night's sleep, recent workouts, a calendar heatmap and a data-health summary.
 
 Each metric is anchored on its own newest day, so a metric that was not
 recorded today still shows its last reading, with its age. A metric is "stale"
@@ -55,10 +55,16 @@ more days old. --category vitals,sleep shows only those (vitals, activity,
 body, mobility, other, sleep, workouts); --compact drops the blank lines and
 the gutter for small terminal panes; --full shows every section.
 
-After the sleep and workouts lines comes a calendar heatmap of daily activity:
-steps if you have them, else exercise time, else active energy (no calendar if
-you have none of these). --weeks sets its length (default 12, 0 hides it) and
---heatmap picks another metric.
+SLEEP shows last night's hypnogram and the core rows of the sleep table (last
+night, 7 nights, vs your 28-night usual); WORKOUTS shows the totals, a table per
+activity type and the recent sessions. Both leave out silently when your data has
+none. Then comes one calendar heatmap of daily activity: steps if you have them,
+else exercise time, else active energy. --weeks sets its length (default 12, 0
+hides all heatmaps). --heatmap steps,sleep,workouts,<metric> draws exactly those,
+in that order. --full shows the full sleep and workouts sections (all stat rows,
+weekly bars, bests, their heatmaps) and the activity heatmap. A single
+--category sleep or --category workouts also shows the full section, the same as
+"healthcli sleep" and "healthcli workouts".
 
 The output is 60-100 columns wide ($COLUMNS or the terminal width). On a pipe,
 or with --ascii, only plain ASCII characters are used. NO_COLOR and --no-color
@@ -75,12 +81,18 @@ JSON output (--json) is the same report:
              spark (28 daily values ending today, null = no data)
   sleep      state, night, age_days, source, *_seconds per stage, in_bed_seconds
   workouts   days, count, duration_seconds, energy_kcal, latest
+  sleep_summary    the full sleep report (see "healthcli sleep --help"); left out without sleep
+  workouts_report  the full workouts report (see "healthcli workouts --help"); left out without workouts
+  heatmaps   calendars for the metrics named in --heatmap, by metric name
   not_tracked[]  metrics with no data at all
   heatmap    the activity grid (see "healthcli heatmap --help"), null if none
   data       samples, first_day, last_day, source_samples, last_import, gaps[]`,
 		Example: `  healthcli overview
   healthcli overview --category vitals,activity
   healthcli overview --compact
+  healthcli overview --full
+  healthcli overview --heatmap steps,sleep,workouts --weeks 26
+  healthcli overview --category sleep
   healthcli overview --ascii --no-color
   healthcli overview --json`,
 		Args: cobra.NoArgs,
@@ -93,9 +105,10 @@ JSON output (--json) is the same report:
 				return err
 			}
 			// --heatmap is a list of steps|sleep|workouts|<metric>. Each name is
-			// checked now (friendly list on a typo); only the first metric is
-			// drawn for the moment, sleep and workouts are kept for the renderer.
-			var heatmaps []string
+			// checked now (friendly list on a typo). Metric names go to the
+			// report (the first also becomes its main heatmap); the renderer
+			// draws every name in the order given.
+			var heatmaps, heatMetrics []string
 			heatMetric := ""
 			for _, arg := range heatmapArg {
 				name, err := heatmapName(arg)
@@ -105,12 +118,16 @@ JSON output (--json) is the same report:
 				if !slices.Contains(heatmaps, name) {
 					heatmaps = append(heatmaps, name)
 				}
-				if name != sleepName && name != workoutsName && heatMetric == "" {
+				if name == sleepName || name == workoutsName {
+					continue
+				}
+				if heatMetric == "" {
 					heatMetric = name
 				}
+				heatMetrics = append(heatMetrics, name)
 			}
-			view := overviewView{compact: compact, categories: cats, heatmaps: heatmaps, full: full}
-			return runOverview(cmd, opts, noColor, ascii, view, stats.OverviewOptions{HeatWeeks: heatWeeks, HeatMetric: heatMetric})
+			view := overviewView{compact: compact, categories: cats, heatmaps: heatmaps, full: full, heatWeeks: heatWeeks, noHeat: heatWeeks == 0}
+			return runOverview(cmd, opts, noColor, ascii, view, stats.OverviewOptions{HeatWeeks: heatWeeks, HeatMetric: heatMetric, HeatMetrics: heatMetrics})
 		},
 	}
 	cmd.Flags().BoolVar(&noColor, "no-color", false, "never use colours")

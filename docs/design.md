@@ -85,6 +85,10 @@ stats.AddDays(day string, n int) (string, error); stats.SourceClass(name) string
 
 Synthetic data only in this repo. `.gitignore` blocks `*.db` and Apple export files.
 
+## Overview page layout (v3)
+
+Order: title, headline, index line, category tables, SLEEP, WORKOUTS, heatmaps, DATA. `overviewSections` (cli/overview_render.go) lists the blocks and each starts with its own blank line (`--compact` drops them). SLEEP and WORKOUTS come from `stats.Overview.SleepSummary` / `WorkoutsReport` (the same reports as `healthcli sleep` / `workouts`, left out of `--json` when there is no data) and are drawn by `renderSleepSection` / `renderWorkoutsSection`: compact by default, full with `--full` or when one of them is the only `--category`. A database without sleep or workouts renders no section and no "none" line. Heatmaps: by default one (steps, else exercise time, else active energy); `--full` adds the sleep and workouts calendars inside their sections; `--heatmap a,b,c` draws exactly those, in order, and then the full sections leave their own calendar out. `--weeks` applies to all of them (0 hides them). The older `sleep` and `workouts` keys of the overview JSON stay for compatibility; `heatmaps` holds the metric calendars named in `--heatmap`.
+
 ## Overview colours
 
 Colour in `overview` follows `metrics.Metric.Polarity`: beyond usual (|z| >= 1 and a change of at least 2%, or the metric's `MinDelta`) and in the healthy direction is green ("better"), the other way red ("worse"); neutral metrics are cyan ("changed"); anything smaller is typical (plain); stale is yellow. Each beyond-usual row prints its word, so colour is never the only signal. This replaces the earlier "never green/red" rule. Words and arrows always repeat the colour, and the code says polarity is a general guide, not medical advice. Rows are only metrics that have samples (the rest are counted as `not_tracked`).

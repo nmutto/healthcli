@@ -19,6 +19,8 @@ type workoutsOpts struct {
 	Full   bool // also weekly bars, bests and the heatmap
 	Weeks  int  // heatmap length in weeks (0: as many weeks as the report has)
 	ByType bool // heatmap cells are type letters instead of shades
+	// NoHeatmap leaves the heatmap out of the full section (the caller draws it).
+	NoHeatmap bool
 }
 
 const (
@@ -66,6 +68,9 @@ func renderWorkoutsSection(r *stats.WorkoutsReport, ti termInfo, width int, opts
 		lines = append(lines, "")
 		lines = append(lines, wkBests(r, st)...)
 		shown = true
+	}
+	if opts.NoHeatmap {
+		return lines
 	}
 	if r.Count >= wkMinHeatRuns {
 		if h := wkHeatmap(r, ti, width, opts); len(h) > 0 {

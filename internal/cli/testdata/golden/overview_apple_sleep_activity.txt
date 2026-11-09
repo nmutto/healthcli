@@ -16,6 +16,22 @@
    Time in daylight            53 min        ▲ +14%            ···░░●░···
  green better / red worse / cyan changed (no good direction)
 
- SLEEP    7h 01m asleep · 7h 30m in bed · last night
- ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓███████████████░░░
- core 4h 16m   REM 1h 18m   deep 1h 27m   awake 17m
+ SLEEP  Sun 8 Nov · Watch stages, iPhone in bed
+ ──────────────────────────────────────────────────────────────────────────────
+       23:12                                                              06:30
+ awake                       ░░░                        ░░                     
+ REM                    ▓▓▓▓▓                      ▓▓▓▓▓                     ▓▓
+ core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒  
+ deep          ████                     █████                      ████        
+              0         1         2         3         4         5         6
+
+ STAT         LAST NIGHT      7 NIGHTS      VS 28-NIGHT USUAL
+ Asleep       7h 01m          7h 08m        – typical
+ In bed       7h 30m          7h 37m        – typical
+ Efficiency   94%             94%           – typical
+ Awake        17m 2x          20m 2x        – typical
+ Deep         1h 27m 21%      1h 30m        – typical
+ REM          1h 18m 19%      1h 17m        – typical
+ Bedtime      23:12           23:12         – typical
+ Midpoint     02:51           02:54         – typical
+ Sleep debt   59m short last night, 7 n: 6h 05m short vs 8h target

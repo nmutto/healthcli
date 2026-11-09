@@ -1,0 +1,40 @@
+ healthcli overview                              db: demo.db · imported 1 d ago
+ ──────────────────────────────────────────────────────────────────────────────
+ 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
+ WORKOUTS
+
+ green better / red worse / cyan changed (no good direction)
+
+ WORKOUTS ─────────────────────────────────────────────────────────────────────
+ 28 d  7 sessions  6h 13m  3,243 kcal  71.1 km  active 7 of 28 days
+
+ TYPE      N TIME       KCAL     KM SHARE
+ running   3 2h 49m    1,828   28.1 █████████░░░░░░░░░░░  45%
+ cycling   2 1h 44m    1,039   34.6 ██████░░░░░░░░░░░░░░  28%
+ walking   2 1h 40m      375    8.3 █████░░░░░░░░░░░░░░░  27%
+
+ RECENT
+ Sat Nov 07 running     51m  8.5 km 6:00 /km  551 kcal
+ Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
+ Tue Nov 03 walking     28m  2.3 km 12:00 /km 104 kcal
+ Sun Nov 01 running     58m  9.7 km 6:00 /km  632 kcal
+ Fri Oct 30 cycling     40m 13.4 km 20.0 km/h 402 kcal
+
+ BESTS (90 d)
+ longest   running 1h 00m, Oct 26 *new*
+ fastest   running 6:00 /km, Oct 26 *new*
+ furthest  running 9.9 km, Oct 26 *new*
+ biggest   running 645 kcal, Oct 26 *new*
+
+ workout minutes per day, 12 weeks to 2026-11-08
+     Aug Sep     Oct     Nov
+ Mon                     ▅ ·
+ Tue                     · ▁
+ Wed                     █ ·
+ Thu                     · ▇
+ Fri                     ▁ ·
+ Sat                     · ▃
+ Sun                     ▅ · ◂
+
+ ▁ ≤40m  ▃ ≤51m  ▅ ≤1h 00m  ▇ ≤1h 04m  █ >1h 04m
+ · rest day   ◂ today   per day

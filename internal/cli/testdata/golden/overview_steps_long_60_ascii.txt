@@ -9,9 +9,6 @@
    Steps   4,000 steps  v -41%            ...*===...
  green better red worse cyan changed
 
- SLEEP    no sleep recorded in the last 30 days
- WORKOUTS none in the last 30 days
-
  CALENDAR step count per day, 12 weeks to 2026-11-08
      Aug Sep     Oct     Nov
  Mon . # . + . + @ + @ - # -

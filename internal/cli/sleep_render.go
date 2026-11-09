@@ -17,7 +17,9 @@ import (
 type sleepOpts struct {
 	Full     bool // all stat rows and the heatmap; otherwise hypnogram + core rows
 	NoHeader bool // skip the "SLEEP ..." title and rule (the caller draws its own)
-	Target   time.Duration
+	// NoHeatmap leaves the calendar out of the full section (the caller draws it).
+	NoHeatmap bool
+	Target    time.Duration
 }
 
 // sleepIndent is the left margin of the section.
@@ -74,9 +76,11 @@ func renderSleepSection(r *stats.SleepReport, ti termInfo, width int, opts sleep
 	lines = append(lines, "")
 	lines = append(lines, sleepStatTable(r, ti, width, opts, target)...)
 
-	if opts.Full {
-		lines = append(lines, "")
-		lines = append(lines, sleepCalendar(r, ti, width)...)
+	if opts.Full && !opts.NoHeatmap {
+		if cal := sleepCalendar(r, ti, width); len(cal) > 0 {
+			lines = append(lines, "")
+			lines = append(lines, cal...)
+		}
 	}
 	return lines
 }

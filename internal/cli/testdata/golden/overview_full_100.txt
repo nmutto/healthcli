@@ -18,10 +18,37 @@
    Weight          72.4 kg       stale                         ······▁····█···▁··▁·········  9 d
  green better / red worse / cyan changed (no good direction)
 
- SLEEP    7h 00m asleep · 8h 30m in bed · last night
- ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▓▓▓▓▓▓▓▓▓████████████████████░░░░
- core 4h 50m   REM 40m   deep 1h 30m   awake 15m
- WORKOUTS 3 in 30 d · 2h 18m · 1,560 kcal · latest: running 5.2 km, 3 d ago
+ SLEEP  Sun 8 Nov · Watch stages, iPhone in bed
+ ──────────────────────────────────────────────────────────────────────────────────────────────────
+       23:00                                                                                  06:00
+ awake                                                                                             
+ REM                                                                   ▓▓▓▓▓▓▓▓                    
+ core  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒                            
+ deep                                                                          ████████████████████
+       23           0            1            2            3            4            5
+
+ STAT         LAST NIGHT      1 NIGHT       VS USUAL
+ Asleep       7h 00m          7h 00m        need 7 nights (have 1)
+ In bed       8h 30m          8h 30m        need 7 nights (have 1)
+ Efficiency   82%             82%           need 7 nights (have 1)
+ Awake        15m 0x          15m 0x        need 7 nights (have 1)
+ Deep         1h 30m 21%      1h 30m        need 7 nights (have 1)
+ REM          40m 10%         40m           need 7 nights (have 1)
+ Bedtime      23:00           23:00         need 7 nights (have 1)
+ Midpoint     02:30           02:30         need 7 nights (have 1)
+ Sleep debt   1h 00m short last night vs 8h target
+
+ WORKOUTS ─────────────────────────────────────────────────────────────────────────────────────────
+ 28 d  3 sessions  2h 18m  1,560 kcal  31.2 km  active 3 of 28 days
+
+ TYPE      N TIME       KCAL     KM SHARE
+ running   2 1h 23m    1,040   13.2 ████████████░░░░░░░░  60%
+ cycling   1 55m         520   18.0 ████████░░░░░░░░░░░░  40%
+
+ RECENT
+ Thu Nov 05 running     31m  5.2 km 5:58 /km  410 kcal
+ Mon Nov 02 cycling     55m 18.0 km 19.6 km/h 520 kcal
+ Fri Oct 30 running     52m  8.0 km 6:30 /km  630 kcal
 
  CALENDAR step count per day, 12 weeks to 2026-11-08
      Aug Sep     Oct     Nov

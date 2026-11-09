@@ -79,58 +79,186 @@ $ healthcli --db demo.db log weight 72.5
 Logged body_mass = 72.5 kg at 2026-11-08 17:47
 ```
 
-One screen with every metric, last night's sleep, recent workouts and how complete your data is (`overview`):
+One screen with every metric, last night's sleep, recent workouts, an activity calendar and how complete your data is (`overview`):
 
 ```console
 $ healthcli --db demo.db overview
  healthcli overview                              db: demo.db · imported 1 d ago
  ──────────────────────────────────────────────────────────────────────────────
- 3 typical vs your 28-day usual
- VITALS 1 · ACTIVITY 1 · BODY 1  (not tracked: MOBILITY, SLEEP, WORKOUTS)
+ 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
+ VITALS 9 !1 · ACTIVITY 8 · BODY 4 · MOBILITY 5 !2 · SLEEP · WORKOUTS
 
-   METRIC          LATEST        VS 28-DAY USUAL               17 DAYS
+   METRIC                      LATEST          VS 28-DAY USUAL               AGE
 
- ━━ VITALS ━━ 1 metric · all typical ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Avg heart rate  79 bpm        ▼ -1%             ···░●░░···  ▃▁▄█▅▆▇▄▄▄▄▂▆█▅▃▃
+ ━━ VITALS ━━ 9 metrics · 1 better · 1 worse · 1 changed · 1 stale ━━━━━━━━━━━━
+   Avg heart rate              76 bpm          ▲ +2%             ···░░░●···
+ ! Resting HR                  60 bpm          ▲ +6% worse       ···░░░░●··
+   HRV                         46 ms           ▼ -4%             ···░●░░···
+ ~ Respiratory rate            15.6/min        ▲ +9% changed     ···░░░░●··
+   Wrist temperature           36.0 °C         – 0%              ···░░●░···
+   Blood oxygen                97%             – 0%              ···░░●░···
+   VO2 max                     41.9 mL/kg/min  stale                         6 d
+ + Walking heart rate          90 bpm          ▼ -4% better      ···●░░░···
+   Heart rate recovery         26 bpm          need 7d (have 6)
 
- ━━ ACTIVITY ━━ 1 metric · all typical ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Steps           19,415 steps  ▲ +2%             ···░░●░···  █▆▅▄▄▁▄▅▅█▁▇▃▇▃█▅
+ ━━ ACTIVITY ━━ 8 metrics · 2 better ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ + Steps                       21,999 steps    ▲ +10% better     ···░░░●···
+ + Active energy               880 kcal        ▲ +10% better     ···░░░●···
+   Resting energy              1,730 kcal      ▲ +2%             ···░░░●···
+   Exercise time               43 min          ▲ +16%            ···░░●░···
+   Stand time                  364 min         ▼ -12%            ···░●░░···
+   Flights climbed             8 flights       ▼ -39%            ···●░░░···
+   Walking + running distance  6.5 km          – 0%              ···░░●░···
+   Time in daylight            53 min          ▲ +14%            ···░░●░···
 
- ━━ BODY ━━ 1 metric · all typical ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Weight          83.6 kg       ▲ +1%             ···░░░░●··  ·▁··▃··▄··▂··▁··█
+ ━━ BODY ━━ 4 metrics · not enough data ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Weight                      78.5 kg         need 7d (have 4)
+   Body fat                    18.5%           need 7d (have 4)
+   BMI                         24.0            need 7d (have 4)
+   Lean body mass              63.2 kg         need 7d (have 4)
+
+ ━━ MOBILITY ━━ 5 metrics · 2 worse · 1 stale ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Walking speed               5.5 km/h        ▲ +2%             ···░░●░···
+   Step length                 73 cm           ▲ +2%             ···░░░●···
+ ! Walking asymmetry           4.9%            ▲ +38% worse      ···░░░░●··
+ ! Double support time         30.7%           ▲ +7% worse       ···░░░░●··
+   Walking steadiness          94%             stale                         6 d
  green better / red worse / cyan changed (no good direction)
 
- SLEEP    no sleep recorded in the last 30 days
- WORKOUTS none in the last 30 days
+ SLEEP  Sun 8 Nov · Watch stages, iPhone in bed
+ ──────────────────────────────────────────────────────────────────────────────
+       23:12                                                              06:30
+ awake                       ░░░                        ░░                     
+ REM                    ▓▓▓▓▓                      ▓▓▓▓▓                     ▓▓
+ core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒  
+ deep          ████                     █████                      ████        
+              0         1         2         3         4         5         6
+
+ STAT         LAST NIGHT      7 NIGHTS      VS 28-NIGHT USUAL
+ Asleep       7h 01m          7h 08m        – typical
+ In bed       7h 30m          7h 37m        – typical
+ Efficiency   94%             94%           – typical
+ Awake        17m 2x          20m 2x        – typical
+ Deep         1h 27m 21%      1h 30m        – typical
+ REM          1h 18m 19%      1h 17m        – typical
+ Bedtime      23:12           23:12         – typical
+ Midpoint     02:51           02:54         – typical
+ Sleep debt   59m short last night, 7 n: 6h 05m short vs 8h target
+
+ WORKOUTS ─────────────────────────────────────────────────────────────────────
+ 28 d  7 sessions  6h 13m  3,243 kcal  71.1 km  active 7 of 28 days
+
+ TYPE      N TIME       KCAL     KM SHARE
+ running   3 2h 49m    1,828   28.1 █████████░░░░░░░░░░░  45%
+ cycling   2 1h 44m    1,039   34.6 ██████░░░░░░░░░░░░░░  28%
+ walking   2 1h 40m      375    8.3 █████░░░░░░░░░░░░░░░  27%
+
+ RECENT
+ Sat Nov 07 running     51m  8.5 km 6:00 /km  551 kcal
+ Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
+ Tue Nov 03 walking     28m  2.3 km 12:00 /km 104 kcal
 
  CALENDAR step count per day, 12 weeks to 2026-11-08
      Aug Sep     Oct     Nov
- Mon · · · · · · · · ▁ ▇ ▃ ▁
- Tue · · · · · · · · ▇ █ ▃ █
- Wed · · · · · · · · ▃ ▅ ▁ ▁
- Thu · · · · · · · · ▇ ▃ ▃ ▇
- Fri · · · · · · · · ▇ █ ▅ ▁
- Sat · · · · · · · · ▁ ▇ ▅ █
- Sun · · · · · · · · ▃ ▅ █ ▅ ◂
+ Mon · · · · · · · · · · ▁ ▁
+ Tue · · · · · · · · · · ▇ ▅
+ Wed · · · · · · · · · · ▇ ▃
+ Thu · · · · · · · · · · ▅ ▃
+ Fri · · · · · · · · · · ▅ █
+ Sat · · · · · · · · · · ▃ █
+ Sun · · · · · · · · · · ▁ ▇ ◂
 
- ▁ ≤16,838  ▃ ≤18,863  ▅ ≤19,498  ▇ ≤21,359  █ >21,359
+ ▁ ≤17,731  ▃ ≤19,464  ▅ ≤20,972  ▇ ≤21,999  █ >21,999
  · no data   ◂ today   steps per day
 
- DATA     1,802 samples
-          range: 2026-10-12 → 2026-11-08
-          sources: other 100%
-          last import: 1,802 added · 0 duplicates
-          days missing: Weight 18 of 28
- not tracked in your data: 27 metrics
+ DATA     1,271 samples, 14 sleep nights
+          range: 2026-10-26 → 2026-11-08
+          sources: Watch 74%, iPhone 26%
+          last import: 1,468 added · 9 duplicates
+          skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
+          days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13
+ not tracked in your data: 4 metrics
 ```
 
-This example is **synthetic**: it is the real output for the generated "sparse" fixture (a fitness band that records only heart rate, steps and weight), with dates shifted to look current. A device that records more gets more rows, grouped in VITALS / ACTIVITY / BODY / MOBILITY bands (a `!` / `+` / `~` in the left gutter marks worse / better / changed rows; `--category vitals,sleep` shows only some, `--compact` drops the blank lines); metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`).
+This example is **synthetic**: it is the real output for the generated "small" fixture (a Watch and an iPhone), with dates shifted to look current. A device that records less gets fewer rows: metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`), and a database with no sleep or no workouts has no SLEEP or WORKOUTS section at all. Metrics are grouped in VITALS / ACTIVITY / BODY / MOBILITY bands; a `!` / `+` / `~` in the left gutter marks worse / better / changed rows, and the index line under the headline counts the worse ones. `--category vitals,sleep` shows only some sections, `--compact` drops the blank lines.
+
+`overview --full` shows everything: the sleep table with every row, the weekly workout bars and personal bests, and a heatmap for sleep, workouts and activity. An excerpt (the middle of the page):
+
+```console
+$ healthcli --db demo.db overview --full
+ SLEEP  Sun 8 Nov · Watch stages, iPhone in bed
+ ──────────────────────────────────────────────────────────────────────────────
+       23:12                                                              06:30
+ awake                       ░░░                        ░░                     
+ REM                    ▓▓▓▓▓                      ▓▓▓▓▓                     ▓▓
+ core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒  
+ deep          ████                     █████                      ████        
+              0         1         2         3         4         5         6
+
+ STAT         LAST NIGHT      7 NIGHTS      VS 28-NIGHT USUAL
+ Asleep       7h 01m          7h 08m        – typical
+ In bed       7h 30m          7h 37m        – typical
+ Efficiency   94%             94%           – typical
+ Awake        17m 2x          20m 2x        – typical
+ Latency      ~12m            12m           – typical
+ Deep         1h 27m 21%      1h 30m        – typical
+ REM          1h 18m 19%      1h 17m        – typical
+ Core         4h 16m 61%      4h 18m        – typical
+ Bedtime      23:12           23:12         – typical
+ Wake         06:30           06:37         – typical
+ Midpoint     02:51           02:54         – typical
+ Regularity   ±1m bed ±8m mid (13 n)
+ Sleep debt   59m short last night, 7 n: 6h 05m short vs 8h target
+ green better / red worse / cyan neutral
+
+ time asleep per night (a calendar needs 14 nights, have 13)
+ Tue Wed Thu Fri Sat Sun Mon Tue Wed Thu Fri Sat Sun
+ 7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h  7h
+ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆ ▆▆▆
+
+ WORKOUTS ─────────────────────────────────────────────────────────────────────
+ 28 d  7 sessions  6h 13m  3,243 kcal  71.1 km  active 7 of 28 days
+
+ TYPE      N TIME       KCAL     KM SHARE
+ running   3 2h 49m    1,828   28.1 █████████░░░░░░░░░░░  45%
+ cycling   2 1h 44m    1,039   34.6 ██████░░░░░░░░░░░░░░  28%
+ walking   2 1h 40m      375    8.3 █████░░░░░░░░░░░░░░░  27%
+
+ RECENT
+ Sat Nov 07 running     51m  8.5 km 6:00 /km  551 kcal
+ Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
+ Tue Nov 03 walking     28m  2.3 km 12:00 /km 104 kcal
+ Sun Nov 01 running     58m  9.7 km 6:00 /km  632 kcal
+ Fri Oct 30 cycling     40m 13.4 km 20.0 km/h 402 kcal
+
+ BESTS (90 d)
+ longest   running 1h 00m, Oct 26 *new*
+ fastest   running 6:00 /km, Oct 26 *new*
+ furthest  running 9.9 km, Oct 26 *new*
+ biggest   running 645 kcal, Oct 26 *new*
+
+ workout minutes per day, 12 weeks to 2026-11-08
+     Aug Sep     Oct     Nov
+ Mon                     ▅ ·
+ Tue                     · ▁
+ Wed                     █ ·
+ Thu                     · ▇
+ Fri                     ▁ ·
+ Sat                     · ▃
+ Sun                     ▅ · ◂
+
+ ▁ ≤40m  ▃ ≤51m  ▅ ≤1h 00m  ▇ ≤1h 04m  █ >1h 04m
+ · rest day   ◂ today   per day
+  ...
+```
+
+The same full sections are available on their own as `healthcli sleep` and `healthcli workouts`.
 
 Each metric is compared with its own 28-day usual and shows its own newest day and age. When a value is beyond your usual (1+ standard deviation, and a change of at least 2% or a small per-metric minimum) it is coloured by which direction is generally healthy for that metric: **green** and the word "better", **red** and "worse". Metrics with no good direction (weight, respiratory rate, wrist temperature) are **cyan** and carry the word "changed". Every beyond-usual row has its word, so nothing depends on colour; typical rows are plain. Stale readings are yellow. The legend is the line under the table.
 
 > The better/worse direction is a general guide, not medical advice. What is healthy for one person (an athlete's low resting heart rate, deliberate weight change) can differ.
 
-The calendar after the table shows daily steps (else exercise time, else active energy); `--weeks N` sets its length (default 12, `0` hides it) and `--heatmap METRIC` picks another metric. On a pipe, or with `--ascii`, the output is plain ASCII; `--no-color` and `NO_COLOR` turn colour off, and `--json` prints the same report as JSON, including each metric's polarity and verdict, `not_tracked` and the heatmap grid.
+The calendar at the end shows daily steps (else exercise time, else active energy); `--weeks N` sets its length (default 12, `0` hides all calendars) and `--heatmap steps,sleep,workouts,METRIC` draws exactly the calendars you name, in that order. On a pipe, or with `--ascii`, the output is plain ASCII; `--no-color` and `NO_COLOR` turn colour off, and `--json` prints the same report as JSON, including each metric's polarity and verdict, `not_tracked` and the heatmap grid.
 
 A day's summary against your recent baseline:
 

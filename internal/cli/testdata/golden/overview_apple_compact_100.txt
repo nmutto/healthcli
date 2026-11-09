@@ -1,0 +1,87 @@
+ healthcli overview                                                  db: demo.db · imported 1 d ago
+ ──────────────────────────────────────────────────────────────────────────────────────────────────
+ 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6% · slept 7h 01m
+ VITALS 9 !1 · ACTIVITY 8 · BODY 4 · MOBILITY 5 !2 · SLEEP · WORKOUTS
+
+ METRIC                      LATEST          VS 28-DAY USUAL               20 DAYS               AGE
+ ━━ VITALS ━━ 9 metrics · 1 better · 1 worse · 1 changed · 1 stale ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Avg heart rate              76 bpm          ▲ +2%             ···░░░●···  ······▄▁▄▄▇▆▆▅▇▆█▆▆█
+ Resting HR                  60 bpm          ▲ +6% worse       ···░░░░●··  ······▁▂▃▅▆▇█▁▂▃▅▆▇█
+ HRV                         46 ms           ▼ -4%             ···░●░░···  ······▂▅▃▁▁▂▆▆▄▄█▃█▃
+ Respiratory rate            15.6/min        ▲ +9% changed     ···░░░░●··  ······▁▄▁▅▂▄▂█▇▅▆▂▆▇
+ Wrist temperature           36.0 °C         – 0%              ···░░●░···  ······▅▆▂██▆▅▁▅█▅█▇▆
+ Blood oxygen                97%             – 0%              ···░░●░···  ······▁█▃▆▆▂▄▆▃▆▄▄▆▅
+ VO2 max                     41.9 mL/kg/min  stale                         ······▁······█······  6 d
+ Walking heart rate          90 bpm          ▼ -4% better      ···●░░░···  ······▁▅▂▅█▁█▅▇▄▃▂█▂
+ Heart rate recovery         26 bpm          need 7d (have 6)              ······▃·▃·█·▁·▅·▇·▃·
+ ━━ ACTIVITY ━━ 8 metrics · 2 better ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Steps                       21,999 steps    ▲ +10% better     ···░░░●···  ······▁▇▆▅▆▃▂▂▅▄▄█▇▇
+ Active energy               880 kcal        ▲ +10% better     ···░░░●···  ······▁▇▆▅▆▃▂▂▅▄▄█▇▇
+ Resting energy              1,730 kcal      ▲ +2%             ···░░░●···  ······▄▆▃▆▁▇▃▃▅▆▄█▄▇
+ Exercise time               43 min          ▲ +16%            ···░░●░···  ······▅▆▂▅▅█▆▃▁▄▄▅▃▅
+ Stand time                  364 min         ▼ -12%            ···░●░░···  ······▄▃█▃▁▂▂█▃██▁▃▃
+ Flights climbed             8 flights       ▼ -39%            ···●░░░···  ······▃▁█▇▁▆▄▅▇▂▆▆▅▃
+ Walking + running distance  6.5 km          – 0%              ···░░●░···  ······▆▅▅▄▄▃▁▄▅▂▇▃█▄
+ Time in daylight            53 min          ▲ +14%            ···░░●░···  ······▇▄▂▂▂▄▃▁▅▂▂█▁▄
+ ━━ BODY ━━ 4 metrics · not enough data ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Weight                      78.5 kg         need 7d (have 4)              ······▆··▆··▃··█··▁·
+ Body fat                    18.5%           need 7d (have 4)              ······▇··█··▂··█··▁·
+ BMI                         24.0            need 7d (have 4)              ······█··▆··█··▆··▁·
+ Lean body mass              63.2 kg         need 7d (have 4)              ······▁··▅··█··▂··▂·
+ ━━ MOBILITY ━━ 5 metrics · 2 worse · 1 stale ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ Walking speed               5.5 km/h        ▲ +2%             ···░░●░···  ······▄▅█▅▄▆▄▇▁▂▂▇▇▆
+ Step length                 73 cm           ▲ +2%             ···░░░●···  ······▄▂▁▇▇▇▂█▄▄█▇▄▇
+ Walking asymmetry           4.9%            ▲ +38% worse      ···░░░░●··  ······▄▆▄█▂▃▁▃▃▅█▅▄█
+ Double support time         30.7%           ▲ +7% worse       ···░░░░●··  ······▆▂▄▆▇▄▃▁▁▁▅█▆█
+ Walking steadiness          94%             stale                         ······▁······█······  6 d
+ green better / red worse / cyan changed (no good direction)
+ SLEEP  Sun 8 Nov · Watch stages, iPhone in bed
+ ──────────────────────────────────────────────────────────────────────────────────────────────────
+       23:12                                                                                  06:30
+ awake                              ░░░                               ░░░                          
+ REM                         ▓▓▓▓▓▓▓                            ▓▓▓▓▓▓                           ▓▓
+ core  ▒▒▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒▒          ▒▒▒▒▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒         ▒▒▒▒▒▒▒▒▒▒      ▒▒▒▒▒▒▒▒  
+ deep            █████                           ███████                           ██████          
+                 0           1            2           3            4            5           6
+
+ STAT         LAST NIGHT      7 NIGHTS      VS 28-NIGHT USUAL
+ Asleep       7h 01m          7h 08m        – typical
+ In bed       7h 30m          7h 37m        – typical
+ Efficiency   94%             94%           – typical
+ Awake        17m 2x          20m 2x        – typical
+ Deep         1h 27m 21%      1h 30m        – typical
+ REM          1h 18m 19%      1h 17m        – typical
+ Bedtime      23:12           23:12         – typical
+ Midpoint     02:51           02:54         – typical
+ Sleep debt   59m short last night, 7 n: 6h 05m short vs 8h target
+ WORKOUTS ─────────────────────────────────────────────────────────────────────────────────────────
+ 28 d  7 sessions  6h 13m  3,243 kcal  71.1 km  active 7 of 28 days
+
+ TYPE      N TIME       KCAL     KM SHARE
+ running   3 2h 49m    1,828   28.1 █████████░░░░░░░░░░░  45%
+ cycling   2 1h 44m    1,039   34.6 ██████░░░░░░░░░░░░░░  28%
+ walking   2 1h 40m      375    8.3 █████░░░░░░░░░░░░░░░  27%
+
+ RECENT
+ Sat Nov 07 running     51m  8.5 km 6:00 /km  551 kcal
+ Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
+ Tue Nov 03 walking     28m  2.3 km 12:00 /km 104 kcal
+ CALENDAR step count per day, 12 weeks to 2026-11-08
+     Aug Sep     Oct     Nov
+ Mon · · · · · · · · · · ▁ ▁
+ Tue · · · · · · · · · · ▇ ▅
+ Wed · · · · · · · · · · ▇ ▃
+ Thu · · · · · · · · · · ▅ ▃
+ Fri · · · · · · · · · · ▅ █
+ Sat · · · · · · · · · · ▃ █
+ Sun · · · · · · · · · · ▁ ▇ ◂
+
+ ▁ ≤17,731  ▃ ≤19,464  ▅ ≤20,972  ▇ ≤21,999  █ >21,999
+ · no data   ◂ today   steps per day
+ DATA     1,271 samples, 14 sleep nights
+          range: 2026-10-26 → 2026-11-08
+          sources: Watch 74%, iPhone 26%
+          last import: 1,468 added · 9 duplicates
+          skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
+          days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13
+ not tracked in your data: 4 metrics
