@@ -170,6 +170,46 @@ $ healthcli --db demo.db query "SELECT metric, count(*) AS n FROM samples GROUP 
 ]
 ```
 
+### Calendar heatmap
+
+`healthcli heatmap [metric]` draws a GitHub-style calendar: a row per weekday, a column per week, newest on the right. Shades are the metric's own quintiles over the window, and the legend gives the actual cut points. A day without data is a dot, never the lowest shade; `◂` marks today. The default metric is `step_count`, `--weeks` sets the maximum (default 12; a narrow terminal drops the oldest weeks), and `--json` prints the grid.
+
+The output below is from a synthetic test database (made-up step counts), not real data:
+
+```console
+$ healthcli heatmap
+step count per day, 12 weeks to 2026-11-04
+    Aug Sep     Oct     Nov
+Mon █ ▇ ▅ ▃ ▁ ▇ ▅ ▃ ▁ █ ▅ ▃
+Tue ▇ ▅ ▃ ▁ █ ▅ ▃ ▁ █ ▇ ▅ ▁
+Wed ▅ ▃ ▁ █ ▇ ▅ ▁ █ ▇ ▅ ▃ ▁ ◂
+Thu ▅ ▁ █ ▇ ▅ ▃ ▁ ▇ ▅ ▃ ▁
+Fri ▃ ▁ ▇ ▅ ▃ ▁ █ ▅ ▃ ▁ █
+Sat ▁ █ ▅ ▃ ▁ █ ▇ ▅ ▁ █ ▇
+Sun █ ▇ ▅ ▁ █ ▇ ▅ ▃ ▁ ▇ ▅
+
+▁ ≤4,950  ▃ ≤6,900  ▅ ≤9,500  ▇ ≤11,450  █ >11,450
+· no data   ◂ today   steps per day
+```
+
+On a pipe or with `--ascii` the same chart uses plain characters:
+
+```console
+$ healthcli heatmap --ascii
+step count per day, 12 weeks to 2026-11-04
+    Aug Sep     Oct     Nov
+Mon @ # + - . # + - . @ + -
+Tue # + - . @ + - . @ # + .
+Wed + - . @ # + . @ # + - . <
+Thu + . @ # + - . # + - .
+Fri - . # + - . @ + - . @
+Sat . @ + - . @ # + . @ #
+Sun @ # + . @ # + - . # +
+
+. <=4,950  - <=6,900  + <=9,500  # <=11,450  @ >11,450
+_ no data   < today   steps per day
+```
+
 ### Where is my data?
 
 If you don't pass `--db`, the database is `healthcli.db` in:
