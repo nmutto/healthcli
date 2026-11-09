@@ -27,10 +27,26 @@ const (
 
 var heatDayNames = [7]string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
 
-// heatColors is one hue (teal to bright cyan, 256-colour codes) from dim to
-// bright, indexed by level-1. Colour is only a hint: the glyph already says
-// the level, and the legend lists the glyphs.
-var heatColors = [stats.HeatLevels]string{"38;5;23", "38;5;30", "38;5;37", "38;5;44", "38;5;51"}
+// Each kind of heatmap has its own hue, from dim (level 1) to bright (level 5),
+// as 256-colour codes. Colour is only a hint: the glyph already says the
+// level, and the legend lists the glyphs.
+var (
+	heatOrange = [stats.HeatLevels]string{"38;5;94", "38;5;130", "38;5;166", "38;5;208", "38;5;214"} // steps and other activity
+	heatGreen  = [stats.HeatLevels]string{"38;5;22", "38;5;28", "38;5;34", "38;5;40", "38;5;46"}     // workouts
+	heatBlue   = [stats.HeatLevels]string{"38;5;18", "38;5;25", "38;5;33", "38;5;39", "38;5;45"}     // sleep
+)
+
+// heatColorsFor picks the ramp for a heatmap: workouts are green, sleep is
+// blue, and everything else (steps, energy, ...) is orange.
+func heatColorsFor(h *stats.Heatmap) [stats.HeatLevels]string {
+	switch {
+	case h.Metric == "workouts":
+		return heatGreen
+	case strings.HasPrefix(h.Metric, "sleep"):
+		return heatBlue
+	}
+	return heatOrange
+}
 
 // heatWeeksFit is how many week columns fit in width columns. One extra
 // column is kept free for the "today" marker at the end of a row.
@@ -50,6 +66,7 @@ func (g glyphSet) shade(level int) rune {
 func renderHeatmap(h *stats.Heatmap, ti termInfo) []string {
 	g := glyphsFor(ti.unicode)
 	st := style{color: ti.color}
+	colors := heatColorsFor(h)
 	weeks := h.Weeks
 	if n := heatWeeksFit(ti.width); len(weeks) > n {
 		weeks = weeks[len(weeks)-n:]
@@ -96,7 +113,7 @@ func renderHeatmap(h *stats.Heatmap, ti termInfo) []string {
 			case cell.Level == 0:
 				b.WriteString(st.dim(string(restGlyph(g)))) // a real zero: a rest day
 			default:
-				glyph := st.wrap(heatColors[cell.Level-1], string(g.shade(cell.Level)))
+				glyph := st.wrap(colors[cell.Level-1], string(g.shade(cell.Level)))
 				b.WriteString(glyph)
 			}
 			b.WriteString(" ")
@@ -221,6 +238,7 @@ func heatMonthLine(weeks [][]stats.HeatDay) string {
 // what the other symbols mean. Lines wrap onto more lines when the terminal
 // is too narrow for them.
 func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
+	colors := heatColorsFor(h)
 	g := glyphsFor(ti.unicode)
 	le, gt := "≤", ">"
 	if !ti.unicode {
@@ -233,12 +251,12 @@ func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
 			level = 1
 		}
 		return append([]string{
-			st.wrap(heatColors[level-1], string(g.shade(level))) + " every day: " + heatFormat(h, h.Thresholds[0]),
+			st.wrap(colors[level-1], string(g.shade(level))) + " every day: " + heatFormat(h, h.Thresholds[0]),
 		}, heatTail(h, ti, st)...)
 	}
 	var parts []string
 	for i := 1; i <= stats.HeatLevels; i++ {
-		glyph := st.wrap(heatColors[i-1], string(g.shade(i)))
+		glyph := st.wrap(colors[i-1], string(g.shade(i)))
 		if i < stats.HeatLevels {
 			parts = append(parts, glyph+" "+le+heatFormat(h, h.Thresholds[i-1]))
 		} else {

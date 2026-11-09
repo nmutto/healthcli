@@ -148,13 +148,23 @@ type segment struct {
 // bar is always exactly `width` wide. A segment too small to earn a whole
 // cell disappears from the bar (the legend under it still lists it).
 func (g glyphSet) stackedBar(segs []segment, width int) string {
+	return g.stackedBarPainted(segs, width, nil)
+}
+
+// stackedBarPainted is stackedBar with a colour per segment: paint gets the
+// stage name and that segment's run of glyphs. A nil paint leaves it plain.
+func (g glyphSet) stackedBarPainted(segs []segment, width int, paint func(stage, run string) string) string {
 	sizes := make([]int64, len(segs))
 	for i, s := range segs {
 		sizes[i] = s.size
 	}
 	var b strings.Builder
 	for i, n := range largestRemainder(sizes, width) {
-		b.WriteString(strings.Repeat(string(g.stages[segs[i].stage]), n))
+		run := strings.Repeat(string(g.stages[segs[i].stage]), n)
+		if paint != nil && n > 0 {
+			run = paint(segs[i].stage, run)
+		}
+		b.WriteString(run)
 	}
 	return b.String()
 }

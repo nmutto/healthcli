@@ -229,13 +229,7 @@ func hypnogram(n stats.SleepNight, cells int, g glyphSet, st style) []string {
 		strings.Repeat(" ", max(cells-len(startL)-len(endL), 1)) + endL
 	lines := []string{st.dim(top)}
 	for i, row := range hypnogramRows {
-		cellsText := string(grid[i])
-		if i == 0 {
-			cellsText = st.yellow(cellsText)
-		} else {
-			cellsText = st.cyan(cellsText)
-		}
-		lines = append(lines, sleepIndent+row.label+cellsText)
+		lines = append(lines, sleepIndent+row.label+st.stage(row.stage, string(grid[i])))
 	}
 	lines = append(lines, st.dim(sleepIndent+strings.Repeat(" ", 6)+hourTicks(from, to, n.StartTZ, cells)))
 	return lines
@@ -269,7 +263,7 @@ func sleepBar(r *stats.SleepReport, width int, g glyphSet, st style) []string {
 	n := r.Last
 	cells := width - 2
 	if r.Kind == "unspecified" {
-		bar := g.stackedBar([]segment{{"unspecified", 1}}, cells)
+		bar := g.stackedBarPainted([]segment{{"unspecified", 1}}, cells, st.stage)
 		mid, _ := n.MidpointMin() // the same number as the table's Midpoint row
 		note := "(stages not recorded)"
 		span := localClock(n.Start, n.StartTZ) + " " + g.arrow + " " + localClock(n.End, n.EndTZ)
@@ -291,7 +285,7 @@ func sleepBar(r *stats.SleepReport, width int, g glyphSet, st style) []string {
 		} else {
 			info += "  " + st.dim(note)
 		}
-		return []string{sleepIndent + st.cyan(bar), sleepIndent + fit(info, cells, g)}
+		return []string{sleepIndent + bar, sleepIndent + fit(info, cells, g)}
 	}
 	segs := []segment{
 		{"awake", int64(n.Awake)}, {"rem", int64(n.REM)}, {"core", int64(n.Core)}, {"deep", int64(n.Deep)},
@@ -299,7 +293,7 @@ func sleepBar(r *stats.SleepReport, width int, g glyphSet, st style) []string {
 	legend := fmt.Sprintf("%c awake %s  %c REM %s  %c core %s  %c deep %s",
 		g.stages["awake"], formatDuration(n.Awake), g.stages["rem"], formatDuration(n.REM),
 		g.stages["core"], formatDuration(n.Core), g.stages["deep"], formatDuration(n.Deep))
-	return []string{sleepIndent + st.cyan(g.stackedBar(segs, cells)), sleepIndent + st.dim(fit(legend, cells, g))}
+	return []string{sleepIndent + g.stackedBarPainted(segs, cells, st.stage), sleepIndent + st.dim(fit(legend, cells, g))}
 }
 
 // narrowSleep is the whole section on a very narrow terminal: a bar and
@@ -779,6 +773,6 @@ func nightBars(r *stats.SleepReport, ti termInfo, width int) []string {
 		level := min(int(math.Round(n.Asleep.Hours()/10*float64(len(g.bars)-1))), len(g.bars)-1)
 		bars.WriteString(padRight(strings.Repeat(string(g.bars[max(level, 0)]), 3), 4))
 	}
-	lines = append(lines, strings.TrimRight(days.String(), " "), strings.TrimRight(hours.String(), " "), st.cyan(strings.TrimRight(bars.String(), " ")))
+	lines = append(lines, strings.TrimRight(days.String(), " "), strings.TrimRight(hours.String(), " "), st.stage("unspecified", strings.TrimRight(bars.String(), " ")))
 	return lines
 }

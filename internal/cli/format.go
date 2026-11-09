@@ -52,6 +52,25 @@ const (
 	ansiCyan   = "36" // changed, and no good direction
 )
 
+// Sleep stage colours follow the iOS Health app: orange for awake, light blue
+// for REM, blue for core and deep blue for deep sleep (256-colour codes).
+// "unspecified" (asleep, no stages) and per-night bars use the core blue.
+var stageColors = map[string]string{
+	"awake":       "38;5;208",
+	"rem":         "38;5;117",
+	"core":        "38;5;33",
+	"deep":        "38;5;21",
+	"unspecified": "38;5;33",
+}
+
+// stage paints s in the colour of a sleep stage (plain when colour is off).
+func (st style) stage(name, s string) string {
+	if code, ok := stageColors[name]; ok {
+		return st.wrap(code, s)
+	}
+	return s
+}
+
 func (st style) bold(s string) string   { return st.wrap(ansiBold, s) }
 func (st style) dim(s string) string    { return st.wrap(ansiDim, s) }
 func (st style) cyan(s string) string   { return st.wrap(ansiCyan, s) }

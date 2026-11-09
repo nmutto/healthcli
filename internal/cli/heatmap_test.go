@@ -221,3 +221,31 @@ func TestHeatmapCommand(t *testing.T) {
 		t.Errorf("json = %+v", h)
 	}
 }
+
+// Each kind of heatmap has its own hue, and sleep stages follow the iOS colours.
+func TestHeatmapAndStageColours(t *testing.T) {
+	cases := []struct {
+		metric string
+		want   [stats.HeatLevels]string
+	}{
+		{"workouts", heatGreen},
+		{"sleep", heatBlue},
+		{"sleep_bedtime", heatBlue},
+		{"step_count", heatOrange},
+		{"active_energy", heatOrange},
+	}
+	for _, c := range cases {
+		if got := heatColorsFor(&stats.Heatmap{Metric: c.metric}); got != c.want {
+			t.Errorf("%s: got %v, want %v", c.metric, got, c.want)
+		}
+	}
+	st := style{color: true}
+	for stage, code := range map[string]string{"awake": "38;5;208", "rem": "38;5;117", "core": "38;5;33", "deep": "38;5;21"} {
+		if got := st.stage(stage, "x"); got != "\x1b["+code+"mx\x1b[0m" {
+			t.Errorf("stage %s: got %q", stage, got)
+		}
+	}
+	if got := (style{}).stage("awake", "x"); got != "x" {
+		t.Errorf("colour off must stay plain, got %q", got)
+	}
+}
