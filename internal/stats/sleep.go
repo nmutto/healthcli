@@ -18,10 +18,33 @@ type SleepNight struct {
 	Night string
 
 	// Source is the one source the stage totals below come from.
-	Source   string
-	Segments int // how many stage rows of Source were used
+	Source string
+	Rows   int // how many stage rows of Source were used
 
-	// Asleep = Core + Deep + REM + Unspecified. Awake and InBed are not sleep.
+	// Start and End are the first and last moment of ASLEEP time (Unix
+	// seconds), 0 when the night has no asleep time. TZ is the UTC offset in
+	// seconds the night was recorded in, so Start and End can be shown as the
+	// clock on the wall.
+	Start, End int64
+	TZ         int
+
+	// InBedStart and InBedEnd are the first and last in_bed moments (0 = none).
+	InBedStart, InBedEnd int64
+
+	// Awakenings counts awake periods of 5 minutes or more between Start and
+	// End; shorter blips are ignored. Latency is how long falling asleep took
+	// (first asleep moment minus first in_bed moment), 0 when unknown: no
+	// in_bed row, or a gap over 90 minutes (the iPhone often starts "in bed"
+	// long before the Watch notices sleep, so it is only a guess).
+	Awakenings int
+	Latency    time.Duration
+
+	// Segments are the stage rows of Source (without in_bed), oldest first,
+	// for drawing the hypnogram.
+	Segments []Seg
+
+	// Asleep is the UNION of the core, deep, REM and unspecified intervals
+	// (so two stage rows that overlap count once). Awake and InBed are not sleep.
 	Asleep      time.Duration
 	Core        time.Duration
 	Deep        time.Duration
@@ -47,12 +70,48 @@ type SleepNight struct {
 // that ends before 18:00 counts toward the night that just ended.
 const nightShift = 6 * 60 * 60
 
+// Seg is one stage row of a night: Stage is core, deep, rem, awake or
+// asleep_unspecified; Start and End are Unix seconds.
+type Seg struct {
+	Stage      string
+	Start, End int64
+}
+
 // interval is a stage row's [start, end) in Unix seconds.
 type interval struct{ start, end int64 }
+
+// merge sorts the intervals and joins the ones that overlap or touch. Rows
+// that end before they start are dropped.
+func merge(ivs []interval) []interval {
+	ivs = append([]interval(nil), ivs...)
+	sort.Slice(ivs, func(i, j int) bool { return ivs[i].start < ivs[j].start })
+	var out []interval
+	for _, iv := range ivs {
+		if iv.end <= iv.start {
+			continue
+		}
+		if n := len(out); n > 0 && iv.start <= out[n-1].end {
+			out[n-1].end = max(out[n-1].end, iv.end)
+			continue
+		}
+		out = append(out, iv)
+	}
+	return out
+}
+
+// length is the total seconds of already merged intervals.
+func length(merged []interval) time.Duration {
+	var secs int64
+	for _, iv := range merged {
+		secs += iv.end - iv.start
+	}
+	return time.Duration(secs) * time.Second
+}
 
 // sleepTotals collects the stage rows of one source for one night.
 type sleepTotals struct {
 	rows    int
+	tz      int // tz_offset of the first row read
 	byStage map[string][]interval
 }
 
@@ -60,24 +119,20 @@ type sleepTotals struct {
 // (a revised estimate written next to the old one) count once, and a row
 // that ends before it starts counts for nothing.
 func (t *sleepTotals) total(stage string) time.Duration {
-	ivs := append([]interval(nil), t.byStage[stage]...)
-	sort.Slice(ivs, func(i, j int) bool { return ivs[i].start < ivs[j].start })
-	var secs, curEnd int64
-	started := false
-	for _, iv := range ivs {
-		if iv.end <= iv.start {
-			continue
-		}
-		if !started || iv.start > curEnd {
-			secs += iv.end - iv.start
-			curEnd, started = iv.end, true
-		} else if iv.end > curEnd {
-			secs += iv.end - curEnd
-			curEnd = iv.end
-		}
-	}
-	return time.Duration(secs) * time.Second
+	return length(merge(t.byStage[stage]))
 }
+
+// asleepUnion joins the intervals of every asleep stage. Summing the stages
+// one by one would count twice a moment that two stages both claim.
+func (t *sleepTotals) asleepUnion() []interval {
+	var all []interval
+	for _, stage := range asleepStages {
+		all = append(all, t.byStage[stage]...)
+	}
+	return merge(all)
+}
+
+var asleepStages = []string{"core", "deep", "rem", "asleep_unspecified"}
 
 // SleepNights returns one SleepNight per night from fromDay to toDay (both
 // inclusive, by the local date the sleep ends, see SleepNight.Night),
@@ -97,7 +152,7 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 	// (migration 0002). tz_offset is the one the row STARTED in, which is
 	// all the database stores.
 	rows, err := conn.QueryContext(ctx, `
-		SELECT date(end_ts + tz_offset + ?, 'unixepoch') AS night, stage, source, start_ts, end_ts
+		SELECT date(end_ts + tz_offset + ?, 'unixepoch') AS night, stage, source, start_ts, end_ts, tz_offset
 		FROM sleep_stages
 		WHERE end_ts >= ? AND end_ts < ?
 		  AND date(end_ts + tz_offset + ?, 'unixepoch') BETWEEN ? AND ?`,
@@ -113,7 +168,8 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 	for rows.Next() {
 		var night, stage, source string
 		var start, end int64
-		if err := rows.Scan(&night, &stage, &source, &start, &end); err != nil {
+		var tz int
+		if err := rows.Scan(&night, &stage, &source, &start, &end, &tz); err != nil {
 			return nil, fmt.Errorf("stats: read sleep: %w", err)
 		}
 		group := stages
@@ -125,7 +181,7 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 		}
 		t := group[night][source]
 		if t == nil {
-			t = &sleepTotals{byStage: map[string][]interval{}}
+			t = &sleepTotals{tz: tz, byStage: map[string][]interval{}}
 			group[night][source] = t
 		}
 		t.rows++
@@ -152,17 +208,29 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 		n := SleepNight{Night: night}
 		if source, t := bestSleepSource(stages[night]); t != nil {
 			n.Source = source
-			n.Segments = t.rows
+			n.Rows = t.rows
+			n.TZ = t.tz
 			n.Core = t.total("core")
 			n.Deep = t.total("deep")
 			n.REM = t.total("rem")
 			n.Unspecified = t.total("asleep_unspecified")
 			n.Awake = t.total("awake")
-			n.Asleep = n.Core + n.Deep + n.REM + n.Unspecified
+			fillAsleepTimes(&n, t)
 		}
 		if source, t := bestSleepSource(inBed[night]); t != nil {
 			n.InBedSource = source
 			n.InBed = t.total("in_bed")
+			if m := merge(t.byStage["in_bed"]); len(m) > 0 {
+				n.InBedStart, n.InBedEnd = m[0].start, m[len(m)-1].end
+			}
+			if n.TZ == 0 {
+				n.TZ = t.tz
+			}
+		}
+		// Falling-asleep time only makes sense when in bed began first, and
+		// only up to 90 minutes: longer means the two sources disagree.
+		if lat := time.Duration(n.Start-n.InBedStart) * time.Second; n.InBedStart > 0 && n.Start > 0 && lat > 0 && lat <= 90*time.Minute {
+			n.Latency = lat
 		}
 		out = append(out, n)
 	}
@@ -180,4 +248,44 @@ func bestSleepSource(bySource map[string]*sleepTotals) (string, *sleepTotals) {
 		}
 	}
 	return best, bt
+}
+
+// minAwakening is the shortest awake period that counts as an awakening.
+const minAwakening = 5 * time.Minute
+
+// fillAsleepTimes sets Asleep, Start, End, Awakenings and Segments of n from
+// the stage rows of one source.
+func fillAsleepTimes(n *SleepNight, t *sleepTotals) {
+	asleep := t.asleepUnion()
+	n.Asleep = length(asleep)
+	if len(asleep) > 0 {
+		n.Start, n.End = asleep[0].start, asleep[len(asleep)-1].end
+	}
+	for _, iv := range merge(t.byStage["awake"]) {
+		if iv.start >= n.Start && iv.end <= n.End && time.Duration(iv.end-iv.start)*time.Second >= minAwakening {
+			n.Awakenings++
+		}
+	}
+	for stage, ivs := range t.byStage {
+		if stage == "in_bed" {
+			continue
+		}
+		for _, iv := range ivs {
+			if iv.end > iv.start {
+				n.Segments = append(n.Segments, Seg{Stage: stage, Start: iv.start, End: iv.end})
+			}
+		}
+	}
+	// Sort by time; the stage name breaks ties so the order never depends on
+	// map iteration.
+	sort.Slice(n.Segments, func(i, j int) bool {
+		a, b := n.Segments[i], n.Segments[j]
+		if a.Start != b.Start {
+			return a.Start < b.Start
+		}
+		if a.End != b.End {
+			return a.End < b.End
+		}
+		return a.Stage < b.Stage
+	})
 }

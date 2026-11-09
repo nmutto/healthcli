@@ -239,6 +239,75 @@ If you don't pass `--db`, the database is `healthcli.db` in:
 
 Delete that file to start over.
 
+### Sleep
+
+`healthcli sleep` shows last night as a hypnogram (awake, REM, core and deep over the night; a short awakening still shows), then last night, your last 7 nights and the change against your usual over `--nights` nights (default 28), with bedtime regularity and sleep debt against `--sleep-target` (default `8h`). A calendar of the nights follows (`--weeks`, `0` hides it; `--by asleep|bedtime|efficiency`); with fewer than 14 nights you get a small bar per night instead. Only what your data holds is shown: a device that records just "asleep" gets a single bar, in-bed time alone shows no sleep numbers, and rows without data are left out (one dim `not available:` line names them). Green is better, red worse, cyan has no good direction, always with a word. A night is the sleep that ends on a date (18:00 to 18:00). Output below is synthetic.
+
+```
+$ healthcli sleep
+ SLEEP  Wed 4 Nov · Watch stages, iPhone in bed
+ ──────────────────────────────────────────────────────────────────────────────
+       00:05                                                              06:00
+ awake                                      ░                  ░               
+ REM                                    ▓▓▓▓             ▓▓▓▓▓▓           ▓▓▓▓▓
+ core  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒         ▒▒▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒▒     
+ deep                █████████                                                 
+                  1           2           3           4           5
+
+ STAT         LAST NIGHT      7 NIGHTS      VS 28-NIGHT USUAL
+ Asleep       5h 50m          6h 08m        ▼ -11% worse
+ In bed       6h 03m          6h 29m        ▼ -12% changed
+ Efficiency   96%             94%           – typical
+ Awake        5m 0x           9m 1x         – typical
+ Latency      ~8m             11m           – typical
+ Deep         45m 13%         45m           – typical
+ REM          1h 15m 21%      1h 14m        – typical
+ Core         3h 50m 66%      4h 08m        ▼ -15% changed
+ Bedtime      00:05           23:58         ▲ +49m later
+ Wake         06:00           06:15         – typical
+ Midpoint     03:03           03:07         ▲ +26m later
+ Regularity   ±51m bed ±34m mid (14 n)   ▲ worse than usual 39m
+ Sleep debt   2h 10m short last night, 7 n: 13h 07m short vs 8h target
+ green better / red worse / cyan neutral
+
+ time asleep per day, 12 weeks to 2026-11-04
+     Aug Sep     Oct     Nov
+ Mon · · · · · · ▁ ▅ ▇ ▅ ▇ ▁
+ Tue · · · · · · ▇ ▃ ▇ ▃ ▇ ▁
+ Wed · · · · · · ▅ ▃ ▅ ▁ ▇ ▁ ◂
+ Thu · · · · · · ▅ ▇ ▅ ▇ ▁
+ Fri · · · · · · ▃ ▇ ▃ ▇ ▁
+ Sat · · · · · ▅ ▇ ▅ ▇ ▇ ▃
+ Sun · · · · · ▃ ▇ ▃ ▇ ▇ ▁
+
+ ▁ ≤6h 36m  ▃ ≤6h 52m  ▅ ≤7h 10m  ▇ ≤7h 20m  █ >7h 20m
+ · no data   ◂ today   per day
+```
+
+With only "asleep" data (no stages, no in-bed):
+
+```
+$ healthcli sleep
+ SLEEP  Wed 4 Nov · iPhone, no stages (unspecified asleep only)
+ ──────────────────────────────────────────────────────────────────────────────
+ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+ asleep 5h 55m   00:05 → 06:00   midpoint 03:02           (stages not recorded)
+
+ STAT         LAST NIGHT      6 NIGHTS      VS USUAL
+ Asleep       5h 55m          6h 18m        need 7 nights (have 6)
+ Bedtime      00:05           00:00         need 7 nights (have 6)
+ Wake         06:00           06:18         need 7 nights (have 6)
+ Midpoint     03:03           03:09         need 7 nights (have 6)
+ Regularity   ±19m bed ±13m mid (6 n)
+ Sleep debt   2h 05m short last night, 6 n: 10h 15m short vs 8h target
+ not available: in bed, efficiency, awake, latency, deep, REM, core
+
+ time asleep per night (a calendar needs 14 nights, have 6)
+ Fri Sat Sun Mon Tue Wed
+ 6h  7h  7h  6h  6h  6h
+ ▅▅▅ ▆▆▆ ▆▆▆ ▅▅▅ ▅▅▅ ▅▅▅
+```
+
 ## Shell completions
 
 If you installed with Homebrew, completions are set up for you. Otherwise generate them yourself:
