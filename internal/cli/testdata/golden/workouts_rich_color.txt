@@ -1,0 +1,44 @@
+ [1mWORKOUTS[0m ─────────────────────────────────────────────────────────────────────
+ 28 d  16 sessions  16h 44m  6,820 kcal  187.5 km  active 16 of 28 days
+
+[2m TYPE      N TIME       KCAL     KM SHARE[0m
+ cycling   6 7h 57m    3,450  126.0 ██████████░░░░░░░░░░  48%
+ running   5 5h 00m    2,740   49.6 ██████░░░░░░░░░░░░░░  30%
+ walking   3 2h 09m      630   11.9 ███░░░░░░░░░░░░░░░░░  13%
+ yoga      2 1h 38m        -      - ██░░░░░░░░░░░░░░░░░░  10%
+
+ [2mRECENT[0m
+ Sat Nov 07 cycling  1h 07m 21.0 km 18.8 km/h 550 kcal
+ Fri Nov 06 walking     33m  4.3 km 7:40 /km  210 kcal
+ Wed Nov 04 running  1h 10m 11.0 km 6:22 /km  580 kcal
+ Mon Nov 02 cycling  1h 12m 21.0 km 17.5 km/h 500 kcal
+ Sat Oct 31 yoga        49m
+
+[2m WEEK OF TIME                                    N VS AVG[0m
+ Sep 21  █████████████░░░░░░░░░░░ 3h 00m         3 [36m▲ +3%[0m
+ Sep 28  ██████████████░░░░░░░░░░ 3h 13m         4 [36m▼ -12%[0m
+ Oct 05  ████████████░░░░░░░░░░░░ 2h 50m         4 [36m▼ -24%[0m
+ Oct 12  ████████████████████████ 5h 31m         5 [36m▲ +62%[0m
+ Oct 19  ██████████████░░░░░░░░░░ 3h 17m         3 [36m▼ -10%[0m
+ Oct 26  █████████████████░░░░░░░ 3h 54m         4 [36m▲ +5%[0m
+ Nov 02  ██████████████████░░░░░░ 4h 02m         4 [36m▲ +4%[0m
+ Nov 09  ░░░░░░░░░░░░░░░░░░░░░░░░ 0m (1 d)       0 – so far
+
+ [2mBESTS (90 d)[0m
+ longest   cycling 1h 32m, Oct 13 [1m*new*[0m
+ fastest   running 3:11 /km, Sep 30
+ furthest  cycling 21.0 km, Sep 03
+ biggest   cycling 700 kcal, Sep 23
+
+ workout minutes per day, 8 weeks to 2026-11-09, by type
+       Oct     Nov
+ Mon   [36mc[0m [34mr[0m [2m·[0m [2m·[0m [2m·[0m [36mC[0m [2m·[0m [1m◂[0m
+ Tue   [2m·[0m [2m·[0m [36mC[0m [34mr[0m [32mw[0m [2m·[0m
+ Wed [36mC[0m [34mr[0m [32mw[0m [2m·[0m [2m·[0m [36mC[0m [34mR[0m
+ Thu [2m·[0m [35my[0m [36mc[0m [34mr[0m [2m·[0m [2m·[0m [2m·[0m
+ Fri [34mR[0m [2m·[0m [2m·[0m [35my[0m [36mC[0m [34mR[0m [32mw[0m
+ Sat [2m·[0m [36mc[0m [34mr[0m [32mw[0m [2m·[0m [35my[0m [36mC[0m
+ Sun [32mw[0m [2m·[0m [2m·[0m [36mC[0m [34mr[0m [2m·[0m [2m·[0m
+
+ [36mC[0m cycling  [34mR[0m running  [32mW[0m walking  [35mY[0m yoga
+ [2m·[0m rest day   ◂ today   UPPERCASE = longer days
