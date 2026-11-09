@@ -1,6 +1,7 @@
  Sunday 2026-11-08 (yesterday)
  ------------------------------------------------------------------------------
  1 better, 1 changed vs your 28-day usual | Steps +64% | slept 7h 00m
+ VITALS 2 | ACTIVITY 1 | BODY 1 | SLEEP | WORKOUTS
 
    METRIC          LATEST        USUAL  VS USUAL
 
@@ -24,17 +25,17 @@
        23        00        01        02         03        04        05
 
  STAT         LAST NIGHT          1 NIGHT             VS USUAL
- Asleep       7h 00m              7h 00m              need 7 nights (have 1)
- Efficiency   97%                 97%                 need 7 nights (have 1)
- Awake        15m / 0 awakenings  15m / 0 awakenings  need 7 nights (have 1)
- Deep         1h 30m 21%          1h 30m              need 7 nights (have 1)
- REM          1h 00m 14%          1h 00m              need 7 nights (have 1)
- Bedtime      23:00               23:00               need 7 nights (have 1)
- Midpoint     02:30               02:30               need 7 nights (have 1)
+ Asleep       7h 00m              7h 00m              need 7 nights (have 0)
+ Efficiency   97%                 97%                 need 7 nights (have 0)
+ Awake        15m / 0 awakenings  15m / 0 awakenings  need 7 nights (have 0)
+ Deep         1h 30m 21%          1h 30m              need 7 nights (have 0)
+ REM          1h 00m 14%          1h 00m              need 7 nights (have 0)
+ Bedtime      23:00               23:00               need 7 nights (have 0)
+ Midpoint     02:30               02:30               need 7 nights (have 0)
  Sleep debt   1h 00m short last night vs 8h target
  not available: in bed
 
- == WORKOUTS == 1 session | 45m | 412 kcal | 6.2 km ===========================
+ == WORKOUTS == 1 session  45m  412 kcal  6.2 km ==============================
 
  SESSIONS
  18:00 running     45m  6.2 km 7:15 /km  412 kcal

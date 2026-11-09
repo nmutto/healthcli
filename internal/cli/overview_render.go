@@ -350,6 +350,12 @@ func verdictWord(verdict string) string {
 // never the whole row. Colour never carries meaning alone: the arrow and the
 // word say it too.
 func deltaArea(r stats.MetricRow, g glyphSet, st style, showBand bool, areaW int, foldAge bool) string {
+	return deltaAreaIn(r, g, st, showBand, areaW, foldAge, deltaW)
+}
+
+// deltaAreaIn is deltaArea with the delta text padded to textW columns before
+// the band (a table whose deltas are all short can use a smaller textW).
+func deltaAreaIn(r stats.MetricRow, g glyphSet, st style, showBand bool, areaW int, foldAge bool, textW int) string {
 	switch r.State {
 	case stats.StateOK:
 		paint := verdictPaint(st, r.Verdict)
@@ -360,10 +366,10 @@ func deltaArea(r stats.MetricRow, g glyphSet, st style, showBand bool, areaW int
 		out := paint(text)
 		used := runeLen(text)
 		if showBand {
-			out += strings.Repeat(" ", deltaW-used+2)
+			out += strings.Repeat(" ", textW-used+2)
 			band := g.bandBar(*r.Value, *r.Mean, *r.Stddev, bandW)
 			out += strings.Replace(band, string(g.marker), paint(string(g.marker)), 1)
-			used = deltaW + 2 + bandW
+			used = textW + 2 + bandW
 		}
 		return out + strings.Repeat(" ", max(areaW-used, 0))
 	case stats.StateNoBaseline:

@@ -49,7 +49,7 @@ func BuildDay(ctx context.Context, conn *sql.DB, day string) (*DayReport, error)
 		if err != nil {
 			return nil, err
 		}
-		if len(series) == 0 || !isFinite(series[0].Value) {
+		if len(series) == 0 {
 			// No reading today. Say so in the footer only if the metric is
 			// tracked at all (has a sample on any day).
 			if _, err := LatestSample(ctx, conn, name); err == nil {
@@ -62,7 +62,15 @@ func BuildDay(ctx context.Context, conn *sql.DB, day string) (*DayReport, error)
 		v := series[0].Value
 		row := newRow(m)
 		row.LatestDay, row.Value, row.Source = day, &v, series[0].Source
-		if err := fillComparison(ctx, conn, &row, m, day, v); err != nil {
+		if !isFinite(v) {
+			// An overflowed daily sum is still a reading (shown in the huge-number
+			// format), but there is nothing sensible to compare it with.
+			b, err := BaselineFor(ctx, conn, name, day, DefaultBaselineDays)
+			if err != nil && !errors.Is(err, ErrNotEnoughData) {
+				return nil, err
+			}
+			row.State, row.BaselineDays = StateNoBaseline, b.N
+		} else if err := fillComparison(ctx, conn, &row, m, day, v); err != nil {
 			return nil, err
 		}
 		d.Metrics = append(d.Metrics, row)
@@ -74,7 +82,7 @@ func BuildDay(ctx context.Context, conn *sql.DB, day string) (*DayReport, error)
 
 	// Sleep: the report looks back from Day, so its newest night is Day's
 	// night when one ended on it, and an older night otherwise.
-	sleep, err := BuildSleepReport(ctx, conn, t, SleepOptions{})
+	sleep, err := BuildSleepReport(ctx, conn, t, SleepOptions{UsualExcludesLast: true})
 	if err != nil {
 		return nil, err
 	}

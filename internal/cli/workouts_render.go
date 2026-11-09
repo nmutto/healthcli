@@ -230,7 +230,7 @@ func wkSessionRows(rows []stats.Workout, title string, whenW int, when func(stat
 	cells := make([]cell, len(rows))
 	has := [3]bool{}
 	for i, w := range rows {
-		if w.DistanceM != nil {
+		if w.DistanceM != nil && *w.DistanceM > 0 { // a recorded 0 m is no distance
 			cells[i].dist = fmt.Sprintf("%.1f km", *w.DistanceM/1000)
 			cells[i].pace = wkPace(w)
 		}

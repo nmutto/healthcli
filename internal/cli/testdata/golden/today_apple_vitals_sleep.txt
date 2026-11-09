@@ -1,17 +1,18 @@
  Sunday 2026-11-08 (yesterday)
  ──────────────────────────────────────────────────────────────────────────────
  1 better, 1 worse, 1 changed, 4 typical vs your 28-day usual · Resting HR +6%
+ VITALS 7 !1 · SLEEP
 
    METRIC              LATEST    USUAL  VS USUAL
 
  ━━ VITALS ━━ 7 metrics · 1 better · 1 worse · 1 changed ━━━━━━━━━━━━━━━━━━━━━━
-   Avg heart rate      76 bpm    75     ▲ +2%             ···░░░●···
- ! Resting HR          60 bpm    57     ▲ +6% worse       ···░░░░●··
-   HRV                 46 ms     48     ▼ -4%             ···░●░░···
- ~ Respiratory rate    15.6/min  14.3   ▲ +9% changed     ···░░░░●··
-   Wrist temperature   36.0 °C   35.9   – 0%              ···░░●░···
-   Blood oxygen        97%       97     – 0%              ···░░●░···
- + Walking heart rate  90 bpm    94     ▼ -4% better      ···●░░░···
+   Avg heart rate      76 bpm    75     ▲ +2%          ···░░░●···
+ ! Resting HR          60 bpm    57     ▲ +6% worse    ···░░░░●··
+   HRV                 46 ms     48     ▼ -4%          ···░●░░···
+ ~ Respiratory rate    15.6/min  14.3   ▲ +9% changed  ···░░░░●··
+   Wrist temperature   36.0 °C   35.9   – 0%           ···░░●░···
+   Blood oxygen        97%       97     – 0%           ···░░●░···
+ + Walking heart rate  90 bpm    94     ▼ -4% better   ···●░░░···
  green better / red worse / cyan changed (no good direction)
  7 tracked metrics have no reading on this day
 
@@ -23,7 +24,7 @@
  deep          ████                     █████                      ████        
               00        01        02        03        04        05        06
 
- STAT         LAST NIGHT          7 NIGHTS            VS 13-NIGHT USUAL
+ STAT         LAST NIGHT          7 NIGHTS            VS 12-NIGHT USUAL
  Asleep       7h 01m              7h 08m              – typical
  In bed       7h 30m              7h 37m              – typical
  Efficiency   94%                 94%                 – typical

@@ -1,13 +1,14 @@
  Friday 2026-11-06 (3 days ago)
  ----------------------------------------------------------
  2 typical vs your 28-day usual
+ VITALS 1 | ACTIVITY 1
 
    METRIC          LATEST       USUAL  VS USUAL
 
  == VITALS == 1 | all typical =============================
-   Avg heart rate  69 bpm       70     v -2%
+   Avg heart rate  69 bpm       70     v -2%     ...*===...
 
  == ACTIVITY == 1 | all typical ===========================
-   Steps           8,000 steps  7,365  ^ +9%
+   Steps           8,000 steps  7,365  ^ +9%     ...==*=...
  green better red worse cyan changed
  1 tracked metric has no reading on this day

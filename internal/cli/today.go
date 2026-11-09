@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"os"
 	"time"
 
@@ -113,8 +114,9 @@ overview": every metric that has a reading on that day next to your 28-day
 usual (the 28 days before it), grouped in category bands; the night of sleep
 that ended on that day; and the day's workouts.
 
-There is no trend column and no calendar: each row reads LATEST, USUAL and
-VS USUAL. Beyond-usual values are coloured by which direction is generally
+There is no trend line and no calendar. Each row reads LATEST, USUAL and VS
+USUAL, followed by a small range gauge (where the value sits in your usual
+range) when the terminal is wide enough. Beyond-usual values are coloured by which direction is generally
 healthy: green "better", red "worse"; metrics with no good direction are cyan
 "changed". A marker in the left gutter flags rows: "!" worse, "+" better,
 "~" changed. A metric needs 7 days of history in the 28 before the day for a
@@ -125,8 +127,11 @@ Metrics with no reading on the day are not listed; one dim line counts the
 tracked ones. If the date has no data at all, the latest day that does is shown
 instead, and a dim line says so. A date in the future is an error.
 
---category vitals,sleep shows only those (vitals, activity, body, mobility,
-other, sleep, workouts); --compact drops the blank lines and keeps a
+Sleep belongs to the date it ends on, counting sleep that ends after 18:00 as
+the next day's night (as in "healthcli sleep"); its "usual" is the nights
+before the one shown. --category vitals,sleep shows only those (vitals,
+activity, body, mobility, other, sleep, workouts) in the text and in --json
+alike, including the "no reading" count; --compact drops the blank lines and keeps a
 one-character flag in the gutter. The output is 50-100 columns wide ($COLUMNS or
 the terminal width). On a pipe, or with --ascii, only plain ASCII characters are
 used. NO_COLOR and --no-color switch colours off; FORCE_COLOR switches them on
@@ -135,7 +140,8 @@ even for a pipe.
 JSON output (--json) has these fields (the ones marked * were added later):
   status          "ok", "fallback" (date had no data; showing the latest day) or "no_data"
   requested_date  the day asked for      date  the day shown
-  metrics[]       only metrics with a reading that day: metric, label, unit, value, source,
+  metrics[]       only metrics with a reading that day (--category narrows this list,
+                  categories[], tracked_without_reading[], sleep and workouts[] alike): metric, label, unit, value, source,
                   baseline {available, days_with_data, days_needed, from, to, mean, stddev},
                   comparison {delta, delta_pct, z, label: above|below|typical} (null without baseline),
                   *category, *polarity, *state (ok|no_baseline),
@@ -189,6 +195,9 @@ func runToday(cmd *cobra.Command, opts *options, date string, noColor, ascii boo
 
 	report, err := buildToday(cmdContext(cmd), conn, date)
 	if err != nil {
+		return err
+	}
+	if report, err = report.restrict(view); err != nil {
 		return err
 	}
 	out := cmd.OutOrStdout()
@@ -273,13 +282,18 @@ func collectDay(ctx context.Context, conn *sql.DB, day string) (*todayReport, er
 	if err != nil {
 		return nil, err
 	}
+	return shapeDay(d)
+}
+
+// shapeDay fills the --json fields of a report from the day's data.
+func shapeDay(d *stats.DayReport) (*todayReport, error) {
 	r := &todayReport{
-		Date: day, day: d,
+		Date: d.Day, day: d,
 		Metrics: []todayMetric{}, Workouts: []todayWorkout{},
 		Categories: d.Categories, TrackedWithoutReading: d.NoReading,
 	}
 	for _, row := range d.Metrics {
-		m, err := metricJSON(row, day)
+		m, err := metricJSON(row, d.Day)
 		if err != nil {
 			return nil, err
 		}
@@ -306,7 +320,62 @@ func collectDay(ctx context.Context, conn *sql.DB, day string) (*todayReport, er
 	return r, nil
 }
 
+// restrict keeps only what --category names, in the text and in --json alike:
+// the metric rows and band counts, the "no reading" footer and list, and the
+// sleep and workouts parts. It runs after the fallback decision, which looks at
+// the whole day.
+func (r *todayReport) restrict(v overviewView) (*todayReport, error) {
+	if len(v.categories) == 0 || r.day == nil {
+		return r, nil
+	}
+	d := *r.day
+	d.Metrics, d.NoReading = []stats.MetricRow{}, []string{}
+	for _, row := range r.day.Metrics {
+		if v.wants(row.Category) {
+			d.Metrics = append(d.Metrics, row)
+		}
+	}
+	d.Categories = stats.CategorySummaries(d.Metrics)
+	for _, name := range r.day.NoReading {
+		if m, err := metrics.Lookup(name); err == nil && v.wants(string(m.Category)) {
+			d.NoReading = append(d.NoReading, name)
+		}
+	}
+	if !v.wants(sleepName) {
+		d.Sleep = nil
+	}
+	if !v.wants(workoutsName) {
+		d.Workouts = []stats.Workout{}
+	}
+	out, err := shapeDay(&d)
+	if err != nil {
+		return nil, err
+	}
+	out.Status, out.RequestedDate = r.Status, r.RequestedDate
+	return out, nil
+}
+
 func seconds(d time.Duration) int64 { return int64(d / time.Second) }
+
+// jsonSafe makes an overflowed daily value encodable: JSON has no Infinity, so
+// it becomes the largest float (the text shows it in the huge-number format).
+// NaN has no sensible number and becomes null.
+func jsonSafe(v *float64) *float64 {
+	if v == nil {
+		return nil
+	}
+	switch {
+	case math.IsNaN(*v):
+		return nil
+	case math.IsInf(*v, 1):
+		m := math.MaxFloat64
+		return &m
+	case math.IsInf(*v, -1):
+		m := -math.MaxFloat64
+		return &m
+	}
+	return v
+}
 
 // metricJSON turns a day's metric row into the --json shape. "Not enough
 // data" is an expected state, not an error: baseline.available is false.
@@ -320,11 +389,11 @@ func metricJSON(row stats.MetricRow, day string) (todayMetric, error) {
 		return todayMetric{}, err
 	}
 	m := todayMetric{
-		Metric: row.Metric, Label: row.Label, Unit: row.Unit, Value: row.Value, Source: row.Source,
+		Metric: row.Metric, Label: row.Label, Unit: row.Unit, Value: jsonSafe(row.Value), Source: row.Source,
 		Category: row.Category, Polarity: row.Polarity, State: row.State, Verdict: row.Verdict, Usual: row.Mean,
 		Baseline: &baselineInfo{DaysWithData: row.BaselineDays, DaysNeeded: stats.MinBaselineDays, From: from, To: to},
 	}
-	if row.Mean != nil && row.Stddev != nil {
+	if row.Mean != nil && row.Stddev != nil && row.Value != nil {
 		m.Baseline.Available = true
 		m.Baseline.Mean, m.Baseline.Stddev = row.Mean, row.Stddev
 		// The raw comparison, before the "too small to matter" rule that the

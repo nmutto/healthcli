@@ -152,6 +152,7 @@ var autoHeatmapMetrics = []string{"step_count", "apple_exercise_time", "active_e
 type MetricRow struct {
 	Metric    string   `json:"metric"`
 	Label     string   `json:"label"`
+	Short     string   `json:"-"` // Label for narrow tables
 	Category  string   `json:"category"`
 	Polarity  string   `json:"polarity"` // higher_better, lower_better or neutral
 	Unit      string   `json:"unit"`
@@ -521,7 +522,11 @@ func newRow(m metrics.Metric) MetricRow {
 	if label == "" {
 		label = m.Label
 	}
-	return MetricRow{Metric: m.Name, Label: label, Category: string(m.Category), Polarity: string(m.Polarity), Unit: m.Unit, State: StateNoData, Spark: []*float64{}}
+	short := m.Short
+	if short == "" {
+		short = label
+	}
+	return MetricRow{Metric: m.Name, Label: label, Short: short, Category: string(m.Category), Polarity: string(m.Polarity), Unit: m.Unit, State: StateNoData, Spark: []*float64{}}
 }
 
 // fillComparison sets the baseline fields, state, comparison and verdict of

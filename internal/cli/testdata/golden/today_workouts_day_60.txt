@@ -1,6 +1,7 @@
  Thursday 2026-11-05 (4 days ago)
  ──────────────────────────────────────────────────────────
  1 better, 2 worse, 1 changed vs your 28-day usual
+ VITALS 2 !1 · ACTIVITY 2 !1 · WORKOUTS
 
    METRIC          LATEST       USUAL  VS USUAL
 
@@ -14,7 +15,7 @@
  green better red worse cyan changed
  2 tracked metrics have no reading on this day
 
- ━━ WORKOUTS ━━ 1 session · 31m · 410 kcal · 5.2 km ━━━━━━━
+ ━━ WORKOUTS ━━ 1 session  31m  410 kcal  5.2 km ━━━━━━━━━━
 
  SESSIONS
  18:00 running     31m  5.2 km 5:58 /km  410 kcal
