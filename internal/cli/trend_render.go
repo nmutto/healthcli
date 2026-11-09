@@ -105,7 +105,7 @@ func fv(r *trendReport, v float64) string {
 	if r.Metric == sleepMetric {
 		return formatDuration(time.Duration(v * float64(time.Hour)))
 	}
-	return formatValue(v, r.Unit) + " " + unitLabel(r.Metric, r.Unit)
+	return formatValue(v, r.Metric) + " " + unitLabel(r.Metric, r.Unit)
 }
 
 // fd formats a signed difference: "+532 steps", "-0.3 kg", "+0h 25m" for sleep.
@@ -120,5 +120,5 @@ func fd(r *trendReport, delta float64) string {
 		}
 		return sign + formatDuration(time.Duration(math.Abs(delta)*float64(time.Hour)))
 	}
-	return formatSigned(delta, r.Unit) + " " + unitLabel(r.Metric, r.Unit)
+	return formatSigned(delta, r.Metric) + " " + unitLabel(r.Metric, r.Unit)
 }

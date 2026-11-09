@@ -149,9 +149,9 @@ func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
 	for i := 1; i <= stats.HeatLevels; i++ {
 		glyph := st.wrap(heatColors[i-1], string(g.shade(i)))
 		if i < stats.HeatLevels {
-			parts = append(parts, glyph+" "+le+formatValue(h.Thresholds[i-1], h.Unit))
+			parts = append(parts, glyph+" "+le+formatValue(h.Thresholds[i-1], h.Metric))
 		} else {
-			parts = append(parts, glyph+" "+gt+formatValue(h.Thresholds[i-2], h.Unit))
+			parts = append(parts, glyph+" "+gt+formatValue(h.Thresholds[i-2], h.Metric))
 		}
 	}
 	return []string{

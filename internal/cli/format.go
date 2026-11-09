@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/nmutto/healthcli/internal/metrics"
 )
 
 // style decides whether text gets ANSI colors. The render functions take a
@@ -89,26 +91,25 @@ func formatDuration(d time.Duration) string {
 	return fmt.Sprintf("%dh %02dm", mins/60, mins%60)
 }
 
-// decimals is how many digits after the point each unit gets. Counts and
-// energy are whole numbers; a heart rate of 61.4 bpm is false precision;
-// body weight is shown to 0.1 kg like a bathroom scale does.
-func decimals(unit string) int {
-	if unit == "kg" {
-		return 1
-	}
-	return 0
-}
-
-// formatValue prints a metric value with the digits and separators its unit
-// calls for (no unit suffix).
-func formatValue(v float64, unit string) string {
-	if d := decimals(unit); d > 0 {
+// formatValue prints a metric value with the digits its registry entry calls
+// for (Metric.Decimals) and thousands separators (no unit suffix).
+func formatValue(v float64, metric string) string {
+	if d := decimals(metric); d > 0 {
 		return strconv.FormatFloat(v, 'f', d, 64)
 	}
 	return formatInt(v)
 }
 
-// unitLabel is the unit as printed. Apple's "count" is meaningless to read,
+// decimals is the registry's digits after the point for a metric; an unknown
+// name gets 0.
+func decimals(metric string) int {
+	if m, err := metrics.Lookup(metric); err == nil {
+		return m.Decimals
+	}
+	return 0
+}
+
+// unitLabel is the unit as stored. Apple's "count" is meaningless to read,
 // so step counts say "steps".
 func unitLabel(metric, unit string) string {
 	if metric == "step_count" {
@@ -117,11 +118,52 @@ func unitLabel(metric, unit string) string {
 	return unit
 }
 
+// displayUnit is the unit as a person writes it: "%", "°C", "/min". It is
+// display only (stored units never change) and may be empty, as for BMI where
+// the label already says it. glued units print with no space: "97%".
+func displayUnit(metric, unit string, unicode bool) (text string, glued bool) {
+	switch unit {
+	case "percent":
+		return "%", true
+	case "degC":
+		if unicode {
+			return "°C", false
+		}
+		return "C", false
+	case "breaths/min":
+		return "/min", true
+	case "kg/m2":
+		return "", false
+	case "count":
+		switch metric {
+		case "step_count":
+			return "steps", false
+		case "flights_climbed":
+			return "flights", false
+		}
+		return "", false
+	}
+	return unit, false
+}
+
+// withUnit is value and display unit together: "97%", "36.4 °C", "7,412 steps".
+func withUnit(v float64, metric, unit string, unicode bool) string {
+	s := formatValue(v, metric)
+	u, glued := displayUnit(metric, unit, unicode)
+	switch {
+	case u == "":
+		return s
+	case glued:
+		return s + u
+	}
+	return s + " " + u
+}
+
 // formatSigned is formatValue with an explicit + for positive numbers, used
 // for differences. A tiny difference that rounds to zero prints without a
 // sign ("0"), never "+0" or "-0".
-func formatSigned(v float64, unit string) string {
-	s := formatValue(v, unit)
+func formatSigned(v float64, metric string) string {
+	s := formatValue(v, metric)
 	if strings.Trim(s, "0.-") == "" {
 		return strings.TrimPrefix(s, "-")
 	}

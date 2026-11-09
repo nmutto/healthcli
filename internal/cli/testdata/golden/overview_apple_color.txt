@@ -7,10 +7,10 @@
  Avg heart rate              76 bpm          [36m▲ +2%[0m            ···░░░[36m●[0m···  today
  Resting HR                  60 bpm          [31m▲ +6% worse[0m      ···░░░░[31m●[0m··  today
  HRV                         46 ms           ▼ -4%            ···░●░░···  today
- Respiratory rate            16 breaths/min  [36m▲ +9%[0m            ···░░░░[36m●[0m··  today
- Wrist temperature           36 degC         – 0%             ···░░●░···  today
- Blood oxygen                97 percent      – 0%             ···░░●░···  today
- VO2 max                     42 mL/kg/min    [33mstale                      [0m  [33m6 d[0m
+ Respiratory rate            15.6/min        [36m▲ +9%[0m            ···░░░░[36m●[0m··  today
+ Wrist temperature           36.0 °C         – 0%             ···░░●░···  today
+ Blood oxygen                97%             – 0%             ···░░●░···  today
+ VO2 max                     41.9 mL/kg/min  [33mstale                      [0m  [33m6 d[0m
  Walking heart rate          90 bpm          [32m▼ -4% better[0m     ···[32m●[0m░░░···  today
  Heart rate recovery         26 bpm          [2mbaseline 6/7 days          [0m  1 d
  [2mACTIVITY[0m
@@ -19,20 +19,20 @@
  Resting energy              1,730 kcal      [36m▲ +2%[0m            ···░░░[36m●[0m···  today
  Exercise time               43 min          ▲ +16%           ···░░●░···  today
  Stand time                  364 min         ▼ -12%           ···░●░░···  today
- Flights climbed             8 count         ▼ -39%           ···●░░░···  today
- Walking + running distance  7 km            – 0%             ···░░●░···  today
+ Flights climbed             8 flights       ▼ -39%           ···●░░░···  today
+ Walking + running distance  6.5 km          – 0%             ···░░●░···  today
  Time in daylight            53 min          ▲ +14%           ···░░●░···  today
  [2mBODY[0m
  Weight                      78.5 kg         [2mbaseline 4/7 days          [0m  1 d
- Body fat                    19 percent      [2mbaseline 4/7 days          [0m  1 d
- BMI                         24 kg/m2        [2mbaseline 4/7 days          [0m  1 d
+ Body fat                    18.5%           [2mbaseline 4/7 days          [0m  1 d
+ BMI                         24.0            [2mbaseline 4/7 days          [0m  1 d
  Lean body mass              63.2 kg         [2mbaseline 4/7 days          [0m  1 d
  [2mMOBILITY[0m
- Walking speed               5 km/h          ▲ +2%            ···░░●░···  today
+ Walking speed               5.5 km/h        ▲ +2%            ···░░●░···  today
  Step length                 73 cm           ▲ +2%            ···░░░●···  today
- Walking asymmetry           5 percent       [31m▲ +38% worse[0m     ···░░░░[31m●[0m··  today
- Double support time         31 percent      [31m▲ +7% worse[0m      ···░░░░[31m●[0m··  today
- Walking steadiness          94 percent      [33mstale                      [0m  [33m6 d[0m
+ Walking asymmetry           4.9%            [31m▲ +38% worse[0m     ···░░░░[31m●[0m··  today
+ Double support time         30.7%           [31m▲ +7% worse[0m      ···░░░░[31m●[0m··  today
+ Walking steadiness          94%             [33mstale                      [0m  [33m6 d[0m
  [32mgreen[0m[2m better[0m[2m / [0m[31mred[0m[2m worse[0m[2m / [0m[36mcyan[0m[2m changed (no good direction)[0m
 
  [1mSLEEP   [0m 7h 01m asleep · 7h 30m in bed · last night

@@ -7,10 +7,10 @@
  Avg heart rate       76 bpm          ▲ +2%            today
  Resting HR           60 bpm          ▲ +6% worse      today
  HRV                  46 ms           ▼ -4%            today
- Respiratory rate     16 breaths/min  ▲ +9%            today
- Wrist temperature    36 degC         – 0%             today
- Blood oxygen         97 percent      – 0%             today
- VO2 max              42 mL/kg/min    stale            6 d
+ Respiratory rate     15.6/min        ▲ +9%            today
+ Wrist temperature    36.0 °C         – 0%             today
+ Blood oxygen         97%             – 0%             today
+ VO2 max              41.9 mL/kg/min  stale            6 d
  Walking heart rate   90 bpm          ▼ -4% better     today
  Heart rate recovery  26 bpm          baseline 6/7 d…  1 d
  ACTIVITY
@@ -19,20 +19,20 @@
  Resting energy       1,730 kcal      ▲ +2%            today
  Exercise time        43 min          ▲ +16%           today
  Stand time           364 min         ▼ -12%           today
- Flights climbed      8 count         ▼ -39%           today
- Walking + running …  7 km            – 0%             today
+ Flights climbed      8 flights       ▼ -39%           today
+ Walking + running …  6.5 km          – 0%             today
  Time in daylight     53 min          ▲ +14%           today
  BODY
  Weight               78.5 kg         baseline 4/7 d…  1 d
- Body fat             19 percent      baseline 4/7 d…  1 d
- BMI                  24 kg/m2        baseline 4/7 d…  1 d
+ Body fat             18.5%           baseline 4/7 d…  1 d
+ BMI                  24.0            baseline 4/7 d…  1 d
  Lean body mass       63.2 kg         baseline 4/7 d…  1 d
  MOBILITY
- Walking speed        5 km/h          ▲ +2%            today
+ Walking speed        5.5 km/h        ▲ +2%            today
  Step length          73 cm           ▲ +2%            today
- Walking asymmetry    5 percent       ▲ +38% worse     today
- Double support time  31 percent      ▲ +7% worse      today
- Walking steadiness   94 percent      stale            6 d
+ Walking asymmetry    4.9%            ▲ +38% worse     today
+ Double support time  30.7%           ▲ +7% worse      today
+ Walking steadiness   94%             stale            6 d
  green better / red worse / cyan changed (no good direction)
 
  SLEEP    7h 01m asleep · 7h 30m in bed · last night

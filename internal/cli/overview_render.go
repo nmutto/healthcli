@@ -176,7 +176,7 @@ func metricTable(o *stats.Overview, ti termInfo, g glyphSet, st style) string {
 	for i, r := range o.Metrics {
 		latest[i] = "-"
 		if r.Value != nil {
-			latest[i] = formatValue(*r.Value, r.Unit) + " " + unitLabel(r.Metric, r.Unit)
+			latest[i] = withUnit(*r.Value, r.Metric, r.Unit, ti.unicode)
 		}
 		labelW = max(labelW, runeLen(r.Label))
 		latestW = max(latestW, runeLen(latest[i]))

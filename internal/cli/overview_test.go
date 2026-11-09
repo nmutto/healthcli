@@ -438,3 +438,27 @@ func TestOverviewStepsOnlyHasNoEmptyRows(t *testing.T) {
 		t.Errorf("missing not-tracked footer:\n%s", got)
 	}
 }
+
+// Display units and per-metric decimals (stored units are untouched).
+func TestWithUnit(t *testing.T) {
+	cases := []struct {
+		v            float64
+		metric, unit string
+		unicode      bool
+		want         string
+	}{
+		{36.44, "apple_sleeping_wrist_temperature", "degC", true, "36.4 °C"},
+		{36.44, "apple_sleeping_wrist_temperature", "degC", false, "36.4 C"},
+		{97, "oxygen_saturation", "percent", true, "97%"},
+		{16.24, "respiratory_rate", "breaths/min", true, "16.2/min"},
+		{24.06, "body_mass_index", "kg/m2", true, "24.1"},
+		{79.94, "body_mass", "kg", true, "79.9 kg"},
+		{9412, "step_count", "count", true, "9,412 steps"},
+		{42, "vo2_max", "mL/kg/min", true, "42.0 mL/kg/min"},
+	}
+	for _, c := range cases {
+		if got := withUnit(c.v, c.metric, c.unit, c.unicode); got != c.want {
+			t.Errorf("withUnit(%v, %s) = %q, want %q", c.v, c.metric, got, c.want)
+		}
+	}
+}
