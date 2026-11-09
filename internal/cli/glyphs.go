@@ -17,6 +17,7 @@ import (
 type glyphSet struct {
 	bars     []rune // eight heights, shortest to tallest
 	gap      rune   // a day without data
+	block    rune   // one full cell, for colour-only heatmaps
 	up       string // delta arrows
 	down     string
 	flat     string
@@ -33,7 +34,7 @@ type glyphSet struct {
 }
 
 var unicodeGlyphs = glyphSet{
-	bars: []rune("▁▂▃▄▅▆▇█"), gap: '·',
+	bars: []rune("▁▂▃▄▅▆▇█"), gap: '·', block: '█',
 	up: "▲", down: "▼", flat: "–",
 	track: '·', usual: '░', marker: '●',
 	stages: map[string]rune{"core": '▒', "rem": '▓', "deep": '█', "unspecified": '▒', "awake": '░'},
@@ -42,7 +43,7 @@ var unicodeGlyphs = glyphSet{
 }
 
 var asciiGlyphs = glyphSet{
-	bars: []rune(".:-=+*#@"), gap: '_',
+	bars: []rune(".:-=+*#@"), gap: '_', block: '#',
 	up: "^", down: "v", flat: "-",
 	track: '.', usual: '=', marker: '*',
 	stages: map[string]rune{"core": ':', "rem": '+', "deep": '#', "unspecified": '~', "awake": '.'},

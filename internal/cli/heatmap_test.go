@@ -249,3 +249,21 @@ func TestHeatmapAndStageColours(t *testing.T) {
 		t.Errorf("colour off must stay plain, got %q", got)
 	}
 }
+
+// With colour on every level is the same block (the colour is the signal);
+// without colour the five heights come back.
+func TestHeatmapShadeUsesOneBlockWhenColoured(t *testing.T) {
+	for _, unicode := range []bool{true, false} {
+		g := glyphsFor(unicode)
+		plain := map[rune]bool{}
+		for level := 1; level <= stats.HeatLevels; level++ {
+			if got := g.shade(level, true); got != g.block {
+				t.Errorf("unicode=%v level %d coloured: got %q, want %q", unicode, level, got, g.block)
+			}
+			plain[g.shade(level, false)] = true
+		}
+		if len(plain) != stats.HeatLevels {
+			t.Errorf("unicode=%v: uncoloured shades must be %d distinct glyphs, got %d", unicode, stats.HeatLevels, len(plain))
+		}
+	}
+}

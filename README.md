@@ -318,7 +318,7 @@ $ healthcli --db demo.db query "SELECT metric, count(*) AS n FROM samples GROUP 
 
 ### Calendar heatmap
 
-`healthcli heatmap [metric]` draws a GitHub-style calendar: a row per weekday, a column per week, newest on the right. Shades are the metric's own quintiles over the window, and the legend gives the actual cut points. A day without data is a dot, never the lowest shade; `◂` marks today. The default metric is `step_count`, `--weeks` sets the maximum (default 12; a narrow terminal drops the oldest weeks), and `--json` prints the grid.
+`healthcli heatmap [metric]` draws a GitHub-style calendar: a row per weekday, a column per week, newest on the right. Each day is one coloured block, and the colour intensity is the metric's own quintile over the window (green for workouts, orange for steps and other activity, blue for sleep); the legend gives the actual cut points. Without colour (a pipe, `NO_COLOR`, `--ascii`) the blocks fall back to five heights so the level is still readable. A day without data is a dot, never the lowest shade; `◂` marks today. The default metric is `step_count`, `--weeks` sets the maximum (default 12; a narrow terminal drops the oldest weeks), and `--json` prints the grid.
 
 The output below is from a synthetic test database (made-up step counts), not real data:
 

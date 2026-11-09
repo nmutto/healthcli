@@ -70,8 +70,8 @@ func TestSleepHeaderIsNeverCut(t *testing.T) {
 // (g) ASCII: a rest day and the lowest level must be different glyphs.
 func TestASCIIRestDayDiffersFromLowestLevel(t *testing.T) {
 	g := glyphsFor(false)
-	if restGlyph(g) == g.shade(1) || restGlyph(g) == g.gap {
-		t.Errorf("rest %q, lowest %q, gap %q must all differ", restGlyph(g), g.shade(1), g.gap)
+	if restGlyph(g) == g.shade(1, false) || restGlyph(g) == g.gap {
+		t.Errorf("rest %q, lowest %q, gap %q must all differ", restGlyph(g), g.shade(1, false), g.gap)
 	}
 }
 

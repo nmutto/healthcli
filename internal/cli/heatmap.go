@@ -56,7 +56,15 @@ func heatWeeksFit(width int) int {
 
 // shade is the glyph of level 1..5: five of the eight bar heights, evenly
 // spread, so the Unicode and ASCII sets both work without new glyphs.
-func (g glyphSet) shade(level int) rune {
+//
+// With colour on, every level is the same full block and only the colour
+// tells them apart: blocks of different heights make the grid look ragged.
+// Without colour (pipes, NO_COLOR, --no-color) the heights are the only
+// signal left, so they stay.
+func (g glyphSet) shade(level int, coloured bool) rune {
+	if coloured {
+		return g.block
+	}
 	return g.bars[[stats.HeatLevels]int{0, 2, 4, 6, 7}[level-1]]
 }
 
@@ -113,7 +121,7 @@ func renderHeatmap(h *stats.Heatmap, ti termInfo) []string {
 			case cell.Level == 0:
 				b.WriteString(st.dim(string(restGlyph(g)))) // a real zero: a rest day
 			default:
-				glyph := st.wrap(colors[cell.Level-1], string(g.shade(cell.Level)))
+				glyph := st.wrap(colors[cell.Level-1], string(g.shade(cell.Level, st.color)))
 				b.WriteString(glyph)
 			}
 			b.WriteString(" ")
@@ -251,12 +259,12 @@ func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
 			level = 1
 		}
 		return append([]string{
-			st.wrap(colors[level-1], string(g.shade(level))) + " every day: " + heatFormat(h, h.Thresholds[0]),
+			st.wrap(colors[level-1], string(g.shade(level, st.color))) + " every day: " + heatFormat(h, h.Thresholds[0]),
 		}, heatTail(h, ti, st)...)
 	}
 	var parts []string
 	for i := 1; i <= stats.HeatLevels; i++ {
-		glyph := st.wrap(colors[i-1], string(g.shade(i)))
+		glyph := st.wrap(colors[i-1], string(g.shade(i, st.color)))
 		if i < stats.HeatLevels {
 			parts = append(parts, glyph+" "+le+heatFormat(h, h.Thresholds[i-1]))
 		} else {
