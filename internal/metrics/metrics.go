@@ -218,6 +218,7 @@ func FromApple(identifier string) (Metric, bool) {
 var aliases = map[string]string{
 	"weight": "body_mass",
 	"hr":     "heart_rate",
+	"hrv":    "hrv_sdnn",
 	"steps":  "step_count",
 	"rr":     "respiratory_rate",
 	"spo2":   "oxygen_saturation",
