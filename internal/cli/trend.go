@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -76,14 +77,15 @@ type trendBase struct {
 func newTrendCmd(opts *options) *cobra.Command {
 	var days int
 	var date string
-	var verbose bool
+	var verbose, noColor, ascii bool
 
 	cmd := &cobra.Command{
 		Use:   "trend <metric>",
 		Short: "Show how a metric changes over the last days",
 		Long: `Show one metric over the last N days as a sparkline (· marks a day without
 data), with min, max and mean, the last 7 days against the 7 before, and the
-current 28-day baseline.
+current 28-day baseline. On a pipe, or with --ascii, the sparkline uses plain
+ASCII characters (. : - = + * # @) instead of block bars.
 
 Metrics: ` + strings.Join(metrics.Names(), ", ") + `, sleep (hours asleep per night).
 Aliases: steps, weight, hr.
@@ -106,16 +108,18 @@ Sleep values are hours asleep.`,
   healthcli trend hr --days 14 --json`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runTrend(cmd, opts, args[0], days, date, verbose)
+			return runTrend(cmd, opts, args[0], days, date, verbose, noColor, ascii)
 		},
 	}
 	cmd.Flags().IntVar(&days, "days", 30, "number of days to show")
 	cmd.Flags().StringVar(&date, "date", "", "last day of the window, YYYY-MM-DD (default: today)")
 	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "also print a per-day table")
+	cmd.Flags().BoolVar(&noColor, "no-color", false, "never use colours")
+	cmd.Flags().BoolVar(&ascii, "ascii", false, "use plain ASCII characters only")
 	return cmd
 }
 
-func runTrend(cmd *cobra.Command, opts *options, name string, days int, date string, verbose bool) error {
+func runTrend(cmd *cobra.Command, opts *options, name string, days int, date string, verbose, noColor, ascii bool) error {
 	if days < 1 || days > 3650 {
 		return fmt.Errorf("--days must be between 1 and 3650, got %d", days)
 	}
@@ -149,7 +153,7 @@ func runTrend(cmd *cobra.Command, opts *options, name string, days int, date str
 		return enc.Encode(report)
 	}
 	report.verbose = verbose
-	_, err = fmt.Fprint(out, renderTrend(report, style{color: colorFor(out)}))
+	_, err = fmt.Fprint(out, renderTrend(report, detectTerm(out, os.Getenv, noColor, ascii)))
 	return err
 }
 

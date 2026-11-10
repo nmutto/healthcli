@@ -9,7 +9,8 @@ import (
 
 // renderTrend turns a report into the text "healthcli trend" prints. Like
 // renderToday it does no I/O.
-func renderTrend(r *trendReport, st style) string {
+func renderTrend(r *trendReport, ti termInfo) string {
+	st := style{color: ti.color}
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s\n", st.bold(fmt.Sprintf("%s, last %d days (%s to %s)",
 		trendTitle(r.Metric), r.Days, r.From, r.To)))
@@ -32,7 +33,7 @@ func renderTrend(r *trendReport, st style) string {
 			values[i] = *d.Value
 		}
 	}
-	fmt.Fprintf(&b, "\n%s\n\n", st.cyan(sparkline(values)))
+	fmt.Fprintf(&b, "\n%s\n\n", st.cyan(glyphsFor(ti.unicode).sparkline(values)))
 
 	s := r.Summary
 	fmt.Fprintf(&b, "min %s   max %s   mean %s   (%d of %d days with data)\n",
