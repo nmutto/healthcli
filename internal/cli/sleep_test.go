@@ -341,3 +341,11 @@ func TestStageSharesUseTheStageTotals(t *testing.T) {
 		t.Errorf("core share %q, want \" 50%%\"", got)
 	}
 }
+
+// The help text must name the thresholds the table really uses.
+func TestSleepHelpNamesTheAwakeThreshold(t *testing.T) {
+	cmd := newSleepCmd(&options{})
+	if !strings.Contains(cmd.Long, "10% for awake time") {
+		t.Errorf("help does not mention the 10%% threshold for awake and latency")
+	}
+}

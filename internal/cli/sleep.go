@@ -37,7 +37,8 @@ Rows with nothing to show are left out, and one dim line names them.
 
 Colour: green better, red worse, cyan no good direction (bedtime, in bed),
 always with a word. "vs usual" compares your last 7 nights with the usual; a
-change under 5% (2 points of efficiency, 15 minutes of clock time) is typical.
+change under 5% (10% for awake time and falling-asleep time, 2 points of
+efficiency, 15 minutes of clock time) is typical.
 
 --by picks the calendar value: asleep (time asleep), bedtime (later is
 darker) or efficiency.
