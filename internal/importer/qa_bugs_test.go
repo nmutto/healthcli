@@ -183,3 +183,23 @@ func TestTruncatedImportSaysHowManyRowsWereSaved(t *testing.T) {
 		t.Errorf("samples = %d, want the committed rows only", n)
 	}
 }
+
+// BUG: a third-party source that writes 97 with unit "%" (Apple writes 0.97)
+// would have become 9700 percent. Such values are skipped as bad_value.
+func TestPercentAbove100IsSkipped(t *testing.T) {
+	p := writeFile(t, "export.xml", wrap(`
+<Record type="HKQuantityTypeIdentifierOxygenSaturation" sourceName="apple" unit="%" `+qaWhen+` value="0.97"/>
+<Record type="HKQuantityTypeIdentifierOxygenSaturation" sourceName="other" unit="%" `+qaWhen+` value="97"/>
+<Record type="HKQuantityTypeIdentifierBodyFatPercentage" sourceName="other" unit="%" `+qaWhen+` value="0.15"/>`))
+	conn := newDB(t)
+	sum, err := Import(conn, p, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Inserted != 2 || sum.Skipped[reasonBadValue] != 1 {
+		t.Errorf("summary = %+v, want 2 inserted and 1 bad_value", sum)
+	}
+	if n := count(t, conn, "SELECT COUNT(*) FROM samples WHERE value > 100"); n != 0 {
+		t.Errorf("%d rows above 100 percent were stored", n)
+	}
+}
