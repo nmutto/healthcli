@@ -1,0 +1,52 @@
+$ healthcli log bogus 1 --at 2025-03-01T08:30:00Z
+--- error ---
+unknown metric "bogus"
+known metrics: heart_rate, resting_heart_rate, step_count, hrv_sdnn, body_mass, active_energy, respiratory_rate, apple_sleeping_wrist_temperature, oxygen_saturation, vo2_max, walking_heart_rate_average, heart_rate_recovery_one_minute, blood_pressure_systolic, blood_pressure_diastolic, blood_glucose, basal_energy, apple_exercise_time, apple_stand_time, flights_climbed, distance_walking_running, time_in_daylight, body_fat_percentage, body_mass_index, lean_body_mass, height, walking_speed, walking_step_length, walking_asymmetry, walking_double_support, apple_walking_steadiness
+aliases: bmi=body_mass_index, hr=heart_rate, hrv=hrv_sdnn, rhr=resting_heart_rate, rr=respiratory_rate, spo2=oxygen_saturation, steps=step_count, temp=apple_sleeping_wrist_temperature, vo2=vo2_max, weight=body_mass
+$ healthcli log weight abc --at 2025-03-01T08:30:00Z
+--- error ---
+value "abc" is not a number
+$ healthcli log weight -5 --at 2025-03-01T08:30:00Z
+--- error ---
+unknown shorthand flag: '5' in -5
+$ healthcli log weight 0 --at 2025-03-01T08:30:00Z
+--- error ---
+value "0" is not a plausible body_mass
+$ healthcli log weight 1e9 --at 2025-03-01T08:30:00Z
+--- error ---
+cannot log "1e9": value is too large for body_mass
+$ healthcli log weight NaN --at 2025-03-01T08:30:00Z
+--- error ---
+value "NaN" is not a number
+$ healthcli log weight 72 --unit stone --at 2025-03-01T08:30:00Z
+--- error ---
+unit "stone" is not supported for body_mass (use: kg, g, lb, lbs)
+$ healthcli log hr 61 --unit kg --at 2025-03-01T08:30:00Z
+--- error ---
+unit "kg" is not supported for heart_rate (use: bpm, count/min)
+$ healthcli log hr 500 --at 2025-03-01T08:30:00Z
+Logged heart_rate = 500 bpm at 2025-03-01 08:30
+$ healthcli log spo2 40 --at 2025-03-01T08:30:00Z
+--- error ---
+cannot log "40": oxygen_saturation below 50% is not plausible; type 97 for 97%
+$ healthcli log spo2 101 --at 2025-03-01T08:30:00Z
+--- error ---
+cannot log "101": oxygen_saturation is a percentage and cannot be above 100
+$ healthcli log weight 72 --at next tuesday
+--- error ---
+cannot read time "next tuesday": use RFC3339 (2025-03-01T08:30:00Z) or "YYYY-MM-DD HH:MM"
+$ healthcli log weight 72 --at 2999-01-01T00:00:00Z
+--- error ---
+--at "2999-01-01T00:00:00Z" is more than a day in the future
+$ healthcli log weight
+--- error ---
+accepts 2 arg(s), received 1
+$ healthcli log
+--- error ---
+accepts 2 arg(s), received 0
+$ healthcli log weight 72 73
+--- error ---
+accepts 2 arg(s), received 3
+$ healthcli query SELECT metric, round(value, 3) AS value, unit, source, start_ts, end_ts, tz_offset FROM samples ORDER BY metric, start_ts
+metric      value  unit  source  start_ts    end_ts      tz_offset
+heart_rate  500    bpm   manual  1740817800  1740817800  0

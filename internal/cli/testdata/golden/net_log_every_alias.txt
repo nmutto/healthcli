@@ -1,0 +1,26 @@
+$ healthcli log steps 8000 --at 2025-03-01T08:30:00Z
+Logged step_count = 8000 count at 2025-03-01 08:30
+$ healthcli log rhr 52 --at 2025-03-01T08:30:00Z
+Logged resting_heart_rate = 52 bpm at 2025-03-01 08:30
+$ healthcli log hrv 48.5 --at 2025-03-01T08:30:00Z
+Logged hrv_sdnn = 48.5 ms at 2025-03-01 08:30
+$ healthcli log rr 15.2 --at 2025-03-01T08:30:00Z
+Logged respiratory_rate = 15.2 breaths/min at 2025-03-01 08:30
+$ healthcli log spo2 97 --at 2025-03-01T08:30:00Z
+Logged oxygen_saturation = 97 percent at 2025-03-01 08:30
+$ healthcli log temp 36.4 --at 2025-03-01T08:30:00Z
+Logged apple_sleeping_wrist_temperature = 36.4 degC at 2025-03-01 08:30
+$ healthcli log vo2 42 --at 2025-03-01T08:30:00Z
+Logged vo2_max = 42 mL/kg/min at 2025-03-01 08:30
+$ healthcli log bmi 23.1 --at 2025-03-01T08:30:00Z
+Logged body_mass_index = 23.1 kg/m2 at 2025-03-01 08:30
+$ healthcli query SELECT metric, round(value, 3) AS value, unit, source, start_ts, end_ts, tz_offset FROM samples ORDER BY metric, start_ts
+metric                            value  unit         source  start_ts    end_ts      tz_offset
+apple_sleeping_wrist_temperature  36.4   degC         manual  1740817800  1740817800  0
+body_mass_index                   23.1   kg/m2        manual  1740817800  1740817800  0
+hrv_sdnn                          48.5   ms           manual  1740817800  1740817800  0
+oxygen_saturation                 97     percent      manual  1740817800  1740817800  0
+respiratory_rate                  15.2   breaths/min  manual  1740817800  1740817800  0
+resting_heart_rate                52     bpm          manual  1740817800  1740817800  0
+step_count                        8000   count        manual  1740817800  1740817800  0
+vo2_max                           42     mL/kg/min    manual  1740817800  1740817800  0

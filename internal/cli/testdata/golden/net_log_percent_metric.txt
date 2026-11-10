@@ -1,0 +1,8 @@
+$ healthcli log body_fat_percentage 18.5 --at 2025-03-01T08:30:00Z
+Logged body_fat_percentage = 18.5 percent at 2025-03-01 08:30
+$ healthcli log walking_double_support 28 --at 2025-03-01T08:30:00Z
+Logged walking_double_support = 28 percent at 2025-03-01 08:30
+$ healthcli query SELECT metric, round(value, 3) AS value, unit, source, start_ts, end_ts, tz_offset FROM samples ORDER BY metric, start_ts
+metric                  value  unit     source  start_ts    end_ts      tz_offset
+body_fat_percentage     18.5   percent  manual  1740817800  1740817800  0
+walking_double_support  28     percent  manual  1740817800  1740817800  0

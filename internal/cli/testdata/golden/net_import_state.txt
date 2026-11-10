@@ -1,0 +1,13 @@
+$ healthcli query SELECT key FROM meta ORDER BY key
+key
+last_import_summary
+last_import_ts
+$ healthcli query SELECT count(*) AS samples FROM samples
+samples
+1271
+$ healthcli query SELECT count(*) AS stages FROM sleep_stages
+stages
+190
+$ healthcli query SELECT count(*) AS workouts FROM workouts
+workouts
+7
