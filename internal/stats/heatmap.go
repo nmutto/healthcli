@@ -95,6 +95,16 @@ const (
 	HueViolet = "violet" // body mass
 )
 
+// HueFor is the colour family of a metric's heatmaps and trend lines: the
+// Apple Health category colour, orange for everything without one. "sleep"
+// (the trend of hours asleep) is blue.
+func HueFor(metric string) string {
+	if metric == "sleep" {
+		return HueBlue
+	}
+	return metricHues[metric]
+}
+
 // metricHues follows the colours of the Apple Health app categories: Heart is
 // red, Respiratory cyan, Body Measurements purple (body mass deep violet).
 // Mobility, activity and everything else stay orange (HueOrange, the empty

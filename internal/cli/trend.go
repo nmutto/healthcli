@@ -86,7 +86,10 @@ func newTrendCmd(opts *options) *cobra.Command {
 data), with min, max and mean, the last 7 days against the 7 before, and the
 baseline (the 28 days before the last day, as in overview and today). On a
 pipe, or with --ascii, the sparkline uses plain ASCII characters instead of
-block bars (_ marks a day without data).
+block bars (_ marks a day without data). With colour on, the bars use the same
+palette as the heatmaps: the hue of the metric (heart red, respiratory cyan,
+sleep blue, body purple and violet, orange for activity), dim for low days and
+bright for high ones.
 
 Metrics: ` + strings.Join(metrics.Names(), ", ") + `, sleep (hours asleep per night).
 Aliases: hr, hrv, rhr, rr, spo2, steps, temp, vo2, weight, bmi.

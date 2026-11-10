@@ -44,7 +44,13 @@ var (
 // sleep is blue, heart rate red, respiratory rate cyan, wrist temperature
 // purple, body mass deep violet, and everything else (steps, energy, ...) is orange.
 func heatColorsFor(h *stats.Heatmap) [stats.HeatLevels]string {
-	switch h.Hue {
+	return heatRamp(h.Hue)
+}
+
+// heatRamp is the five-step colour ramp of a hue (dim at level 1, bright at
+// level 5), shared by the heatmaps and the trend line.
+func heatRamp(hue string) [stats.HeatLevels]string {
+	switch hue {
 	case stats.HueGreen:
 		return heatGreen
 	case stats.HueBlue:

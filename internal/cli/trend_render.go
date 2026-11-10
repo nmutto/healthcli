@@ -3,8 +3,11 @@ package cli
 import (
 	"fmt"
 	"math"
+	"slices"
 	"strings"
 	"time"
+
+	"github.com/nmutto/healthcli/internal/stats"
 )
 
 // renderTrend turns a report into the text "healthcli trend" prints. Like
@@ -38,7 +41,7 @@ func renderTrend(r *trendReport, ti termInfo) string {
 	}
 	// One character per day: a long window shows only its newest days.
 	shown := values[max(len(values)-ti.width, 0):]
-	fmt.Fprintf(&b, "\n%s\n", st.cyan(g.sparkline(shown)))
+	fmt.Fprintf(&b, "\n%s\n", trendLine(shown, stats.HueFor(r.Metric), g, st))
 	if len(shown) < len(values) {
 		b.WriteString(st.dim(fmt.Sprintf("(the last %d of %d days)", len(shown), len(values))) + "\n")
 	}
@@ -69,6 +72,29 @@ func renderTrend(r *trendReport, ti termInfo) string {
 
 	if r.verbose {
 		b.WriteString("\n" + trendTable(r, st, ti))
+	}
+	return b.String()
+}
+
+// trendLine draws the sparkline with the same colour palette as the heatmaps:
+// the hue of the metric (heart red, respiratory cyan, sleep blue, ...), dim for
+// the low bars and bright for the high ones, so the colour says the quantity
+// too. Without colour it is the plain sparkline; gaps are dim.
+func trendLine(values []float64, hue string, g glyphSet, st style) string {
+	line := g.sparkline(values)
+	if !st.color {
+		return line
+	}
+	ramp := heatRamp(hue)
+	var b strings.Builder
+	for _, r := range line {
+		idx := slices.Index(g.bars, r)
+		if idx < 0 { // a gap
+			b.WriteString(st.dim(string(r)))
+			continue
+		}
+		level := int(math.Round(1 + float64(idx)*float64(stats.HeatLevels-1)/float64(len(g.bars)-1)))
+		b.WriteString(st.wrap(ramp[level-1], string(r)))
 	}
 	return b.String()
 }

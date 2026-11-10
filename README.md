@@ -333,7 +333,7 @@ Last 7 days vs previous 7: 20,640 steps vs 19,563 steps  (+1,078 steps, +5.5%)
 Baseline (28 days): 20,101 steps
 ```
 
-`trend` takes any metric of the registry (about 30, plus `sleep` for hours asleep per night) and the aliases above; `healthcli trend --help` lists them all. On a pipe, or with `--ascii`, the sparkline uses plain characters (`_` marks a day without data); `--no-color` turns colour off; lines never run past the terminal width (50 to 100 columns). The baseline is the 28 days before the last day shown, the same as in `overview` and `today`. The example above is a real run on the small fixture in a terminal; on a pipe the sparkline reads `.#*+*-::+==@##`.
+`trend` takes any metric of the registry (about 30, plus `sleep` for hours asleep per night) and the aliases above; `healthcli trend --help` lists them all. With colour on, the trend bars use the same palette as the heatmaps: the metric's hue (heart red, respiratory cyan, sleep blue, body purple and violet, orange for activity), dim for low days and bright for high ones. On a pipe, or with `--ascii`, the sparkline uses plain characters (`_` marks a day without data); `--no-color` turns colour off; lines never run past the terminal width (50 to 100 columns). The baseline is the 28 days before the last day shown, the same as in `overview` and `today`. The example above is a real run on the small fixture in a terminal; on a pipe the sparkline reads `.#*+*-::+==@##`.
 
 Plain SQL. The database is opened read-only and `query` takes exactly one `SELECT`, `WITH` or `EXPLAIN` statement (a trailing `;` and leading comments are fine; a second statement, `PRAGMA` and `ATTACH` are refused). The example below ran after the `log weight` above, hence 6 `body_mass` rows:
 
