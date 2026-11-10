@@ -259,7 +259,10 @@ func headline(o *stats.Overview, v overviewView, g glyphSet, width int) string {
 		}
 		parts = append(parts, text)
 	case waiting:
-		parts = append(parts, fmt.Sprintf("Not enough history to compare yet (a baseline needs %d days)", stats.MinBaselineDays))
+		parts = append(parts, firstFit(width,
+			fmt.Sprintf("Not enough history to compare yet (a baseline needs %d days)", stats.MinBaselineDays),
+			"Not enough history to compare yet",
+			"Not enough history yet"))
 	case newest > 0:
 		parts = append(parts, fmt.Sprintf("No recent readings: the newest is %d d old", newest))
 	default:
@@ -282,6 +285,38 @@ func headline(o *stats.Overview, v overviewView, g glyphSet, width int) string {
 		return ""
 	}
 	return joinFit(parts, width, g)
+}
+
+// firstFit returns the first text that fits width (the last one if none do),
+// so a sentence gets shorter instead of being cut in the middle.
+func firstFit(width int, texts ...string) string {
+	for _, t := range texts {
+		if runeLen(t) <= width {
+			return t
+		}
+	}
+	return texts[len(texts)-1]
+}
+
+// listFit writes "prefix item, item, +N more" on one line of at most room
+// characters, dropping whole items from the end (and counting them in "+N
+// more") rather than cutting one in the middle. hidden is the number of
+// items the caller left out of items before this.
+func listFit(prefix string, items []string, hidden, room int) string {
+	line := ""
+	for n := len(items); n >= 0; n-- {
+		line = prefix + strings.Join(items[:n], ", ")
+		if more := len(items) - n + hidden; more > 0 {
+			if n > 0 {
+				line += ", "
+			}
+			line += fmt.Sprintf("+%d more", more)
+		}
+		if runeLen(line) <= room {
+			break
+		}
+	}
+	return line
 }
 
 // joinFit joins parts with the separator dot. When the result is too wide it
@@ -528,13 +563,13 @@ func dataBlock(d stats.DataHealth, ti termInfo, g glyphSet, st style, v overview
 	}
 	var lines []string
 	if d.Samples > 0 {
-		lines = append(lines, "range: "+d.FirstDay+" "+g.arrow+" "+d.LastDay, "sources: "+sourcesText(d.SourceCount))
+		lines = append(lines, "range: "+d.FirstDay+" "+g.arrow+" "+d.LastDay, listFit("sources: ", sourceParts(d.SourceCount), 0, room))
 	}
 	if li := d.LastImport; li != nil {
 		lines = append(lines, importLines(li, g, room)...)
 	}
 	if len(d.Gaps) > 0 {
-		lines = append(lines, gapsText(d.Gaps))
+		lines = append(lines, gapsLine(d.Gaps, room))
 	}
 
 	var b strings.Builder
@@ -545,9 +580,9 @@ func dataBlock(d stats.DataHealth, ti termInfo, g glyphSet, st style, v overview
 	return b.String()
 }
 
-// sourcesText is "Watch 79%, iPhone 20%, manual 1%". The percentages come from
-// largestRemainder so they always add up to exactly 100.
-func sourcesText(counts map[string]int64) string {
+// sourceParts is ["Watch 79%", "iPhone 20%", "manual 1%"]. The percentages come
+// from largestRemainder so they always add up to exactly 100.
+func sourceParts(counts map[string]int64) []string {
 	classes := []struct{ key, name string }{
 		{stats.ClassWatch, "Watch"}, {stats.ClassIPhone, "iPhone"},
 		{stats.ClassManual, "manual"}, {stats.ClassOther, "other"},
@@ -567,7 +602,7 @@ func sourcesText(counts map[string]int64) string {
 		}
 		parts = append(parts, names[i]+" "+text)
 	}
-	return strings.Join(parts, ", ")
+	return parts
 }
 
 // importLines describes the last import on one or two lines:
@@ -619,15 +654,16 @@ func importLines(li *stats.ImportInfo, g glyphSet, room int) []string {
 	return append(lines, line)
 }
 
-// gapsText lists up to three metrics with missing days, worst first.
-func gapsText(gaps []stats.Gap) string {
+// gapsLine lists up to three metrics with missing days, worst first, and
+// fewer on a narrow line ("+N more" counts the rest).
+func gapsLine(gaps []stats.Gap, room int) string {
 	sorted := append([]stats.Gap(nil), gaps...)
 	sort.SliceStable(sorted, func(i, j int) bool { return sorted[i].Missing > sorted[j].Missing })
 	var parts []string
 	for _, x := range sorted[:min(len(sorted), 3)] {
 		parts = append(parts, fmt.Sprintf("%s %d of %d", x.Label, x.Missing, x.Span))
 	}
-	return "days missing: " + strings.Join(parts, ", ")
+	return listFit("days missing: ", parts, len(sorted)-len(parts), room)
 }
 
 // emptyBox is the onboarding message for a database with nothing in it.

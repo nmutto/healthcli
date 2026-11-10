@@ -9,23 +9,23 @@
    Avg heart rate  76 bpm  75      ▲ +2%
  ! Resting HR      60 bpm  57      ▲ +6% worse
    HRV             46 ms   48      ▼ -4%
- ~ Respiratory r…  15.6/…  14.3    ▲ +9% higher
-   Wrist tempera…  36.0 …  35.9    – 0%
+ ~ Respiratory r…  15.6    14.3    ▲ +9% higher
+   Wrist tempera…  36.0    35.9    – 0%
    Blood oxygen    97%     97      ▲ +0.2pt
  + Walking heart…  90 bpm  94      ▼ -4% better
 
  ━━ ACTIVITY ━━ 8 · 2 better ━━━━━━━━━━━━━━━━━━━━
- + Steps           21,99…  19,955  ▲ +10% better
- + Active energy   880 k…  798     ▲ +10% better
-   Resting energy  1,730…  1,701   ▲ +2%
+ + Steps           21,999  19,955  ▲ +10% better
+ + Active energy   880     798     ▲ +10% better
+   Resting energy  1,730   1,701   ▲ +2%
    Exercise time   43 min  37      ▲ +16%
-   Stand time      364 m…  411     ▼ -12%
-   Flights climb…  8 fli…  13      ▼ -39%
+   Stand time      364     411     ▼ -12%
+   Flights climb…  8       13      ▼ -39%
    Walk + run di…  6.5 km  6.5     – 0%
    Time in dayli…  53 min  47      ▲ +14%
 
  ━━ MOBILITY ━━ 4 · 2 changed ━━━━━━━━━━━━━━━━━━━
-   Walking speed   5.5 k…  5.4     ▲ +2%
+   Walking speed   5.5     5.4     ▲ +2%
    Step length     73 cm   72      ▲ +2%
  ~ Walking asymm…  4.9%    3.5     ▲ +1.4pt higher
  ~ Double suppor…  30.7%   28.6    ▲ +2.1pt higher
