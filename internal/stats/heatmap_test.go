@@ -47,7 +47,7 @@ func TestHeatLevelTiesShareALevel(t *testing.T) {
 func TestLayoutHeatmapGapsFutureAndFlat(t *testing.T) {
 	// 2026-11-04 is a Wednesday; 2 weeks start on Monday 2026-10-26.
 	byDay := map[string]float64{"2026-10-26": 100, "2026-10-28": 300, "2026-11-04": 200}
-	h := layoutHeatmap("step_count", "count", "2026-11-04", "2026-10-26", 2, byDay, false)
+	h := layoutHeatmap("step_count", "count", "2026-11-04", "2026-10-26", 2, byDay, false, "")
 	if len(h.Weeks) != 2 || len(h.Weeks[0]) != 7 {
 		t.Fatalf("grid is %d weeks", len(h.Weeks))
 	}
@@ -68,7 +68,7 @@ func TestLayoutHeatmapGapsFutureAndFlat(t *testing.T) {
 	}
 
 	flat := layoutHeatmap("step_count", "count", "2026-11-04", "2026-10-26", 2,
-		map[string]float64{"2026-10-26": 7, "2026-10-27": 7, "2026-11-01": 7}, false)
+		map[string]float64{"2026-10-26": 7, "2026-10-27": 7, "2026-11-01": 7}, false, "")
 	for _, w := range flat.Weeks {
 		for _, c := range w {
 			if c.Value != nil && c.Level != flatLevel {
@@ -77,7 +77,7 @@ func TestLayoutHeatmapGapsFutureAndFlat(t *testing.T) {
 		}
 	}
 
-	empty := layoutHeatmap("step_count", "count", "2026-11-04", "2026-10-26", 2, nil, false)
+	empty := layoutHeatmap("step_count", "count", "2026-11-04", "2026-10-26", 2, nil, false, "")
 	if !empty.Empty() || len(empty.Thresholds) != 0 {
 		t.Errorf("empty heatmap: %+v", empty)
 	}

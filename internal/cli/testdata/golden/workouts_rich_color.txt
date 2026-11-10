@@ -31,8 +31,8 @@
 
  [2m━━[0m [1mCALENDAR[0m [2m━━[0m workout minutes per day, by type, 8 weeks to 2026-11-09 [2m━━━━━━━[0m
        Oct     Nov
- Mon   [36mc[0m [34mr[0m [2m·[0m [2m·[0m [2m·[0m [36mC[0m [2m·[0m [1m◂[0m
- Tue   [2m·[0m [2m·[0m [36mC[0m [34mr[0m [32mw[0m [2m·[0m
+ Mon [2m·[0m [36mc[0m [34mr[0m [2m·[0m [2m·[0m [2m·[0m [36mC[0m [2m·[0m [1m◂[0m
+ Tue [2m·[0m [2m·[0m [2m·[0m [36mC[0m [34mr[0m [32mw[0m [2m·[0m
  Wed [36mC[0m [34mr[0m [32mw[0m [2m·[0m [2m·[0m [36mC[0m [34mR[0m
  Thu [2m·[0m [35my[0m [36mc[0m [34mr[0m [2m·[0m [2m·[0m [2m·[0m
  Fri [34mR[0m [2m·[0m [2m·[0m [35my[0m [36mC[0m [34mR[0m [32mw[0m

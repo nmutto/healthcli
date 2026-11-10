@@ -392,7 +392,9 @@ func buildNamedHeatmap(ctx context.Context, conn *sql.DB, name string, weeks int
 	} else {
 		spec.ZeroIsRest = true
 		spec.Hue = stats.HueGreen
-		byDay, err = stats.WorkoutMinutesByDay(ctx, conn, from, today)
+		// Read all history: a workout before the window makes the blank days
+		// at its start rest days.
+		byDay, err = stats.WorkoutMinutesByDay(ctx, conn, "0001-01-01", today)
 	}
 	if err != nil {
 		return nil, err

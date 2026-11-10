@@ -147,29 +147,43 @@ func HeatmapFromDays(spec HeatSpec, now time.Time, weeks int, byDay map[string]f
 		return nil, err
 	}
 	days := make(map[string]float64, len(byDay))
+	// firstEver is the first non-zero day, even before the window: with a
+	// history, the blank days at the start of the window are rest days.
+	firstEver := ""
 	for day, v := range byDay {
-		if isFinite(v) && day >= from && day <= today {
+		if !isFinite(v) || day > today {
+			continue
+		}
+		if v > 0 && (firstEver == "" || day < firstEver) {
+			firstEver = day
+		}
+		if day >= from {
 			days[day] = v
 		}
 	}
-	h := layoutHeatmap(spec.Title, spec.Unit, today, from, weeks, days, spec.ZeroIsRest)
+	h := layoutHeatmap(spec.Title, spec.Unit, today, from, weeks, days, spec.ZeroIsRest, firstEver)
 	h.Title, h.Hue, h.Format, h.ZeroIsRest = spec.Title, spec.Hue, spec.Format, spec.ZeroIsRest
 	return h, nil
 }
 
-// layoutHeatmap is the pure part: values in, grid out.
-func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string]float64, zeroIsRest bool) *Heatmap {
+// layoutHeatmap is the pure part: values in, grid out. firstEver is the first
+// day with a real value, possibly before the window ("" if unknown): only used
+// with zeroIsRest, where it decides where the rest days start.
+func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string]float64, zeroIsRest bool, firstEver string) *Heatmap {
 	h := &Heatmap{Metric: metric, Unit: unit, Today: today, From: from, Thresholds: []float64{}}
 	var values []float64
 	if zeroIsRest {
 		// Every day from the first non-zero one to today has a value; the
 		// ones nobody wrote are real zeros (rest). Rests do not count when
 		// cutting the shades.
-		first := ""
+		first := firstEver
 		for day, v := range byDay {
 			if v > 0 && (first == "" || day < first) {
 				first = day
 			}
+		}
+		if first != "" && first < from {
+			first = from // the window starts here; earlier days are not drawn
 		}
 		filled := map[string]float64{}
 		for day := first; first != "" && day <= today; {

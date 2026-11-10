@@ -64,3 +64,21 @@ func TestHeatmapFromDaysRestDays(t *testing.T) {
 		t.Errorf("a missing day is a gap without ZeroIsRest: %+v", c)
 	}
 }
+
+// Training before the window means the blank days at the start of the window
+// are rest days, not "no data".
+func TestHeatmapFromDaysRestAfterHistoryBeforeWindow(t *testing.T) {
+	now := time.Date(2026, 11, 10, 12, 0, 0, 0, time.UTC) // Tuesday; 2 weeks start 2026-11-02
+	spec := HeatSpec{Title: "workouts", Unit: "min", ZeroIsRest: true}
+	h, err := HeatmapFromDays(spec, now, 2, map[string]float64{
+		"2026-10-16": 30, "2026-10-21": 30, "2026-10-27": 40, "2026-10-29": 50,
+		"2026-10-31": 30, "2026-11-03": 45, "2026-11-05": 30, "2026-11-07": 60, "2026-11-10": 30,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Monday 2026-11-02 (the first cell) had no workout: a rest day.
+	if c := h.Weeks[0][0]; c.Value == nil || *c.Value != 0 {
+		t.Errorf("%s should be a rest day, got %+v", c.Day, c)
+	}
+}
