@@ -15,7 +15,8 @@ func newQueryCmd(opts *options) *cobra.Command {
 	return &cobra.Command{
 		Use:   "query <sql>",
 		Short: "Run a read-only SQL query",
-		Long: `Run a read-only SQL query (SELECT or WITH) against the local database and print the rows.
+		Long: `Run one read-only SQL query (SELECT, WITH or EXPLAIN) against the local database and print the rows.
+The database is opened read-only; a second statement, PRAGMA and ATTACH are refused.
 Main table: samples(metric, start_ts, end_ts, value, unit, tz_offset, source).`,
 		Example: `  healthcli query "SELECT count(*) FROM samples"
   healthcli query "SELECT * FROM samples LIMIT 5" --json`,
@@ -27,22 +28,19 @@ Main table: samples(metric, start_ts, end_ts, value, unit, tz_offset, source).`,
 }
 
 func runQuery(cmd *cobra.Command, opts *options, query string) error {
-	// First line of defence: a friendly error for anything that is not a read.
-	if !looksReadOnly(query) {
-		return fmt.Errorf("only SELECT queries are allowed")
+	// First line of defence: a friendly error for anything that is not a
+	// single read.
+	if err := checkReadOnlySQL(query); err != nil {
+		return err
 	}
 
-	conn, err := openDB(opts)
+	// Second line of defence: the connection itself is opened read-only, so
+	// SQLite refuses every write, whatever the SQL says.
+	conn, err := openReadOnlyDB(opts)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
-
-	// Second line of defence: SQLite itself refuses all writes on this
-	// connection. Open uses a single-connection pool, so the setting sticks.
-	if _, err := conn.Exec(`PRAGMA query_only = ON`); err != nil {
-		return fmt.Errorf("make connection read-only: %w", err)
-	}
 
 	rows, err := conn.Query(query)
 	if err != nil {
@@ -60,10 +58,104 @@ func runQuery(cmd *cobra.Command, opts *options, query string) error {
 	return writeTable(cmd.OutOrStdout(), cols, data)
 }
 
-// looksReadOnly accepts statements starting with SELECT or WITH.
-func looksReadOnly(query string) bool {
-	q := strings.ToLower(strings.TrimSpace(query))
-	return strings.HasPrefix(q, "select") || strings.HasPrefix(q, "with")
+// checkReadOnlySQL accepts exactly one statement that starts with SELECT,
+// WITH or EXPLAIN. Leading comments are fine and so is a trailing ";".
+// ATTACH and PRAGMA can only come second or first, so both are refused too.
+func checkReadOnlySQL(query string) error {
+	words, semicolonAt := scanSQL(query)
+	if len(words) == 0 {
+		return fmt.Errorf("only SELECT queries are allowed")
+	}
+	first := words[0]
+	if first == "explain" {
+		// EXPLAIN [QUERY PLAN] <statement>: look at the statement itself.
+		words = words[1:]
+		if len(words) >= 2 && words[0] == "query" && words[1] == "plan" {
+			words = words[2:]
+		}
+		if len(words) == 0 {
+			return fmt.Errorf("only SELECT queries are allowed")
+		}
+		first = words[0]
+	}
+	if first != "select" && first != "with" {
+		return fmt.Errorf("only SELECT queries are allowed")
+	}
+	if semicolonAt >= 0 {
+		return fmt.Errorf("only one statement is allowed per query")
+	}
+	return nil
+}
+
+// scanSQL walks the SQL text once. It skips comments and quoted text and
+// returns the lower-case words of the first statement, plus the position of a
+// ";" that is followed by more SQL (-1 when there is none). A single trailing
+// ";" is not "more SQL".
+func scanSQL(q string) (words []string, semicolonAt int) {
+	semicolonAt = -1
+	pendingSemicolon := -1
+	i := 0
+	for i < len(q) {
+		c := q[i]
+		switch {
+		case c == '-' && strings.HasPrefix(q[i:], "--"):
+			end := strings.IndexByte(q[i:], '\n')
+			if end < 0 {
+				return words, semicolonAt
+			}
+			i += end + 1
+		case c == '/' && strings.HasPrefix(q[i:], "/*"):
+			end := strings.Index(q[i+2:], "*/")
+			if end < 0 {
+				return words, semicolonAt
+			}
+			i += end + 4
+		case c == '\'' || c == '"' || c == '`' || c == '[':
+			closer := c
+			if c == '[' {
+				closer = ']'
+			}
+			i++
+			for i < len(q) && q[i] != closer {
+				i++
+			}
+			i++ // the closing quote (a doubled quote just reopens the text)
+			if pendingSemicolon >= 0 {
+				return words, pendingSemicolon
+			}
+			if len(words) < 4 {
+				words = append(words, "?") // placeholder: quoted text is not a keyword
+			}
+		case c == ';':
+			if pendingSemicolon < 0 {
+				pendingSemicolon = i
+			}
+			i++
+		case c == ' ' || c == '\t' || c == '\n' || c == '\r':
+			i++
+		default:
+			// Anything else after a ";" means a second statement.
+			if pendingSemicolon >= 0 {
+				return words, pendingSemicolon
+			}
+			start := i
+			for i < len(q) && isWordByte(q[i]) {
+				i++
+			}
+			if i == start {
+				i++ // punctuation such as "(" or ","
+				continue
+			}
+			if len(words) < 4 {
+				words = append(words, strings.ToLower(q[start:i]))
+			}
+		}
+	}
+	return words, semicolonAt
+}
+
+func isWordByte(c byte) bool {
+	return c == '_' || c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
 }
 
 // readRows loads every row into memory. Fine for a personal CLI; users can

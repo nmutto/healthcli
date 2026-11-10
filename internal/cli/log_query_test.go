@@ -106,7 +106,7 @@ func TestQueryTable(t *testing.T) {
 }
 
 func TestQueryEmptyJSONIsArray(t *testing.T) {
-	out, _, err := run(t, "--db", tempDB(t), "query", "SELECT * FROM samples", "--json")
+	out, _, err := run(t, "--db", emptyDB(t), "query", "SELECT * FROM samples", "--json")
 	if err != nil || strings.TrimSpace(out) != "[]" {
 		t.Errorf("want [], got %q, %v", out, err)
 	}
@@ -160,7 +160,7 @@ func TestQueryJSONKeepsColumnOrder(t *testing.T) {
 // BUG: `healthcli log steps NaN` passed ParseFloat, and `inf` was stored. NaN hit
 // a confusing NOT NULL database error; Inf later broke `query --json`.
 func TestLogRejectsNonFiniteValues(t *testing.T) {
-	db := tempDB(t)
+	db := emptyDB(t)
 	for _, v := range []string{"NaN", "inf", "1e305"} {
 		_, _, err := run(t, "--db", db, "log", "steps", v)
 		if err == nil || (!strings.Contains(err.Error(), "not a number") && !strings.Contains(err.Error(), "too large")) {

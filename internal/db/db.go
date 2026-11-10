@@ -71,6 +71,26 @@ func Open(path string) (*sql.DB, error) {
 	return conn, nil
 }
 
+// OpenReadOnly opens an existing database for reading only. SQLite itself
+// refuses every write on this handle (mode=ro), so no SQL text, not even a
+// PRAGMA, can switch that off. Migrations are not applied: they write.
+func OpenReadOnly(path string) (*sql.DB, error) {
+	if path == "" {
+		return nil, errors.New("db: empty database path")
+	}
+	dsn := "file:" + path +
+		"?mode=ro" +
+		"&_pragma=busy_timeout(5000)" +
+		"&_pragma=query_only(1)"
+
+	conn, err := sql.Open("sqlite", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("db: open %s: %w", path, err)
+	}
+	conn.SetMaxOpenConns(1)
+	return conn, nil
+}
+
 // DefaultPath returns where the database lives when the user does not say.
 //
 // Rules, first match wins:
