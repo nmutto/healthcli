@@ -128,10 +128,14 @@ var (
 	toKcal    = map[string]float64{"kcal": 1, "cal": 1, "kj": 1 / 4.184}
 )
 
-// optional converts an optional numeric attribute. present is false when the
-// attribute is absent; ok is false when it is there but unusable.
+// optional converts an optional numeric attribute. v is nil when the
+// attribute or its unit is absent (we cannot trust a number without a unit);
+// ok is false when it is there but unusable.
 func optional(a map[string]string, key, unitKey string, factors map[string]float64) (v *float64, ok bool) {
 	if a[key] == "" {
+		return nil, true
+	}
+	if a[unitKey] == "" {
 		return nil, true
 	}
 	raw, good := number(a[key])
@@ -187,7 +191,9 @@ func workoutRow(a map[string]string, stats []map[string]string) (workoutData, st
 		if !ok {
 			return workoutData{}, reasonBadWorkout
 		}
-		duration = *d
+		if d != nil { // nil = no unit, so keep the interval length
+			duration = *d
+		}
 	}
 	energy, ok1 := total(a, "totalEnergyBurned", "totalEnergyBurnedUnit", stats, isActiveEnergy, toKcal)
 	distance, ok2 := total(a, "totalDistance", "totalDistanceUnit", stats, isDistance, toMetres)

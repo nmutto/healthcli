@@ -166,3 +166,22 @@ func TestSmallFixtureWorkoutsAllHaveTotals(t *testing.T) {
 		t.Errorf("%d fixture workouts have NULL totals", n)
 	}
 }
+
+// A missing unit must not cost the whole workout. Without durationUnit we
+// cannot trust the number, so the interval length is used (as when the
+// duration itself is missing); without an energy or distance unit only that
+// field is dropped.
+func TestWorkoutMissingUnitsKeepTheWorkout(t *testing.T) {
+	// qaWhen is a one-hour interval, so the fallback duration is 3600 s.
+	r, sum := importOneWorkout(t, `<Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="30" sourceName="W" `+qaWhen+
+		` totalEnergyBurned="300" totalDistance="5"/>`)
+	if sum.Inserted != 1 || sum.SkippedTotal() != 0 {
+		t.Fatalf("summary = %+v, want the workout kept", sum)
+	}
+	if r.dur != 3600 {
+		t.Errorf("duration = %v, want the 3600 s interval", r.dur)
+	}
+	if r.energy.valid || r.distance.valid {
+		t.Errorf("energy = %+v, distance = %+v, want both NULL", r.energy, r.distance)
+	}
+}
