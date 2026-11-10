@@ -120,3 +120,21 @@ func TestCalIsKilocalorie(t *testing.T) {
 		t.Errorf("Cal should import unchanged as kcal, got %d rows", n)
 	}
 }
+
+// BUG: strconv.ParseFloat accepts hex floats and underscores, so "0x1p6"
+// imported as 64. Only plain decimal and exponent numbers are measurements.
+func TestOnlyPlainDecimalNumbersAreAccepted(t *testing.T) {
+	p := writeFile(t, "export.xml", wrap(`
+<Record type="HKQuantityTypeIdentifierStepCount" sourceName="a" unit="count" `+qaWhen+` value="0x1p6"/>
+<Record type="HKQuantityTypeIdentifierStepCount" sourceName="b" unit="count" `+qaWhen+` value="1_000"/>
+<Record type="HKQuantityTypeIdentifierStepCount" sourceName="c" unit="count" `+qaWhen+` value="1e2"/>
+<Record type="HKQuantityTypeIdentifierStepCount" sourceName="d" unit="count" `+qaWhen+` value="12.5"/>`))
+	conn := newDB(t)
+	sum, err := Import(conn, p, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Inserted != 2 || sum.Skipped[reasonBadValue] != 2 {
+		t.Errorf("summary = %+v, want 2 inserted and 2 bad_value", sum)
+	}
+}
