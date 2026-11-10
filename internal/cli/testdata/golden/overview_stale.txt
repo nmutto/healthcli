@@ -44,7 +44,7 @@
  cycling   1 55m         520   18.0 ████████░░░░░░░░░░░░  40%
 
 
- ━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━━━━━━
+ ━━ CALENDAR ━━ Steps per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━━━━━━━━━━━
      Aug Sep     Oct     Nov
  Mon · · · · · ▁ ▅ ▁ ▅ █ ▃ ·
  Tue · · · · · █ ▃ ▇ ▃ ▇ █ ·

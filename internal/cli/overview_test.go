@@ -420,7 +420,7 @@ func TestOverviewHeatmapFlags(t *testing.T) {
 		t.Errorf("--weeks 0 should hide the heatmap: %v\n%s", err, out)
 	}
 	out, _, err = run(t, "--db", path, "overview", "--heatmap", "active_energy", "--weeks", "4")
-	if err != nil || !strings.Contains(out, "active energy per day, 4 weeks") {
+	if err != nil || !strings.Contains(out, "Active energy per day, 4 weeks") {
 		t.Errorf("--heatmap override: %v\n%s", err, out)
 	}
 	if _, _, err = run(t, "--db", path, "overview", "--heatmap", "nonsense"); err == nil {
@@ -614,11 +614,11 @@ func TestOverviewHeatmapListAndFull(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	w, s, a := strings.Index(out, "workout minutes per day"), strings.Index(out, "step count per day"), strings.Index(out, "active energy per day")
+	w, s, a := strings.Index(out, "workout minutes per day"), strings.Index(out, "Steps per day"), strings.Index(out, "Active energy per day")
 	if w < 0 || s < w || a < s {
 		t.Errorf("want workouts, steps, active energy in that order (%d %d %d):\n%s", w, s, a, out)
 	}
-	if strings.Contains(out, "per night") || strings.Count(out, "step count per day") != 1 {
+	if strings.Contains(out, "per night") || strings.Count(out, "Steps per day") != 1 {
 		t.Errorf("only the named heatmaps:\n%s", out)
 	}
 
@@ -628,7 +628,7 @@ func TestOverviewHeatmapListAndFull(t *testing.T) {
 		t.Errorf("default shows one heatmap:\n%s", def)
 	}
 	full, _, _ := run(t, "--db", path, "overview", "--full")
-	for _, want := range []string{"workout minutes per day", "step count per day", "BESTS", "STAT"} {
+	for _, want := range []string{"workout minutes per day", "Steps per day", "BESTS", "STAT"} {
 		if !strings.Contains(full, want) {
 			t.Errorf("--full lacks %q", want)
 		}

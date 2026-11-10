@@ -101,7 +101,7 @@
  ▁ ≤40m  ▃ ≤51m  ▅ ≤1h 00m  ▇ ≤1h 04m  █ >1h 04m
  · rest day   ◂ today   per day
 
- ━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-08
+ ━━ CALENDAR ━━ Steps per day, 12 weeks to 2026-11-08 ━━━━━
      Aug Sep     Oct     Nov
  Mon · · · · · · · · · · ▁ ▁
  Tue · · · · · · · · · · ▇ ▅

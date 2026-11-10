@@ -46,23 +46,23 @@ func renderTrend(r *trendReport, ti termInfo) string {
 
 	s := r.Summary
 	b.WriteString(strings.Join(wrapParts([]string{
-		"min " + fv(r, s.Min),
-		"max " + fv(r, s.Max),
-		"mean " + fv(r, s.Mean),
+		"min " + fv(r, s.Min, ti.unicode),
+		"max " + fv(r, s.Max, ti.unicode),
+		"mean " + fv(r, s.Mean, ti.unicode),
 		fmt.Sprintf("(%d of %d days with data)", s.DaysWithData, r.Days),
 	}, "   ", ti.width), "\n") + "\n")
 
 	c := r.Change
 	if c.Available {
-		last, prev := fv(r, *c.Last7Mean), fv(r, *c.PrevMean)
-		change := fmt.Sprintf("(%s, %s)", fd(r, *c.Delta), formatPct(*c.DeltaPct))
+		last, prev := fv(r, *c.Last7Mean, ti.unicode), fv(r, *c.PrevMean, ti.unicode)
+		change := fmt.Sprintf("(%s, %s)", fd(r, *c.Delta, ti.unicode), formatPct(*c.DeltaPct))
 		b.WriteString(strings.Join(changeLines(last, prev, change, ti.width), "\n") + "\n")
 	} else {
 		b.WriteString(strings.Join(wordWrap("Last 7 days vs previous 7: n/a (need data in both weeks)", ti.width), "\n") + "\n")
 	}
 
 	if r.Baseline.Available {
-		fmt.Fprintf(&b, "Baseline (28 days): %s\n", fv(r, *r.Baseline.Mean))
+		fmt.Fprintf(&b, "Baseline (28 days): %s\n", fv(r, *r.Baseline.Mean, ti.unicode))
 	} else {
 		fmt.Fprintf(&b, "Baseline (28 days): n/a (need %d days, have %d)\n", r.Baseline.DaysNeeded, r.Baseline.DaysWithData)
 	}
@@ -119,15 +119,19 @@ func wordWrap(text string, width int) []string {
 func trendTable(r *trendReport, st style, ti termInfo) string {
 	g := glyphsFor(ti.unicode)
 	header := "value"
-	if r.Metric != sleepMetric {
-		header += " (" + unitLabel(r.Metric, r.Unit) + ")"
+	unit, _ := displayUnit(r.Metric, r.Unit, ti.unicode)
+	if r.Metric != sleepMetric && unit != "" {
+		header += " (" + unit + ")"
 	}
 	valueW := len(header)
 	cells := make([]string, len(r.Daily))
 	for i, d := range r.Daily {
 		cells[i] = "-"
 		if d.Value != nil {
-			cells[i] = strings.TrimSuffix(fv(r, *d.Value), " "+unitLabel(r.Metric, r.Unit))
+			cells[i] = formatValue(*d.Value, r.Metric)
+			if r.Metric == sleepMetric {
+				cells[i] = fv(r, *d.Value, ti.unicode)
+			}
 		}
 		valueW = max(valueW, len([]rune(cells[i])))
 	}
@@ -149,16 +153,6 @@ func padLeft(s string, n int) string {
 	return s
 }
 
-// trendLabels are the headings of the metrics people ask "trend" about most.
-var trendLabels = []struct{ name, label string }{
-	{"step_count", "Steps"},
-	{"active_energy", "Active energy"},
-	{"heart_rate", "Avg heart rate"},
-	{"resting_heart_rate", "Resting heart rate"},
-	{"hrv_sdnn", "HRV"},
-	{"body_mass", "Weight"},
-}
-
 // titleCase upper-cases the first letter: "running" -> "Running".
 func titleCase(s string) string {
 	if s == "" {
@@ -169,25 +163,20 @@ func titleCase(s string) string {
 
 // trendTitle is the heading word for a metric: "step_count" -> "Steps".
 func trendTitle(metric string) string {
-	for _, tm := range trendLabels {
-		if tm.name == metric {
-			return tm.label
-		}
-	}
-	return titleCase(metric)
+	return titleCase(metricLabel(metric))
 }
 
 // fv formats a value of the report's metric with its unit: sleep as
 // "7h 12m", the rest as "8,432 steps".
-func fv(r *trendReport, v float64) string {
+func fv(r *trendReport, v float64, unicode bool) string {
 	if r.Metric == sleepMetric {
 		return formatDuration(time.Duration(v * float64(time.Hour)))
 	}
-	return formatValue(v, r.Metric) + " " + unitLabel(r.Metric, r.Unit)
+	return withUnit(v, r.Metric, r.Unit, unicode)
 }
 
 // fd formats a signed difference: "+532 steps", "-0.3 kg", "+0h 25m" for sleep.
-func fd(r *trendReport, delta float64) string {
+func fd(r *trendReport, delta float64, unicode bool) string {
 	if r.Metric == sleepMetric {
 		sign := "+"
 		if delta < 0 {
@@ -198,5 +187,5 @@ func fd(r *trendReport, delta float64) string {
 		}
 		return sign + formatDuration(time.Duration(math.Abs(delta)*float64(time.Hour)))
 	}
-	return formatSigned(delta, r.Metric) + " " + unitLabel(r.Metric, r.Unit)
+	return joinUnit(formatSigned(delta, r.Metric), r.Metric, r.Unit, unicode)
 }
