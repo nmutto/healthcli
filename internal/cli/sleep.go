@@ -21,7 +21,7 @@ func newSleepCmd(opts *options) *cobra.Command {
 		Short: "Last night's sleep: hypnogram, stats against your usual, calendar",
 		Long: `Show last night's sleep as a hypnogram (awake, REM, core and deep sleep over
 the night), then a table of last night, your last 7 nights and how that
-compares with your usual over the last --nights nights (default 28): time
+compares with your usual, the --nights nights before it (default 28): time
 asleep, in bed, efficiency, awake time and awakenings, falling-asleep time,
 deep/REM/core sleep, bedtime, wake time, midpoint, bedtime regularity and
 sleep debt against --sleep-target (default 8h). Below the table is a calendar
@@ -65,7 +65,7 @@ the target), heatmap.`,
 			return runSleep(cmd, opts, noColor, ascii, stats.SleepOptions{Nights: nights, Target: d, By: by, Weeks: weeks})
 		},
 	}
-	cmd.Flags().IntVar(&nights, "nights", stats.DefaultSleepNights, "nights in the usual window (7-90)")
+	cmd.Flags().IntVar(&nights, "nights", stats.DefaultSleepNights, "nights before the last one in the usual window (7-90)")
 	cmd.Flags().StringVar(&target, "sleep-target", "8h", "nightly sleep goal, e.g. 7h30m")
 	cmd.Flags().StringVar(&by, "by", stats.SleepByAsleep, "calendar value: asleep, bedtime, efficiency")
 	cmd.Flags().IntVar(&weeks, "weeks", defaultHeatWeeks, "weeks of calendar (0 hides it)")

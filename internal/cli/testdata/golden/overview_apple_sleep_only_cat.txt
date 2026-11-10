@@ -11,7 +11,7 @@
  deep          ████                     █████                      ████        
               00        01        02        03        04        05        06
 
- STAT         LAST NIGHT          7 NIGHTS            VS 13-NIGHT USUAL
+ STAT         LAST NIGHT          7 NIGHTS            VS 12-NIGHT USUAL
  Asleep       7h 01m              7h 08m              – typical
  In bed       7h 30m              7h 37m              – typical
  Efficiency   94%                 94%                 – typical

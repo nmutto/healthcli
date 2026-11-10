@@ -27,14 +27,14 @@
 [2m       23        00        01        02         03        04        05[0m
 
 [2m STAT         LAST NIGHT          1 NIGHT             VS USUAL[0m
- Asleep       7h 00m              7h 00m              [2mneed 7 nights (have 1)[0m
- In bed       8h 30m              8h 30m              [2mneed 7 nights (have 1)[0m
- Efficiency   82%                 82%                 [2mneed 7 nights (have 1)[0m
- Awake        0m / 0 awakenings   0m / 0 awakenings   [2mneed 7 nights (have 1)[0m
- Deep         1h 30m 21%          1h 30m              [2mneed 7 nights (have 1)[0m
- REM          40m 10%             40m                 [2mneed 7 nights (have 1)[0m
- Bedtime      23:00               23:00               [2mneed 7 nights (have 1)[0m
- Midpoint     02:30               02:30               [2mneed 7 nights (have 1)[0m
+ Asleep       7h 00m              7h 00m              [2mneed 7 nights (have 0)[0m
+ In bed       8h 30m              8h 30m              [2mneed 7 nights (have 0)[0m
+ Efficiency   82%                 82%                 [2mneed 7 nights (have 0)[0m
+ Awake        0m / 0 awakenings   0m / 0 awakenings   [2mneed 7 nights (have 0)[0m
+ Deep         1h 30m 21%          1h 30m              [2mneed 7 nights (have 0)[0m
+ REM          40m 10%             40m                 [2mneed 7 nights (have 0)[0m
+ Bedtime      23:00               23:00               [2mneed 7 nights (have 0)[0m
+ Midpoint     02:30               02:30               [2mneed 7 nights (have 0)[0m
  Sleep debt   1h 00m short last night vs 8h target
 
  [2m━━[0m [1mWORKOUTS[0m [2m━━[0m 3 sessions  2h 18m  1,560 kcal  31.2 km  active 3 of 28 d [2m━━━━━[0m

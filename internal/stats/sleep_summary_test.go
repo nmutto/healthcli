@@ -90,8 +90,8 @@ func TestSummarizeRegularityDebtAndWindows(t *testing.T) {
 			Night: day.Format(DayLayout), Asleep: 7 * time.Hour, Start: start, End: start + 7*3600,
 		})
 	}
-	r := summarize("2024-12-20", nights, 28, 8*time.Hour, false)
-	if r.Kind != "unspecified" || r.Week.Nights != 7 || r.Fortnight.Nights != 14 || r.Usual.Nights != 20 {
+	r := summarize("2024-12-20", nights, 28, 8*time.Hour)
+	if r.Kind != "unspecified" || r.Week.Nights != 7 || r.Fortnight.Nights != 14 || r.Usual.Nights != 19 {
 		t.Errorf("windows: %s %d %d %d", r.Kind, r.Week.Nights, r.Fortnight.Nights, r.Usual.Nights)
 	}
 	if r.Regularity == nil || r.Regularity.Nights != 14 || r.Regularity.BedtimeMin < 15 || r.Regularity.BedtimeMin > 17 {
@@ -109,11 +109,11 @@ func TestSummarizeRegularityDebtAndWindows(t *testing.T) {
 
 	// Fewer than 5 nights: no regularity. A surplus is a negative debt.
 	short := []SleepNight{{Night: "2024-12-20", Asleep: 9 * time.Hour, Start: 100, End: 100 + 9*3600}}
-	r = summarize("2024-12-20", short, 28, 8*time.Hour, false)
+	r = summarize("2024-12-20", short, 28, 8*time.Hour)
 	if r.Regularity != nil || r.Debt.LastSecs != -3600 {
 		t.Errorf("short: %+v %+v", r.Regularity, r.Debt)
 	}
-	if !summarize("2024-12-20", nil, 28, 8*time.Hour, false).Empty {
+	if !summarize("2024-12-20", nil, 28, 8*time.Hour).Empty {
 		t.Error("no nights: Empty")
 	}
 }
@@ -138,5 +138,32 @@ func TestClockMinHandlesMidnight(t *testing.T) {
 	early := clockMin(time.Date(2024, 12, 1, 23, 30, 0, 0, time.UTC).Unix(), 0)
 	if late-early != 60 || ClockText(late) != "00:30" {
 		t.Errorf("late %v early %v", late, early)
+	}
+}
+
+// The usual is the nights BEFORE the one shown: with 31 nights of history
+// ending on Dec 31 it is Dec 3 to Dec 30 (28 nights), not the last 28 with
+// Dec 31 in them. The 7- and 14-night windows still include the last night.
+func TestSleepUsualExcludesTheShownNight(t *testing.T) {
+	conn := newDB(t)
+	for d := 1; d <= 31; d++ {
+		// Night d is d minutes over 6 h, so every window has a known mean.
+		end := time.Date(2024, 12, d, 6, 0, 0, 0, time.UTC)
+		start := end.Add(-(6*time.Hour + time.Duration(d)*time.Minute))
+		addSleep(t, conn, "core", start.Format("2006-01-02 15:04 +0000"), end.Format("2006-01-02 15:04 +0000"), watch)
+	}
+	r, err := BuildSleepReport(context.Background(), conn, time.Date(2024, 12, 31, 12, 0, 0, 0, time.UTC), SleepOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r.Week.Nights != 7 || r.Fortnight.Nights != 14 || r.Usual.Nights != 28 {
+		t.Errorf("windows 7/14/usual = %d/%d/%d, want 7/14/28", r.Week.Nights, r.Fortnight.Nights, r.Usual.Nights)
+	}
+	// Dec 3..30 average 16.5 minutes over 6 h.
+	if want := 6*3600 + 16.5*60; *r.Usual.AsleepSecs != want {
+		t.Errorf("usual asleep %.0f s, want %.0f", *r.Usual.AsleepSecs, want)
+	}
+	if *r.Usual.AsleepSecs == *r.Fortnight.AsleepSecs {
+		t.Error("usual equals the 14-night average although the history is longer")
 	}
 }

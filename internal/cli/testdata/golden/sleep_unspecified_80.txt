@@ -3,10 +3,10 @@
  asleep 5h 55m   00:05 → 06:00   midpoint 03:03           (stages not recorded)
 
  STAT         LAST NIGHT          6 NIGHTS            VS USUAL
- Asleep       5h 55m              6h 18m              need 7 nights (have 6)
- Bedtime      00:05               00:00               need 7 nights (have 6)
- Wake         06:00               06:18               need 7 nights (have 6)
- Midpoint     03:03               03:09               need 7 nights (have 6)
+ Asleep       5h 55m              6h 18m              need 7 nights (have 5)
+ Bedtime      00:05               00:00               need 7 nights (have 5)
+ Wake         06:00               06:18               need 7 nights (have 5)
+ Midpoint     03:03               03:09               need 7 nights (have 5)
  Regularity   ±19m bed ±13m mid (6 nights)
  Sleep debt   2h 05m short last night, 6 nights: 10h 15m short vs 8h target
  not available: in bed, efficiency, awake, latency, deep, REM, core
