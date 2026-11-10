@@ -59,6 +59,9 @@ type todayMetric struct {
 	State    string   `json:"state"`           // added: ok or no_baseline
 	Verdict  string   `json:"verdict"`         // added: better, worse, changed or typical; "" without a baseline
 	Usual    *float64 `json:"usual,omitempty"` // added: the 28-day mean, same as baseline.mean
+	// Range is the metric's reference range and where the value sits, the same
+	// object as in the overview JSON; left out for metrics without one.
+	Range *stats.RangeCheck `json:"range,omitempty"` // added
 }
 
 type baselineInfo struct {
@@ -123,6 +126,13 @@ healthy: green "better", red "worse"; metrics with no good direction say
 comparison ("need 7d (have 3)" until then). That direction is a general guide,
 not medical advice.
 
+A few metrics also have a reference limit for the level itself (resting heart
+rate above 100 bpm, respiratory rate above 20 per minute, blood oxygen below
+95%); when the day's value is outside it, a plain dim note under that category
+says so, without changing the row's verdict. Walking double support (above 40%)
+and walking asymmetry (above 35%) are judged by level, not by the direction of
+the move, and also get a dim note when they leave their range.
+
 Metrics with no reading on the day are not listed; one dim line counts the
 tracked ones. If the date has no data at all, the latest day that does is shown
 instead, and a dim line says so. A date in the future is an error.
@@ -144,7 +154,9 @@ JSON output (--json) has these fields (the ones marked * were added later):
                   categories[], tracked_without_reading[], sleep and workouts[] alike): metric, label, unit, value, source,
                   baseline {available, days_with_data, days_needed, from, to, mean, stddev},
                   comparison {delta, delta_pct, z, label: above|below|typical} (null without baseline),
-                  *category, *polarity, *state (ok|no_baseline),
+                  *category, *polarity (higher_better|lower_better|in_range|neutral),
+                  *range {low, high, source, basis, position: below|within|above}
+                  (left out for metrics without a reference range), *state (ok|no_baseline),
                   *verdict (better|worse|changed|typical, "" without baseline; unlike
                   comparison.label it ignores changes too small to matter), *usual (the
                   baseline mean)
@@ -390,7 +402,7 @@ func metricJSON(row stats.MetricRow, day string) (todayMetric, error) {
 	}
 	m := todayMetric{
 		Metric: row.Metric, Label: row.Label, Unit: row.Unit, Value: jsonSafe(row.Value), Source: row.Source,
-		Category: row.Category, Polarity: row.Polarity, State: row.State, Verdict: row.Verdict, Usual: row.Mean,
+		Category: row.Category, Polarity: row.Polarity, State: row.State, Verdict: row.Verdict, Usual: row.Mean, Range: row.Range,
 		Baseline: &baselineInfo{DaysWithData: row.BaselineDays, DaysNeeded: stats.MinBaselineDays, From: from, To: to},
 	}
 	if row.Mean != nil && row.Stddev != nil && row.Value != nil {
@@ -410,12 +422,15 @@ func metricJSON(row stats.MetricRow, day string) (todayMetric, error) {
 // latestDataDay finds the newest local day with any data: the newest
 // sample of any metric, workout or night of sleep. Like the overview, it
 // ignores anything starting more than a day after now. found is false for an
-// empty database.
+// empty database. No candidate is later than today's local date: an evening
+// nap is dated tomorrow by the 18:00 sleep shift, and tomorrow is not a day
+// with data yet.
 func latestDataDay(ctx context.Context, conn *sql.DB) (day string, found bool, err error) {
 	maxStart := nowFunc().Add(24 * time.Hour).Unix() // stats.futureSlack
+	today := nowFunc().Format(stats.DayLayout)
 	consider := func(d string) {
 		// "YYYY-MM-DD" strings sort in date order, so > compares dates.
-		if d > day {
+		if d > day && d <= today {
 			day, found = d, true
 		}
 	}
@@ -432,13 +447,14 @@ func latestDataDay(ctx context.Context, conn *sql.DB) (day string, found bool, e
 
 	// Workouts and sleep have no "latest" helper in stats, so ask directly.
 	// Local day = UTC time + tz_offset; a night belongs to the date it ends on,
-	// with the 6-hour shift stats uses (see stats.SleepNight).
+	// with the 6-hour shift stats uses (see stats.SleepNight). Days after today
+	// are left out in the query, so an older night can still win.
 	for _, q := range []string{
-		`SELECT max(date(start_ts + tz_offset, 'unixepoch')) FROM workouts WHERE start_ts <= ?`,
-		`SELECT max(date(end_ts + tz_offset + 21600, 'unixepoch')) FROM sleep_stages WHERE start_ts <= ?`,
+		`SELECT max(date(start_ts + tz_offset, 'unixepoch')) FROM workouts WHERE start_ts <= ? AND date(start_ts + tz_offset, 'unixepoch') <= ?`,
+		`SELECT max(date(end_ts + tz_offset + 21600, 'unixepoch')) FROM sleep_stages WHERE start_ts <= ? AND date(end_ts + tz_offset + 21600, 'unixepoch') <= ?`,
 	} {
 		var d sql.NullString // NULL when the table is empty
-		if err := conn.QueryRowContext(ctx, q, maxStart).Scan(&d); err != nil {
+		if err := conn.QueryRowContext(ctx, q, maxStart, today).Scan(&d); err != nil {
 			return "", false, fmt.Errorf("find latest day: %w", err)
 		}
 		if d.Valid {

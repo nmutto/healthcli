@@ -830,3 +830,113 @@ func TestRangeNoteUsesTheBasis(t *testing.T) {
 		t.Errorf("note = %q, want %q", got, want)
 	}
 }
+
+// Every workouts figure in the overview uses the same 28-day window: the
+// headline count, the table's "active N of 28 d" and workouts_report.
+func TestOverviewWorkoutsUseOneWindow(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return overviewNow }
+	defer func() { nowFunc = old }()
+
+	path := seedOverview(t, "full")
+	conn, err := db.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 29 days back: outside 28 days, inside the old 30-day window.
+	start := overviewNow.AddDate(0, 0, -29).Add(-2 * time.Hour).Unix()
+	if _, err := conn.Exec(`INSERT INTO workouts (activity, start_ts, end_ts, duration_s, tz_offset, source)
+		VALUES ('rowing', ?, ?, 1800, 0, 'Test Apple Watch')`, start, start+1800); err != nil {
+		t.Fatal(err)
+	}
+	conn.Close()
+
+	var o struct {
+		Workouts struct {
+			Days  int `json:"days"`
+			Count int `json:"count"`
+		} `json:"workouts"`
+		Report struct {
+			Days  int `json:"days"`
+			Count int `json:"count"`
+		} `json:"workouts_report"`
+	}
+	out, _, err := run(t, "--db", path, "overview", "--json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal([]byte(out), &o); err != nil {
+		t.Fatal(err)
+	}
+	if o.Workouts.Days != 28 || o.Report.Days != 28 || o.Workouts.Count != o.Report.Count {
+		t.Errorf("workouts %+v and workouts_report %+v must share one 28-day window", o.Workouts, o.Report)
+	}
+}
+
+// --category narrows the JSON the same way it narrows the text and "today
+// --json": only the chosen categories' metrics, and sleep and workouts only
+// when asked for.
+func TestOverviewJSONHonoursCategory(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return overviewNow }
+	defer func() { nowFunc = old }()
+
+	path := seedOverview(t, "full")
+	decode := func(cat string) map[string]json.RawMessage {
+		t.Helper()
+		out, _, err := run(t, "--db", path, "overview", "--json", "--category", cat)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var m map[string]json.RawMessage
+		if err := json.Unmarshal([]byte(out), &m); err != nil {
+			t.Fatal(err)
+		}
+		return m
+	}
+
+	m := decode("vitals")
+	var rows []struct{ Category string }
+	if err := json.Unmarshal(m["metrics"], &rows); err != nil || len(rows) == 0 {
+		t.Fatalf("vitals metrics: %v %s", err, m["metrics"])
+	}
+	for _, r := range rows {
+		if r.Category != "vitals" {
+			t.Errorf("--category vitals returned a %s metric", r.Category)
+		}
+	}
+	for _, key := range []string{"sleep", "workouts", "sleep_summary", "workouts_report", "heatmap"} {
+		if _, ok := m[key]; ok {
+			t.Errorf("--category vitals must leave out %q", key)
+		}
+	}
+
+	m = decode("sleep,workouts")
+	for _, key := range []string{"sleep", "workouts", "sleep_summary", "workouts_report"} {
+		if _, ok := m[key]; !ok {
+			t.Errorf("--category sleep,workouts must keep %q", key)
+		}
+	}
+	if string(m["metrics"]) != "[]" {
+		t.Errorf("--category sleep,workouts has no metric rows, got %s", m["metrics"])
+	}
+}
+
+// The help names the JSON fields and rules the commands really have.
+func TestOverviewAndTodayHelpNameTheNewFields(t *testing.T) {
+	for cmd, wants := range map[string][]string{
+		"overview": {"range {low, high, source, basis, position", "sleep_nights", "in_range", "only with --heatmap", "sleep_summary.heatmap", "stale rows"},
+		"today":    {"range {low, high, source, basis, position", "in_range", "above 100 bpm", "double support (above 40%)", "asymmetry (above 35%)"},
+	} {
+		out, _, err := run(t, cmd, "--help")
+		if err != nil {
+			t.Fatal(err)
+		}
+		flat := strings.Join(strings.Fields(out), " ")
+		for _, want := range wants {
+			if !strings.Contains(flat, want) {
+				t.Errorf("%s --help is missing %q", cmd, want)
+			}
+		}
+	}
+}

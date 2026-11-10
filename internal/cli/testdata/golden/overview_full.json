@@ -371,7 +371,7 @@
     "in_bed_seconds": 30600
   },
   "workouts": {
-    "days": 30,
+    "days": 28,
     "count": 3,
     "duration_seconds": 8280,
     "energy_kcal": 1560,

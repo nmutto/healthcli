@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/nmutto/healthcli/internal/db"
+	"github.com/nmutto/healthcli/internal/metrics"
 	"github.com/nmutto/healthcli/internal/stats"
 )
 
@@ -29,6 +30,9 @@ func newOverviewCmd(opts *options) *cobra.Command {
 		Long: `Show the latest value of each metric next to your 28-day usual, a band that
 shows where it sits, a 28-day trend line and how old the reading is; then last
 night's sleep, recent workouts, a calendar heatmap and a data-health summary.
+--category narrows the text and the --json alike, the same way as in "healthcli
+today": only the chosen categories' metrics, and the sleep and workouts parts
+only when named.
 
 Each metric is anchored on its own newest day, so a metric that was not
 recorded today still shows its last reading, with its age. A metric is "stale"
@@ -43,8 +47,9 @@ Beyond-usual values are coloured by which direction is generally healthy for
 that metric: green with the word "better", red with "worse". Metrics with no
 good direction (weight, respiratory rate, ...) get no colour, only the word
 "higher" or "lower". That direction is a general guide, not medical advice.
-Stale data is yellow. Colour is never the only signal: every row has an
-arrow, and beyond-usual rows also carry the word.
+Stale data is yellow. Colour is never the only signal: rows with a usual to
+compare with have an arrow (stale rows and "need 7d" rows have none), and
+beyond-usual rows also carry the word.
 
 Walking double support time and walking asymmetry are judged by their level,
 not by the direction of the move: a rise that stays inside the range (double
@@ -91,11 +96,14 @@ JSON output (--json) is the same report:
   today, empty (true when the database has no data)
   categories[]  name, total, better, worse, changed, typical, stale,
              no_baseline, no_data
-  metrics[]  metric, label, category, polarity, unit,
+  metrics[]  metric, label, category, polarity (higher_better|lower_better|
+             in_range|neutral), unit,
              state (ok|no_baseline|stale|no_data), latest_day,
              age_days, value, source, baseline_days_with_data, baseline_mean,
              baseline_stddev, delta_pct, z, comparison (above|below|typical),
              verdict (better|worse|changed|typical)
+             range {low, high, source, basis, position: below|within|above},
+             only for metrics with a reference range
              spark (28 daily values ending today, null = no data)
   sleep      state, night, age_days, source, *_seconds per stage, in_bed_seconds
   workouts   days, count, duration_seconds, energy_kcal, latest
@@ -103,10 +111,11 @@ JSON output (--json) is the same report:
                    without sleep
   workouts_report  the full workouts report ("healthcli workouts --help"); left
                    out without workouts
-  heatmaps   calendars for the metrics named in --heatmap, by metric name
+  heatmaps   only with --heatmap: calendars for the metrics named there, by
+             metric name (the sleep calendar is in sleep_summary.heatmap)
   not_tracked[]  metrics with no data at all
   heatmap    the activity grid ("healthcli heatmap --help"), left out if none
-  data       samples, first_day, last_day, source_samples, last_import, gaps[]`,
+  data       samples, sleep_nights, first_day, last_day, source_samples, last_import, gaps[]`,
 		Example: `  healthcli overview
   healthcli overview --category vitals,activity
   healthcli overview --compact
@@ -182,7 +191,7 @@ func runOverview(cmd *cobra.Command, opts *options, noColor, ascii bool, view ov
 	if opts.jsonOutput {
 		enc := json.NewEncoder(out)
 		enc.SetIndent("", "  ")
-		return enc.Encode(report)
+		return enc.Encode(restrictOverviewJSON(report, view))
 	}
 	name, err := dbDisplayName(opts)
 	if err != nil {
@@ -190,6 +199,50 @@ func runOverview(cmd *cobra.Command, opts *options, noColor, ascii bool, view ov
 	}
 	_, err = fmt.Fprint(out, renderOverview(report, ti, withDB(view, name, now)))
 	return err
+}
+
+// overviewJSON is the report as --json prints it. Sleep and workouts are
+// pointers here so that --category can leave them out (the fields of the
+// embedded report with the same JSON names are hidden by these).
+type overviewJSON struct {
+	*stats.Overview
+	Sleep    *stats.OverviewSleep   `json:"sleep,omitempty"`
+	Workouts *stats.WorkoutsSummary `json:"workouts,omitempty"`
+}
+
+// restrictOverviewJSON keeps only what --category names, like "today --json":
+// the metric rows, the band counts and the not-tracked list of those
+// categories, and the sleep and workouts sections only when asked for. The
+// activity heatmap stays only when --heatmap asked for heatmaps.
+func restrictOverviewJSON(o *stats.Overview, v overviewView) any {
+	if len(v.categories) == 0 {
+		return o // without --category the report is printed as it is
+	}
+	out := overviewJSON{Sleep: &o.Sleep, Workouts: &o.Workouts}
+	r := *o
+	r.Metrics, r.NotTracked = []stats.MetricRow{}, []string{}
+	for _, row := range o.Metrics {
+		if v.wants(row.Category) {
+			r.Metrics = append(r.Metrics, row)
+		}
+	}
+	r.Categories = stats.CategorySummaries(r.Metrics)
+	for _, name := range o.NotTracked {
+		if m, err := metrics.Lookup(name); err == nil && v.wants(string(m.Category)) {
+			r.NotTracked = append(r.NotTracked, name)
+		}
+	}
+	if len(v.heatmaps) == 0 {
+		r.Heatmap = nil
+	}
+	if !v.wants(sleepName) {
+		out.Sleep, r.SleepSummary = nil, nil
+	}
+	if !v.wants(workoutsName) {
+		out.Workouts, r.WorkoutsReport = nil, nil
+	}
+	out.Overview = &r
+	return out
 }
 
 // withDB adds the database name and the clock to the view the flags built.

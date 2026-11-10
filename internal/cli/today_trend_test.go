@@ -285,3 +285,55 @@ func TestFormatting(t *testing.T) {
 		t.Errorf("formatSigned tiny = %q", got)
 	}
 }
+
+// An evening nap that ends after 18:00 belongs to tomorrow's sleep night; the
+// fallback must not offer that future day (sleep and overview say no data).
+func TestTodayFallbackNeverShowsAFutureDay(t *testing.T) {
+	fixClock(t, time.Date(2026, 11, 10, 18, 10, 0, 0, time.UTC))
+	path := tempDB(t)
+	conn, err := db.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := time.Date(2026, 11, 10, 16, 30, 0, 0, time.UTC).Unix()
+	end := time.Date(2026, 11, 10, 18, 5, 0, 0, time.UTC).Unix()
+	if _, err := conn.Exec(`INSERT INTO sleep_stages (stage, start_ts, end_ts, tz_offset, source)
+		VALUES ('asleep_unspecified', ?, ?, 0, 'Test Apple Watch')`, start, end); err != nil {
+		t.Fatal(err)
+	}
+	conn.Close()
+
+	out, _, err := run(t, "--db", path, "today")
+	if err != nil || strings.Contains(out, "showing 2026-11-11") {
+		t.Errorf("fallback offered a future day: %v\n%s", err, out)
+	}
+	out, _, err = run(t, "--db", path, "today", "--json")
+	if err != nil || !strings.Contains(out, `"status": "no_data"`) {
+		t.Errorf("want no_data: %v\n%s", err, out)
+	}
+}
+
+// The same evening nap must not hide a real night before it.
+func TestTodayFallbackKeepsOlderNightBesideFutureNap(t *testing.T) {
+	fixClock(t, time.Date(2026, 11, 10, 18, 10, 0, 0, time.UTC))
+	path := tempDB(t)
+	conn, err := db.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, span := range [][2]time.Time{
+		{time.Date(2026, 11, 9, 23, 0, 0, 0, time.UTC), time.Date(2026, 11, 10, 6, 30, 0, 0, time.UTC)},   // last night
+		{time.Date(2026, 11, 10, 16, 30, 0, 0, time.UTC), time.Date(2026, 11, 10, 18, 5, 0, 0, time.UTC)}, // evening nap
+	} {
+		if _, err := conn.Exec(`INSERT INTO sleep_stages (stage, start_ts, end_ts, tz_offset, source)
+			VALUES ('asleep_unspecified', ?, ?, 0, 'Test Apple Watch')`, span[0].Unix(), span[1].Unix()); err != nil {
+			t.Fatal(err)
+		}
+	}
+	conn.Close()
+
+	out, _, err := run(t, "--db", path, "today", "--json")
+	if err != nil || strings.Contains(out, "2026-11-11") {
+		t.Errorf("a future day leaked: %v\n%s", err, out)
+	}
+}

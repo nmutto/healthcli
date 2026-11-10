@@ -23,7 +23,7 @@ const (
 	// StaleDays: a metric whose newest day is older than this is "stale".
 	// Its value is still shown, but not compared with a baseline.
 	StaleDays = 3
-	// RecentDays is the look-back for the sleep night and the workout total.
+	// RecentDays is the look-back for the sleep night.
 	RecentDays = 30
 )
 
@@ -240,7 +240,8 @@ type OverviewSleep struct {
 	InBedSecs  int64  `json:"in_bed_seconds"`
 }
 
-// WorkoutsSummary covers the last RecentDays days.
+// WorkoutsSummary covers the last workoutsReportDays days, the same window
+// as the workouts report, so the headline and the table agree.
 type WorkoutsSummary struct {
 	Days            int            `json:"days"`
 	Count           int            `json:"count"`
@@ -711,8 +712,8 @@ func buildSleep(ctx context.Context, conn *sql.DB, today string) (OverviewSleep,
 }
 
 func buildWorkouts(ctx context.Context, conn *sql.DB, today string) (WorkoutsSummary, error) {
-	w := WorkoutsSummary{Days: RecentDays}
-	from, err := AddDays(today, -(RecentDays - 1))
+	w := WorkoutsSummary{Days: workoutsReportDays}
+	from, err := AddDays(today, -(workoutsReportDays - 1))
 	if err != nil {
 		return w, err
 	}

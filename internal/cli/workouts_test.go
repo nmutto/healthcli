@@ -242,3 +242,45 @@ func TestWorkoutsSectionHeatmapIsGreen(t *testing.T) {
 	}
 	t.Errorf("no green heatmap colour in the section:\n%s", got)
 }
+
+// Recent is every session of the last 7 days whatever --days says, and the
+// RECENT block shows even when the window itself is empty.
+func TestWorkoutsRecentIgnoresShortDays(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return workoutsNow }
+	defer func() { nowFunc = old }()
+	path := tempDB(t)
+	conn, err := db.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// workoutsNow is Nov 9 20:00; the sessions are on Nov 8 and Nov 5.
+	for _, back := range []int{1, 4} {
+		start := workoutsNow.AddDate(0, 0, -back).Add(-3 * time.Hour).Unix()
+		if _, err := conn.Exec(`INSERT INTO workouts (activity, start_ts, end_ts, duration_s, tz_offset, source)
+			VALUES ('yoga', ?, ?, 2700, 0, 'Test')`, start, start+2700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	conn.Close()
+
+	for _, days := range []string{"1", "2", "6"} {
+		out, _, err := run(t, "--db", path, "workouts", "--days", days, "--json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		var rep struct {
+			Recent []any `json:"recent"`
+		}
+		if err := json.Unmarshal([]byte(out), &rep); err != nil {
+			t.Fatal(err)
+		}
+		if len(rep.Recent) != 2 {
+			t.Errorf("--days %s: recent has %d sessions, want 2\n%s", days, len(rep.Recent), out)
+		}
+	}
+	out, _, err := run(t, "--db", path, "workouts", "--days", "1")
+	if err != nil || !strings.Contains(out, "none in 1 d (last: Nov 08)") || !strings.Contains(out, "RECENT") {
+		t.Errorf("text must show the none line and the RECENT block: %v\n%s", err, out)
+	}
+}

@@ -47,7 +47,12 @@
       "category": "vitals",
       "polarity": "lower_better",
       "state": "no_baseline",
-      "verdict": ""
+      "verdict": "",
+      "range": {
+        "high": 100,
+        "source": "adult resting heart rate, 60-100 bpm",
+        "position": "within"
+      }
     },
     {
       "metric": "step_count",
