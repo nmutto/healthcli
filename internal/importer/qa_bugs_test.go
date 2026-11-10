@@ -101,3 +101,61 @@ func TestRecordsWithoutHealthDataRootAreRejectedEarly(t *testing.T) {
 		t.Errorf("%d rows were committed from a non-Apple file, want 0", n)
 	}
 }
+
+// BUG: Apple's "Cal" is the food Calorie, i.e. a kilocalorie. Energy records
+// written in it were skipped as bad_unit because only "kJ" was known.
+func TestCalIsKilocalorie(t *testing.T) {
+	p := writeFile(t, "export.xml", wrap(`
+<Record type="HKQuantityTypeIdentifierActiveEnergyBurned" sourceName="a" unit="Cal" `+qaWhen+` value="120"/>
+<Record type="HKQuantityTypeIdentifierBasalEnergyBurned" sourceName="a" unit="kcal" `+qaWhen+` value="80"/>`))
+	conn := newDB(t)
+	sum, err := Import(conn, p, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Inserted != 2 || sum.SkippedTotal() != 0 {
+		t.Fatalf("summary = %+v, want both energy records imported", sum)
+	}
+	if n := count(t, conn, "SELECT COUNT(*) FROM samples WHERE metric = 'active_energy' AND value = 120"); n != 1 {
+		t.Errorf("Cal should import unchanged as kcal, got %d rows", n)
+	}
+}
+
+// BUG: nonsense values were stored: -50 steps, a heart rate of 0. Negative
+// amounts and non-positive heart rates are bad_value. Zero steps and a
+// negative wrist temperature (a delta) are real and stay.
+func TestNonsenseValuesAreSkipped(t *testing.T) {
+	p := writeFile(t, "export.xml", wrap(`
+<Record type="HKQuantityTypeIdentifierStepCount" sourceName="a" unit="count" `+qaWhen+` value="-50"/>
+<Record type="HKQuantityTypeIdentifierActiveEnergyBurned" sourceName="a" unit="kcal" `+qaWhen+` value="-1"/>
+<Record type="HKQuantityTypeIdentifierHeartRate" sourceName="a" unit="count/min" `+qaWhen+` value="0"/>
+<Record type="HKQuantityTypeIdentifierRestingHeartRate" sourceName="a" unit="count/min" `+qaWhen+` value="-60"/>
+<Record type="HKQuantityTypeIdentifierStepCount" sourceName="zero" unit="count" `+qaWhen+` value="0"/>
+<Record type="HKQuantityTypeIdentifierAppleSleepingWristTemperature" sourceName="neg" unit="degC" `+qaWhen+` value="-0.4"/>`))
+	conn := newDB(t)
+	sum, err := Import(conn, p, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Inserted != 2 || sum.Skipped[reasonBadValue] != 4 {
+		t.Errorf("summary = %+v, want 2 inserted and 4 bad_value", sum)
+	}
+}
+
+// BUG: strconv.ParseFloat accepts hex floats and underscores, so "0x1p6"
+// imported as 64. Only plain decimal and exponent numbers are measurements.
+func TestOnlyPlainDecimalNumbersAreAccepted(t *testing.T) {
+	p := writeFile(t, "export.xml", wrap(`
+<Record type="HKQuantityTypeIdentifierStepCount" sourceName="a" unit="count" `+qaWhen+` value="0x1p6"/>
+<Record type="HKQuantityTypeIdentifierStepCount" sourceName="b" unit="count" `+qaWhen+` value="1_000"/>
+<Record type="HKQuantityTypeIdentifierStepCount" sourceName="c" unit="count" `+qaWhen+` value="1e2"/>
+<Record type="HKQuantityTypeIdentifierStepCount" sourceName="d" unit="count" `+qaWhen+` value="12.5"/>`))
+	conn := newDB(t)
+	sum, err := Import(conn, p, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Inserted != 2 || sum.Skipped[reasonBadValue] != 2 {
+		t.Errorf("summary = %+v, want 2 inserted and 2 bad_value", sum)
+	}
+}

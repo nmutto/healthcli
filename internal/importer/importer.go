@@ -14,6 +14,7 @@ import (
 	"io"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -248,6 +249,12 @@ func attrs(el xml.StartElement) map[string]string {
 // number parses a float attribute. ok is false when it is empty or not numeric.
 func number(s string) (float64, bool) {
 	if s == "" {
+		return 0, false
+	}
+	// ParseFloat also reads hex floats ("0x1p6") and underscores ("1_000"),
+	// which are not measurements. Allow only the characters of a plain
+	// decimal number with an optional exponent.
+	if strings.Trim(s, "0123456789+-.eE") != "" {
 		return 0, false
 	}
 	f, err := strconv.ParseFloat(s, 64)

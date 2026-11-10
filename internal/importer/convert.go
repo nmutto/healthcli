@@ -74,6 +74,24 @@ func round4(v float64) float64 { return math.Round(v*10000) / 10000 }
 // cannot be read back as JSON when it holds Inf.
 func finite(v float64) bool { return !math.IsNaN(v) && !math.IsInf(v, 0) }
 
+// positiveOnly lists the heart-rate metrics where 0 or less is not a reading.
+var positiveOnly = map[string]bool{
+	"heart_rate": true, "resting_heart_rate": true, "walking_heart_rate_average": true,
+}
+
+// sensible reports whether value can be a real reading of m. Amounts that add
+// up over a day cannot be negative and a heart rate cannot be 0. Other
+// metrics are left alone: wrist temperature, for one, is a delta below zero.
+func sensible(m metrics.Metric, value float64) bool {
+	if positiveOnly[m.Name] {
+		return value > 0
+	}
+	if m.Daily == metrics.Sum {
+		return value >= 0
+	}
+	return true
+}
+
 // sampleRow converts a numeric <Record>. A non-empty reason means "skip it".
 func sampleRow(a map[string]string) (sampleData, string) {
 	m, known := metrics.FromApple(a["type"])
@@ -92,7 +110,7 @@ func sampleRow(a map[string]string) (sampleData, string) {
 		return sampleData{}, reasonBadUnit
 	}
 	// Conversion and rounding can overflow a huge but finite number to Inf.
-	if value = round4(value); !finite(value) {
+	if value = round4(value); !finite(value) || !sensible(m, value) {
 		return sampleData{}, reasonBadValue
 	}
 	start, end, tz, ok := interval(a)
@@ -128,10 +146,14 @@ var (
 	toKcal    = map[string]float64{"kcal": 1, "cal": 1, "kj": 1 / 4.184}
 )
 
-// optional converts an optional numeric attribute. present is false when the
-// attribute is absent; ok is false when it is there but unusable.
+// optional converts an optional numeric attribute. v is nil when the
+// attribute or its unit is absent (we cannot trust a number without a unit);
+// ok is false when it is there but unusable.
 func optional(a map[string]string, key, unitKey string, factors map[string]float64) (v *float64, ok bool) {
 	if a[key] == "" {
+		return nil, true
+	}
+	if a[unitKey] == "" {
 		return nil, true
 	}
 	raw, good := number(a[key])
@@ -187,7 +209,9 @@ func workoutRow(a map[string]string, stats []map[string]string) (workoutData, st
 		if !ok {
 			return workoutData{}, reasonBadWorkout
 		}
-		duration = *d
+		if d != nil { // nil = no unit, so keep the interval length
+			duration = *d
+		}
 	}
 	energy, ok1 := total(a, "totalEnergyBurned", "totalEnergyBurnedUnit", stats, isActiveEnergy, toKcal)
 	distance, ok2 := total(a, "totalDistance", "totalDistanceUnit", stats, isDistance, toMetres)
