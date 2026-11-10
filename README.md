@@ -437,8 +437,8 @@ $ healthcli workouts
 
  ━━ CALENDAR ━━ workout minutes per day, 8 weeks to 2026-11-09 ━━━━━━━━━━━━━━━━
        Oct     Nov
- Mon   ▅ ▁ · · · █ · ◂
- Tue   · · █ ▅ ▁ ·
+ Mon · ▅ ▁ · · · █ · ◂
+ Tue · · · █ ▅ ▁ ·
  Wed ▇ ▁ ▁ · · █ ▇
  Thu · ▃ ▃ ▅ · · ·
  Fri ▇ · · ▃ █ ▇ ▁
@@ -500,7 +500,7 @@ $ healthcli sleep
  Sat · · · · · ▅ ▇ ▅ ▇ ▇ ▃
  Sun · · · · · ▃ ▇ ▃ ▇ ▇ ▁
 
- ▁ ≤6h 36m  ▃ ≤6h 52m  ▅ ≤7h 10m  ▇ ≤7h 20m  █ >7h 20m
+ ▁ ≤6h 36m  ▃ ≤6h 52m  ▅ ≤7h 10m  ▇ ≤7h 20m
  · no data   ◂ today   per day
 ```
 

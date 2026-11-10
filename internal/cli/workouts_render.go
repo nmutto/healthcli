@@ -529,7 +529,12 @@ func renderTypeHeatmap(h *stats.Heatmap, r *stats.WorkoutsReport, ti termInfo) [
 	}
 	lines = append(lines, "")
 	lines = append(lines, wrapParts(legend, "  ", ti.width)...)
-	lines = append(lines, wrapParts([]string{st.dim(string(restGlyph(g))) + " rest day", todayMark(ti.unicode) + " today", "UPPERCASE = longer days"}, "   ", ti.width)...)
+	tail := []string{st.dim(string(restGlyph(g))) + " rest day", todayMark(ti.unicode) + " today"}
+	used := heatLevelsUsed(weeks)
+	if used[stats.HeatLevels-1] || used[stats.HeatLevels] {
+		tail = append(tail, "UPPERCASE = longer days") // only when a day can be uppercase
+	}
+	lines = append(lines, wrapParts(tail, "   ", ti.width)...)
 	return lines
 }
 

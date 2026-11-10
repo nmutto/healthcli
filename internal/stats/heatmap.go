@@ -147,29 +147,43 @@ func HeatmapFromDays(spec HeatSpec, now time.Time, weeks int, byDay map[string]f
 		return nil, err
 	}
 	days := make(map[string]float64, len(byDay))
+	// firstEver is the first non-zero day, even before the window: with a
+	// history, the blank days at the start of the window are rest days.
+	firstEver := ""
 	for day, v := range byDay {
-		if isFinite(v) && day >= from && day <= today {
+		if !isFinite(v) || day > today {
+			continue
+		}
+		if v > 0 && (firstEver == "" || day < firstEver) {
+			firstEver = day
+		}
+		if day >= from {
 			days[day] = v
 		}
 	}
-	h := layoutHeatmap(spec.Title, spec.Unit, today, from, weeks, days, spec.ZeroIsRest)
+	h := layoutHeatmap(spec.Title, spec.Unit, today, from, weeks, days, spec.ZeroIsRest, firstEver)
 	h.Title, h.Hue, h.Format, h.ZeroIsRest = spec.Title, spec.Hue, spec.Format, spec.ZeroIsRest
 	return h, nil
 }
 
-// layoutHeatmap is the pure part: values in, grid out.
-func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string]float64, zeroIsRest bool) *Heatmap {
+// layoutHeatmap is the pure part: values in, grid out. firstEver is the first
+// day with a real value, possibly before the window ("" if unknown): only used
+// with zeroIsRest, where it decides where the rest days start.
+func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string]float64, zeroIsRest bool, firstEver string) *Heatmap {
 	h := &Heatmap{Metric: metric, Unit: unit, Today: today, From: from, Thresholds: []float64{}}
 	var values []float64
 	if zeroIsRest {
 		// Every day from the first non-zero one to today has a value; the
 		// ones nobody wrote are real zeros (rest). Rests do not count when
 		// cutting the shades.
-		first := ""
+		first := firstEver
 		for day, v := range byDay {
 			if v > 0 && (first == "" || day < first) {
 				first = day
 			}
+		}
+		if first != "" && first < from {
+			first = from // the window starts here; earlier days are not drawn
 		}
 		filled := map[string]float64{}
 		for day := first; first != "" && day <= today; {
@@ -223,19 +237,32 @@ func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string
 // QuintileThresholds returns the 4 cut points that split values into fifths,
 // or nil for no values.
 //
-// Method: sort, then take the value at "nearest rank" 20%, 40%, 60% and 80%
-// (index ceil(p*n)-1). Every threshold is therefore a real value from the
+// With 5 or more values: sort, then take the value at "nearest rank" 20%, 40%,
+// 60% and 80% (index ceil(p*n)-1). Every threshold is a real value from the
 // data, which makes the legend honest ("up to 6,100 steps").
+//
+// With fewer than 5 values nearest rank makes the last cut the maximum, so
+// the top level could never be reached. There the cuts are interpolated
+// between neighbouring values instead (the 80% point lies between the two
+// highest), which keeps the highest value above the last cut.
 func QuintileThresholds(values []float64) []float64 {
 	if len(values) == 0 {
 		return nil
 	}
 	sorted := append([]float64(nil), values...)
 	sort.Float64s(sorted)
+	n := len(sorted)
 	out := make([]float64, HeatLevels-1)
 	for i := range out {
 		p := float64(i+1) / HeatLevels
-		out[i] = sorted[int(math.Ceil(p*float64(len(sorted))))-1]
+		if n >= HeatLevels {
+			out[i] = sorted[int(math.Ceil(p*float64(n)))-1]
+			continue
+		}
+		pos := p * float64(n-1) // fractional index into the sorted values
+		lo := int(pos)
+		hi := min(lo+1, n-1)
+		out[i] = sorted[lo] + (pos-float64(lo))*(sorted[hi]-sorted[lo])
 	}
 	return out
 }

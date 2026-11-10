@@ -31,8 +31,8 @@
 
  ━━ CALENDAR ━━ workout minutes per day, by type, 8 weeks to 2026-11-09 ━━━━━━━
        Oct     Nov
- Mon   c r · · · C · ◂
- Tue   · · C r w ·
+ Mon · c r · · · C · ◂
+ Tue · · · C r w ·
  Wed C r w · · C R
  Thu · y c r · · ·
  Fri R · · y C R w

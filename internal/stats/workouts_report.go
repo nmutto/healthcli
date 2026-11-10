@@ -229,11 +229,22 @@ func weeklyVolume(all []Workout, today string, weeks int) []WeekVolume {
 		v.DurationSeconds += w.Duration.Seconds()
 		v.Count++
 	}
+	// Weeks before the first workout are not "zero weeks": they are left out,
+	// and a week needs 3 weeks since the first workout to get a delta at all.
+	first := ""
+	for start := range byWeek {
+		if first == "" || start < first {
+			first = start
+		}
+	}
 	thisMonday := mondayOf(today)
 	var out []WeekVolume
 	for i := weeks + 4; i >= 0; i-- { // 4 extra weeks only feed the deltas
 		start, err := AddDays(thisMonday, -7*i)
 		if err != nil {
+			continue
+		}
+		if start < first {
 			continue
 		}
 		v := WeekVolume{Start: start, Days: 7}
@@ -247,15 +258,6 @@ func weeklyVolume(all []Workout, today string, weeks int) []WeekVolume {
 		}
 		out = append(out, v)
 	}
-	// Weeks before the first workout are not "zero weeks": they are not part
-	// of the average, and a week needs 3 weeks since the first workout to get
-	// a delta at all.
-	first := ""
-	for start := range byWeek {
-		if first == "" || start < first {
-			first = start
-		}
-	}
 	for i := range out {
 		if out[i].Partial {
 			continue
@@ -263,9 +265,6 @@ func weeklyVolume(all []Workout, today string, weeks int) []WeekVolume {
 		var sum float64
 		n := 0
 		for j := max(i-4, 0); j < i; j++ {
-			if out[j].Start < first {
-				continue
-			}
 			sum += out[j].DurationSeconds
 			n++
 		}
@@ -274,7 +273,7 @@ func weeklyVolume(all []Workout, today string, weeks int) []WeekVolume {
 			out[i].DeltaPct = &d
 		}
 	}
-	return out[len(out)-weeks:]
+	return out[max(len(out)-weeks, 0):]
 }
 
 // bests picks the personal bests among activities with enough sessions.

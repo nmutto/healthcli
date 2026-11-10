@@ -275,16 +275,40 @@ func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
 			st.wrap(colors[level-1], string(g.shade(level, st.color))) + " every day: " + heatFormat(h, h.Thresholds[0]),
 		}, heatTail(h, ti, st)...)
 	}
+	// Only levels some day has are listed (with few days or ties some are
+	// unreachable), and a bound that prints like the one before it is skipped.
+	used := heatLevelsUsed(h.Weeks)
 	var parts []string
+	prev := ""
 	for i := 1; i <= stats.HeatLevels; i++ {
-		glyph := st.wrap(colors[i-1], string(g.shade(i, st.color)))
-		if i < stats.HeatLevels {
-			parts = append(parts, glyph+" "+le+heatFormat(h, h.Thresholds[i-1]))
-		} else {
-			parts = append(parts, glyph+" "+gt+heatFormat(h, h.Thresholds[i-2]))
+		if !used[i] {
+			continue
 		}
+		glyph := st.wrap(colors[i-1], string(g.shade(i, st.color)))
+		var bound string
+		if i < stats.HeatLevels {
+			bound = le + heatFormat(h, h.Thresholds[i-1])
+		} else {
+			bound = gt + heatFormat(h, h.Thresholds[i-2])
+		}
+		if bound == prev {
+			continue
+		}
+		prev = bound
+		parts = append(parts, glyph+" "+bound)
 	}
 	return append(wrapParts(parts, "  ", ti.width), heatTail(h, ti, st)...)
+}
+
+// heatLevelsUsed reports which levels (1..5) at least one cell has.
+func heatLevelsUsed(weeks [][]stats.HeatDay) [stats.HeatLevels + 1]bool {
+	var used [stats.HeatLevels + 1]bool
+	for _, week := range weeks {
+		for _, c := range week {
+			used[c.Level] = true
+		}
+	}
+	return used
 }
 
 // wrapParts joins parts with sep, starting a new line before a part that
@@ -315,7 +339,7 @@ func newHeatmapCmd(opts *options) *cobra.Command {
 per week, newest week on the right. Shades are the metric's own quintiles over
 the window (the legend lists the cut points), so the darkest fifth of days is
 always the highest fifth for that metric. A day without data shows a dot, not
-the lowest shade. Today is marked.
+the lowest shade; for workouts a dot means a rest day. Today is marked.
 
 The metric defaults to step_count; "sleep" (time asleep per day) and
 "workouts" (workout minutes per day, with rest days) work too. --weeks sets the
@@ -325,7 +349,7 @@ narrow (oldest dropped).
 JSON output (--json):
   metric, unit, today, from, thresholds (4 upper bounds of levels 1-4),
   days_with_data, weeks[7 days each]: day, value (left out = no data), level
-  (1-5; 0 = no data), future (true after today)`,
+  (1-5; 0 = no data, or a rest day with value 0 for workouts), future (true after today)`,
 		Example: `  healthcli heatmap
   healthcli heatmap active_energy --weeks 26
   healthcli heatmap sleep
@@ -392,7 +416,9 @@ func buildNamedHeatmap(ctx context.Context, conn *sql.DB, name string, weeks int
 	} else {
 		spec.ZeroIsRest = true
 		spec.Hue = stats.HueGreen
-		byDay, err = stats.WorkoutMinutesByDay(ctx, conn, from, today)
+		// Read all history: a workout before the window makes the blank days
+		// at its start rest days.
+		byDay, err = stats.WorkoutMinutesByDay(ctx, conn, "0001-01-01", today)
 	}
 	if err != nil {
 		return nil, err
@@ -431,7 +457,11 @@ func runHeatmap(cmd *cobra.Command, opts *options, name string, weeks int, noCol
 		return enc.Encode(h)
 	}
 	if h.Empty() {
-		_, err = fmt.Fprintf(out, "No %s data in the last %s yet.\n", strings.ReplaceAll(name, "_", " "), plural(int64(weeks), "week"))
+		what := strings.ReplaceAll(name, "_", " ") + " data"
+		if name == "workouts" {
+			what = "workouts" // "workouts data" reads wrong
+		}
+		_, err = fmt.Fprintf(out, "No %s in the last %s yet.\n", what, plural(int64(weeks), "week"))
 		return err
 	}
 	_, err = fmt.Fprintln(out, strings.Join(renderHeatmap(h, ti), "\n"))

@@ -317,7 +317,7 @@ func TestOverviewMinimumEffectSize(t *testing.T) {
 func TestHeatmapAllZeroIsLowestShade(t *testing.T) {
 	h := layoutHeatmap("step_count", "count", "2026-11-08", "2026-10-26", 2, map[string]float64{
 		"2026-11-01": 0, "2026-11-02": 0, "2026-11-03": 0,
-	}, false)
+	}, false, "")
 	if !h.Flat {
 		t.Error("equal values should set Flat")
 	}
@@ -328,7 +328,7 @@ func TestHeatmapAllZeroIsLowestShade(t *testing.T) {
 			}
 		}
 	}
-	h = layoutHeatmap("step_count", "count", "2026-11-08", "2026-10-26", 2, map[string]float64{"2026-11-01": 5, "2026-11-02": 5}, false)
+	h = layoutHeatmap("step_count", "count", "2026-11-08", "2026-10-26", 2, map[string]float64{"2026-11-01": 5, "2026-11-02": 5}, false, "")
 	for _, w := range h.Weeks {
 		for _, c := range w {
 			if c.Value != nil && c.Level != flatLevel {

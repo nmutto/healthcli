@@ -28,8 +28,8 @@
 
  ━━ CALENDAR ━━ workout minutes per day, 8 weeks ━━━━━━━━━━
        Oct     Nov
- Mon   ▅ ▁ · · · █ · ◂
- Tue   · · █ ▅ ▁ ·
+ Mon · ▅ ▁ · · · █ · ◂
+ Tue · · · █ ▅ ▁ ·
  Wed ▇ ▁ ▁ · · █ ▇
  Thu · ▃ ▃ ▅ · · ·
  Fri ▇ · · ▃ █ ▇ ▁
