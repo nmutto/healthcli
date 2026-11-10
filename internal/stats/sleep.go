@@ -137,21 +137,55 @@ type sleepTotals struct {
 	byStage map[string][]interval
 }
 
+// awake is the merged awake rows of the source. Awake wins over an asleep row
+// that overlaps it, so asleep stages are counted without these moments.
+func (t *sleepTotals) awake() []interval { return merge(t.byStage["awake"]) }
+
 // total is how long the stage lasted. Rows of the same stage that overlap
 // (a revised estimate written next to the old one) count once, and a row
-// that ends before it starts counts for nothing.
+// that ends before it starts counts for nothing. Asleep stages lose the
+// moments the source also calls awake.
 func (t *sleepTotals) total(stage string) time.Duration {
-	return length(merge(t.byStage[stage]))
+	merged := merge(t.byStage[stage])
+	if stage != "awake" && stage != "in_bed" {
+		merged = subtract(merged, t.awake())
+	}
+	return length(merged)
 }
 
-// asleepUnion joins the intervals of every asleep stage. Summing the stages
-// one by one would count twice a moment that two stages both claim.
+// asleepUnion joins the intervals of every asleep stage, minus the awake
+// moments. Summing the stages one by one would count twice a moment that two
+// stages both claim.
 func (t *sleepTotals) asleepUnion() []interval {
 	var all []interval
 	for _, stage := range asleepStages {
 		all = append(all, t.byStage[stage]...)
 	}
-	return merge(all)
+	return subtract(merge(all), t.awake())
+}
+
+// subtract removes the moments of cut from the merged intervals. Both lists
+// must be merged (sorted, no overlaps).
+func subtract(merged, cut []interval) []interval {
+	var out []interval
+	for _, iv := range merged {
+		start, startTZ := iv.start, iv.startTZ
+		for _, c := range cut {
+			if c.end <= start || c.start >= iv.end {
+				continue
+			}
+			if c.start > start {
+				out = append(out, interval{start, c.start, startTZ, c.startTZ})
+			}
+			if c.end > start {
+				start, startTZ = c.end, c.endTZ
+			}
+		}
+		if start < iv.end {
+			out = append(out, interval{start, iv.end, startTZ, iv.endTZ})
+		}
+	}
+	return out
 }
 
 var asleepStages = []string{"core", "deep", "rem", "asleep_unspecified"}

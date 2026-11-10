@@ -332,3 +332,12 @@ func TestStandaloneCommandsFit50(t *testing.T) {
 		}
 	}
 }
+
+// Stages that overlap each other add up to more than Asleep (the union);
+// the shares must still add up to 100%.
+func TestStageSharesUseTheStageTotals(t *testing.T) {
+	n := stats.SleepNight{Asleep: 4 * time.Hour, Core: 3 * time.Hour, REM: 2 * time.Hour, Deep: time.Hour}
+	if got := stagePct(n.Core, stageSum(n)); got != " 50%" {
+		t.Errorf("core share %q, want \" 50%%\"", got)
+	}
+}

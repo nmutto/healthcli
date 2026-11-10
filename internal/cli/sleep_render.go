@@ -387,7 +387,13 @@ type sleepStat struct {
 
 func secsText(s float64) string { return formatDuration(time.Duration(s * float64(time.Second))) }
 
-// stagePct is " 21%": the stage's share of the night's sleep.
+// stageSum is the total of the stage totals. Stages that overlap each other
+// are counted in full there, so dividing by Asleep (the union) could pass 100%.
+func stageSum(n stats.SleepNight) time.Duration {
+	return n.Core + n.Deep + n.REM + n.Unspecified
+}
+
+// stagePct is " 21%": the stage's share of the stage totals.
 func stagePct(part, total time.Duration) string {
 	if total <= 0 {
 		return ""
@@ -449,17 +455,17 @@ var sleepStats = []sleepStat{
 		val:  func(a *stats.SleepAgg) *float64 { return a.LatencySecs }},
 	{name: "Deep", compact: true, kind: kindDuration, polarity: +1, minDelta: 5,
 		last: func(n stats.SleepNight, _ bool) string {
-			return ifThen(n.HasStages(), formatDuration(n.Deep)+stagePct(n.Deep, n.Asleep))
+			return ifThen(n.HasStages(), formatDuration(n.Deep)+stagePct(n.Deep, stageSum(n)))
 		},
 		val: func(a *stats.SleepAgg) *float64 { return a.DeepSecs }},
 	{name: "REM", compact: true, kind: kindDuration, polarity: +1, minDelta: 5,
 		last: func(n stats.SleepNight, _ bool) string {
-			return ifThen(n.HasStages(), formatDuration(n.REM)+stagePct(n.REM, n.Asleep))
+			return ifThen(n.HasStages(), formatDuration(n.REM)+stagePct(n.REM, stageSum(n)))
 		},
 		val: func(a *stats.SleepAgg) *float64 { return a.REMSecs }},
 	{name: "Core", kind: kindDuration, polarity: 0, minDelta: 5,
 		last: func(n stats.SleepNight, _ bool) string {
-			return ifThen(n.HasStages(), formatDuration(n.Core)+stagePct(n.Core, n.Asleep))
+			return ifThen(n.HasStages(), formatDuration(n.Core)+stagePct(n.Core, stageSum(n)))
 		},
 		val: func(a *stats.SleepAgg) *float64 { return a.CoreSecs }},
 	{name: "Bedtime", compact: true, kind: kindClock, minDelta: 15,

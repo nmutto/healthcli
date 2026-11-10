@@ -66,3 +66,25 @@ func TestSleepAwakeIsInsideTheMainBlockOnly(t *testing.T) {
 		t.Errorf("efficiency %.2f ok=%v, want 97.92", pct, ok)
 	}
 }
+
+// An awake row that overlaps asleep rows of the same source wins: the
+// overlap is not asleep time.
+func TestSleepAwakeOverlapIsNotAsleep(t *testing.T) {
+	conn := newDB(t)
+	addSleep(t, conn, "core", "2024-12-01 23:00 +0100", "2024-12-02 07:00 +0100", watch)
+	addSleep(t, conn, "awake", "2024-12-02 02:00 +0100", "2024-12-02 03:00 +0100", watch)
+	nights, err := SleepNights(context.Background(), conn, "2024-12-02", "2024-12-02")
+	if err != nil || len(nights) != 1 {
+		t.Fatalf("%v %+v", err, nights)
+	}
+	n := nights[0]
+	if n.Asleep != 7*time.Hour || n.Core != 7*time.Hour {
+		t.Errorf("asleep %v core %v, want 7h", n.Asleep, n.Core)
+	}
+	if n.Awake != time.Hour || n.Awakenings != 1 {
+		t.Errorf("awake %v in %d awakenings, want 1h in 1", n.Awake, n.Awakenings)
+	}
+	if pct, _, ok := n.Efficiency(); !ok || pct != 87.5 {
+		t.Errorf("efficiency %.1f ok=%v, want 87.5 (7h of 8h)", pct, ok)
+	}
+}
