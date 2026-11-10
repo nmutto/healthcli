@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -269,7 +268,7 @@ func buildToday(ctx context.Context, conn *sql.DB, date string) (*todayReport, e
 		return report, nil
 	}
 
-	latest, found, err := latestDataDay(ctx, conn)
+	latest, found, err := stats.LatestDataDay(ctx, conn, nowFunc())
 	if err != nil {
 		return nil, err
 	}
@@ -417,49 +416,4 @@ func metricJSON(row stats.MetricRow, day string) (todayMetric, error) {
 		}
 	}
 	return m, nil
-}
-
-// latestDataDay finds the newest local day with any data: the newest
-// sample of any metric, workout or night of sleep. Like the overview, it
-// ignores anything starting more than a day after now. found is false for an
-// empty database. No candidate is later than today's local date: an evening
-// nap is dated tomorrow by the 18:00 sleep shift, and tomorrow is not a day
-// with data yet.
-func latestDataDay(ctx context.Context, conn *sql.DB) (day string, found bool, err error) {
-	maxStart := nowFunc().Add(24 * time.Hour).Unix() // stats.futureSlack
-	today := nowFunc().Format(stats.DayLayout)
-	consider := func(d string) {
-		// "YYYY-MM-DD" strings sort in date order, so > compares dates.
-		if d > day && d <= today {
-			day, found = d, true
-		}
-	}
-	for _, name := range metrics.Names() {
-		s, err := stats.LatestSampleUpTo(ctx, conn, name, maxStart)
-		if errors.Is(err, stats.ErrNoData) {
-			continue
-		}
-		if err != nil {
-			return "", false, err
-		}
-		consider(s.Day)
-	}
-
-	// Workouts and sleep have no "latest" helper in stats, so ask directly.
-	// Local day = UTC time + tz_offset; a night belongs to the date it ends on,
-	// with the 6-hour shift stats uses (see stats.SleepNight). Days after today
-	// are left out in the query, so an older night can still win.
-	for _, q := range []string{
-		`SELECT max(date(start_ts + tz_offset, 'unixepoch')) FROM workouts WHERE start_ts <= ? AND date(start_ts + tz_offset, 'unixepoch') <= ?`,
-		`SELECT max(date(end_ts + tz_offset + 21600, 'unixepoch')) FROM sleep_stages WHERE start_ts <= ? AND date(end_ts + tz_offset + 21600, 'unixepoch') <= ?`,
-	} {
-		var d sql.NullString // NULL when the table is empty
-		if err := conn.QueryRowContext(ctx, q, maxStart, today).Scan(&d); err != nil {
-			return "", false, fmt.Errorf("find latest day: %w", err)
-		}
-		if d.Valid {
-			consider(d.String)
-		}
-	}
-	return day, found, nil
 }
