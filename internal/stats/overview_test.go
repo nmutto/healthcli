@@ -358,3 +358,24 @@ func TestOverviewZeroBaselineChangeCounts(t *testing.T) {
 		t.Errorf("delta_pct = %v, want nil (baseline mean is 0)", *r.DeltaPct)
 	}
 }
+
+// Percent-scale metrics need a whole percentage point of change: SpO2 95.5
+// against a usual 97.35 is well beyond one stddev, and is worse.
+func TestOverviewPercentMetricsUseMinDelta(t *testing.T) {
+	conn := newDB(t)
+	for i := 0; i < 8; i++ {
+		v := 97.0 // alternate 97 and 97.7: mean 97.35, stddev 0.35
+		if i%2 == 1 {
+			v = 97.7
+		}
+		addSample(t, conn, "oxygen_saturation", fmt.Sprintf("2026-10-%02d 07:00 +0000", 30-i), v, watch)
+	}
+	addSample(t, conn, "oxygen_saturation", "2026-11-08 07:00 +0000", 95.5, watch)
+	o, err := BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r := rowFor(t, o, "oxygen_saturation"); r.Verdict != VerdictWorse {
+		t.Errorf("verdict = %q, want worse (z=%v)", r.Verdict, *r.Z)
+	}
+}
