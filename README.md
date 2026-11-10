@@ -51,13 +51,15 @@ Import it (use `--db` to choose a database file; without it, healthcli uses a pe
 
 ```console
 $ healthcli --db demo.db import apple testdata/small/export.xml
-Read:       1244 records
-Inserted:   1232
+Read:       1480 records
+Inserted:   1468
 Duplicates: 9 (already in the database)
 Skipped:    3
   bad_date             1
   missing_value        1
   unknown_type         1
+Most common types not imported:
+  HKQuantityTypeIdentifierSomethingFromTheFuture     1
 Elapsed:    0.0s
 ```
 
@@ -65,9 +67,9 @@ Importing the same file again is safe and adds nothing:
 
 ```console
 $ healthcli --db demo.db import apple testdata/small/export.xml
-Read:       1244 records
+Read:       1480 records
 Inserted:   0
-Duplicates: 1241 (already in the database)
+Duplicates: 1477 (already in the database)
 Skipped:    3
   ...
 ```
@@ -76,8 +78,10 @@ Log a reading by hand:
 
 ```console
 $ healthcli --db demo.db log weight 72.5
-Logged body_mass = 72.5 kg at 2026-11-08 17:47
+Logged body_mass = 72.5 kg at 2026-11-10 18:31
 ```
+
+`log` checks what you type. A value must be a plain number (no hex, no underscores), not negative, and not zero except for steps and active energy; percentages are typed as 0-100 (`log spo2 97`; above 100 is refused, and a blood oxygen below 50 is refused with the hint "type 97 for 97%"); anything above 10,000,000 is refused; `--at` may be at most one day in the future. Every metric healthcli knows works (an unknown name lists them), and the aliases are `hr`, `hrv`, `rhr`, `rr`, `spo2`, `steps`, `temp`, `vo2`, `weight` and `bmi`. Weight is stored in kg (`--unit lb` converts).
 
 One screen with every metric, last night's sleep, recent workouts, an activity calendar and how complete your data is (`overview`):
 
@@ -127,13 +131,13 @@ $ healthcli --db demo.db overview
 
  ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
        23:12                                                              06:30
- awake                       ░░░                        ░░                     
+ awake                       ░░░                        ░░
  REM                    ▓▓▓▓▓                      ▓▓▓▓▓                     ▓▓
- core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒  
- deep          ████                     █████                      ████        
+ core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒
+ deep          ████                     █████                      ████
               00        01        02        03        04        05        06
 
- STAT         LAST NIGHT          7 NIGHTS            VS 13-NIGHT USUAL
+ STAT         LAST NIGHT          7 NIGHTS            VS 12-NIGHT USUAL
  Asleep       7h 01m              7h 08m              – typical
  In bed       7h 30m              7h 37m              – typical
  Efficiency   94%                 94%                 – typical
@@ -156,7 +160,7 @@ $ healthcli --db demo.db overview
  Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
  Tue Nov 03 walking     28m  2.3 km 12:00 /km 104 kcal
 
- ━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━━━━━━
+ ━━ CALENDAR ━━ Steps per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━━━━━━━━━━━
      Aug Sep     Oct     Nov
  Mon · · · · · · · · · · ▁ ▁
  Tue · · · · · · · · · · ▇ ▅
@@ -174,7 +178,7 @@ $ healthcli --db demo.db overview
  sources: Watch 74%, iPhone 26%
  last import: 1,468 added · 9 duplicates
  skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
- days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13
+ days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13, +4 more
  not tracked in your data: 4 metrics
 ```
 
@@ -186,13 +190,13 @@ This example is **synthetic**: it is the real output for the generated "small" f
 $ healthcli --db demo.db overview --full
  ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
        23:12                                                              06:30
- awake                       ░░░                        ░░                     
+ awake                       ░░░                        ░░
  REM                    ▓▓▓▓▓                      ▓▓▓▓▓                     ▓▓
- core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒  
- deep          ████                     █████                      ████        
+ core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒
+ deep          ████                     █████                      ████
               00        01        02        03        04        05        06
 
- STAT         LAST NIGHT          7 NIGHTS            VS 13-NIGHT USUAL
+ STAT         LAST NIGHT          7 NIGHTS            VS 12-NIGHT USUAL
  Asleep       7h 01m              7h 08m              – typical
  In bed       7h 30m              7h 37m              – typical
  Efficiency   94%                 94%                 – typical
@@ -248,11 +252,11 @@ $ healthcli --db demo.db overview --full
 
 The same full sections are available on their own as `healthcli sleep` and `healthcli workouts`.
 
-Each metric is compared with its own 28-day usual and shows its own newest day and age. When a value is beyond your usual (1+ standard deviation, and a change of at least 2% or a small per-metric minimum) it is coloured by which direction is generally healthy for that metric: **green** and the word "better", **red** and "worse". Metrics with no good direction (weight, respiratory rate, wrist temperature) have no colour and say "higher" or "lower" in plain text. Every beyond-usual row has its word, so nothing depends on colour; typical rows are plain. The legend names the margin markers, so it reads the same without colour. Stale readings are yellow. The legend is the line under the table. Walking double support time and walking asymmetry are judged by their level: a rise that stays inside the range (up to 40% for double support, Apple's typical walking range; up to 35% for asymmetry) says only "higher" or "lower", leaving it is "worse" and coming back is "better". Metrics that are themselves a percentage show their change in points (`pt`), not a relative percent. Three metrics also have a reference limit for the level itself (resting heart rate above 100 bpm, respiratory rate above 20/min, blood oxygen below 95%): when the latest value is outside it, a plain dim note under that category says so (for example "Blood oxygen 93% is below the usual adult level of 95% (general guide, not medical advice)"). The note never colours a row or changes its word, because a level against a population is not a change against your own usual; watch readings are estimates, and this is not medical advice.
+Each metric is compared with its own 28-day usual and shows its own newest day and age. When a value is beyond your usual (1+ standard deviation, and a change of at least 2% or a small per-metric minimum) it is coloured by which direction is generally healthy for that metric: **green** and the word "better", **red** and "worse". Metrics with no good direction (weight, respiratory rate, wrist temperature) have no colour and say "higher" or "lower" in plain text. Every beyond-usual row has its word, so nothing depends on colour; typical rows are plain. The legend names the margin markers, so it reads the same without colour. Stale readings are yellow. The legend is the line under the table. Walking double support time and walking asymmetry are judged by their level: a rise that stays inside the range (up to 40% for double support, Apple's typical walking range; up to 35% for asymmetry) says only "higher" or "lower", leaving it is "worse" and coming back is "better". Metrics that are themselves a percentage show their change in points (`pt`), not a relative percent. Three metrics also have a reference limit for the level itself (resting heart rate above 100 bpm, respiratory rate above 20/min, blood oxygen below 95%): when the latest value is outside it, a plain dim note under that category says so (for example "Blood oxygen 93% is below the usual adult level of 95% (general guide, not medical advice)"). The note never colours a row or changes its word, because a level against a population is not a change against your own usual; watch readings are estimates, and this is not medical advice. The double support (40%) and walking asymmetry (35%) limits give the same kind of note, under MOBILITY (for example "Double support time 45.0% is above 40.0%, the top of Apple's typical walking range"). Walking steadiness has no range: Apple publishes no numeric cut-offs.
 
 > The better/worse direction is a general guide, not medical advice. What is healthy for one person (an athlete's low resting heart rate, deliberate weight change) can differ.
 
-The calendar at the end shows daily steps (else exercise time, else active energy); `--weeks N` sets its length (default 12, `0` hides all calendars) and `--heatmap steps,sleep,workouts,METRIC` draws exactly the calendars you name, in that order. On a pipe, or with `--ascii`, the output is plain ASCII; `--no-color` and `NO_COLOR` turn colour off, and `--json` prints the same report as JSON, including each metric's polarity and verdict, `not_tracked` and the heatmap grid.
+The calendar at the end shows daily steps (else exercise time, else active energy); `--weeks N` sets its length (default 12, `0` hides all calendars) and `--heatmap steps,sleep,workouts,METRIC` draws exactly the calendars you name, in that order. On a pipe, or with `--ascii`, the output is plain ASCII; `--no-color` and `NO_COLOR` turn colour off, and `--json` prints the same report as JSON, including each metric's polarity, verdict and `range` (for the metrics that have one), `not_tracked` and the heatmap grid. `--category` narrows the JSON the same way as the text: only the chosen categories' metrics and counts, and the `sleep` and `workouts` parts only when named. `sleep.state` is `ok`, `stale`, `no_data` or `in_bed_only` (a latest night with in-bed time but no sleep stages). The workouts figures in the overview (headline, table) cover the last 28 days.
 
 A day's summary against your recent baseline: `today` is a one-day slice of the overview (same bands, gutter markers, colours and widths), with a USUAL column (your 28-day usual before that day) instead of the trend line:
 
@@ -314,7 +318,7 @@ $ healthcli --db demo.db today --date 2026-11-08
 
 The example is **synthetic**: real output for the generated "small" fixture (made-up data, no real health data), with dates shifted to look current. `today` uses the same category bands, gutter markers (`!` worse, `+` better, `~` changed), colours and 50–100 column widths as `overview`, and the same index line under the headline (without a "not tracked" tail). Each row reads LATEST, USUAL and VS USUAL, with the range gauge after the delta when it fits; the 28-day usual is the 28 days before that day, and sleep's usual is the nights before the one shown. Only metrics with a reading on that day get a row; one dim line counts the tracked metrics with none, and a day with no workouts has no WORKOUTS section. Sleep belongs to the date it ends on, counting sleep that ends after 18:00 as the next day's night.
 
-Without `--date`, `today` shows today; if that day has no data at all, the latest day with data is shown instead, with a dim line saying so (`No data for 2026-11-09; showing 2026-11-08, the latest day with data`). A future date is an error. `--category`, `--compact`, `--ascii` and `--no-color` work as in `overview`; `--category` narrows the text and `--json` alike. `--json` keeps its documented fields (see `healthcli today --help`) and adds category, polarity, verdict, usual, `categories`, `tracked_without_reading` and `sleep_summary`.
+Without `--date`, `today` shows today; if that day has no data at all, the latest day with data is shown instead, with a dim line saying so (`No data for 2026-11-09; showing 2026-11-08, the latest day with data`). A future date is an error. `--category`, `--compact`, `--ascii` and `--no-color` work as in `overview`; `--category` narrows the text and `--json` alike. `--json` keeps its documented fields (see `healthcli today --help`) and adds category, polarity, verdict, usual, `range` (the same object as in the overview, only for metrics with a reference range), `categories`, `tracked_without_reading` and `sleep_summary`. The day shown falls back to the latest day with data, but never past today's date.
 
 A metric over time:
 
@@ -329,22 +333,44 @@ Last 7 days vs previous 7: 20,640 steps vs 19,563 steps  (+1,078 steps, +5.5%)
 Baseline (28 days): 20,101 steps
 ```
 
-Metrics: `heart_rate` (`hr`), `resting_heart_rate`, `step_count` (`steps`), `hrv_sdnn`, `body_mass` (`weight`), `active_energy`, and `sleep`.
+`trend` takes any metric of the registry (about 30, plus `sleep` for hours asleep per night) and the aliases above; `healthcli trend --help` lists them all. On a pipe, or with `--ascii`, the sparkline uses plain characters (`_` marks a day without data); `--no-color` turns colour off; lines never run past the terminal width (50 to 100 columns). The baseline is the 28 days before the last day shown, the same as in `overview` and `today`. The example above is a real run on the small fixture in a terminal; on a pipe the sparkline reads `.#*+*-::+==@##`.
 
-Plain SQL (read-only; only `SELECT` is allowed):
+Plain SQL. The database is opened read-only and `query` takes exactly one `SELECT`, `WITH` or `EXPLAIN` statement (a trailing `;` and leading comments are fine; a second statement, `PRAGMA` and `ATTACH` are refused). The example below ran after the `log weight` above, hence 6 `body_mass` rows:
 
 ```console
 $ healthcli --db demo.db query "SELECT metric, count(*) AS n FROM samples GROUP BY metric ORDER BY n DESC"
-metric              n
-step_count          448
-heart_rate          330
-active_energy       224
-hrv_sdnn            14
-resting_heart_rate  14
-body_mass           6
+metric                            n
+step_count                        448
+heart_rate                        330
+active_energy                     224
+oxygen_saturation                 28
+apple_exercise_time               14
+apple_sleeping_wrist_temperature  14
+apple_stand_time                  14
+basal_energy                      14
+distance_walking_running          14
+flights_climbed                   14
+hrv_sdnn                          14
+respiratory_rate                  14
+resting_heart_rate                14
+time_in_daylight                  14
+walking_asymmetry                 14
+walking_double_support            14
+walking_heart_rate_average        14
+walking_speed                     14
+walking_step_length               14
+heart_rate_recovery_one_minute    7
+body_mass                         6
+body_fat_percentage               5
+body_mass_index                   5
+lean_body_mass                    5
+apple_walking_steadiness          2
+vo2_max                           2
 ```
 
-Every command accepts `--json` for scripts:
+Commands that only read (`query`, `today`, `overview`, `sleep`, `workouts`, `heatmap`, `trend`) never create a database: with a wrong path they stop with `database not found: <path>; run "healthcli import apple <export.zip>" first`. Only `import` and `log` create the file.
+
+Every command accepts `--json` for scripts (field names are per command; see each `--help`):
 
 ```console
 $ healthcli --db demo.db query "SELECT metric, count(*) AS n FROM samples GROUP BY metric ORDER BY n DESC LIMIT 2" --json
@@ -362,7 +388,7 @@ The output below is from a synthetic test database (made-up step counts), not re
 
 ```console
 $ healthcli heatmap
-━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-04 ━━━━━━━━━━━━━━━━━━━━━
+━━ CALENDAR ━━ Steps per day, 12 weeks to 2026-11-04 ━━━━━━━━━━━━━━━━━━━━━
     Aug Sep     Oct     Nov
 Mon █ ▇ ▅ ▃ ▁ ▇ ▅ ▃ ▁ █ ▅ ▃
 Tue ▇ ▅ ▃ ▁ █ ▅ ▃ ▁ █ ▇ ▅ ▁
@@ -380,7 +406,7 @@ On a pipe or with `--ascii` the same chart uses plain characters:
 
 ```console
 $ healthcli heatmap --ascii
-== CALENDAR == step count per day, 12 weeks to 2026-11-04 =====================
+== CALENDAR == Steps per day, 12 weeks to 2026-11-04 =====================
     Aug Sep     Oct     Nov
 Mon @ # + - . # + - . @ + -
 Tue # + - . @ + - . @ # + .
@@ -396,7 +422,7 @@ _ no data   < today   steps per day
 
 ### Workouts
 
-`healthcli workouts [--days N] [--weeks N] [--by type]` shows totals per activity type with a share bar, weekly training time (the current week is marked and gets no change figure), personal bests over 90 days (an activity needs 3 sessions), every session of the last 7 days and a calendar of workout minutes per day, where empty days after your first workout are rest days. `--by type` draws each day's main activity as a letter. Columns with no data (no calories or distance recorded) disappear, and with no workouts you get one line, not an error. `--json` prints the report (durations in seconds; values that are absent are left out, never `null`).
+`healthcli workouts [--days N] [--weeks N] [--by type]` shows totals per activity type with a share bar, weekly training time (the current week is marked and gets no change figure), personal bests over 90 days (an activity needs 3 sessions), every session of the last 7 days (RECENT: today included, newest first, whatever `--days` says) and a calendar of workout minutes per day, where empty days after your first workout are rest days. `--by type` draws each day's main activity as a letter. Columns with no data (no calories or distance recorded) disappear, and with no workouts you get one line, not an error. `--json` prints the report (durations in seconds; values that are absent are left out, never `null`).
 
 Synthetic data, not real:
 
@@ -458,31 +484,31 @@ Delete that file to start over.
 
 ### Sleep
 
-`healthcli sleep` shows last night as a hypnogram (awake, REM, core and deep over the night; a short awakening still shows), then last night, your last 7 nights and the change against your usual over `--nights` nights (default 28), with bedtime regularity and sleep debt against `--sleep-target` (default `8h`). A calendar of the nights follows (`--weeks`, `0` hides it; `--by asleep|bedtime|efficiency`); with fewer than 14 nights you get a small bar per night instead. Only what your data holds is shown: a device that records just "asleep" gets a single bar, in-bed time alone shows no sleep numbers, and rows without data are left out (one dim `not available:` line names them). Green is better, red worse, always with a word; rows with no good direction (bedtime, in bed) have no colour and say later/earlier, longer/shorter or higher/lower. A night is the sleep that ends on a date (18:00 to 18:00). Output below is synthetic.
+`healthcli sleep` shows last night as a hypnogram (awake, REM, core and deep over the night; a short awakening still shows), then last night, your last 7 nights and the change against your usual: the `--nights` nights (default 28) BEFORE the night shown, the same rule in `sleep`, `overview` and `today` (the 7- and 14-night figures include the night shown), with bedtime regularity and sleep debt against `--sleep-target` (default `8h`). A calendar of the nights follows (`--weeks`, `0` hides it; `--by asleep|bedtime|efficiency`); with fewer than 14 nights you get a small bar per night instead. Only what your data holds is shown: a device that records just "asleep" gets a single bar, in-bed time alone is not counted as a night of sleep and shows no sleep numbers, and rows without data are left out (one dim `not available:` line names them). Green is better, red worse, always with a word; rows with no good direction (bedtime, in bed) have no colour and say later/earlier, longer/shorter or higher/lower. A night is the sleep that ends on a date (18:00 to 18:00). Output below is synthetic.
 
 ```
 $ healthcli sleep
  ━━ SLEEP ━━ Wed 4 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
        00:05                                                              06:00
- awake                                      ░                  ░               
+ awake                                      ░                  ░
  REM                                    ▓▓▓▓             ▓▓▓▓▓▓           ▓▓▓▓▓
- core  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒         ▒▒▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒▒     
- deep                █████████                                                 
+ core  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒         ▒▒▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒▒
+ deep                █████████
                   01          02          03          04          05
 
  STAT         LAST NIGHT          7 NIGHTS            VS 28-NIGHT USUAL
  Asleep       5h 50m              6h 08m              ▼ -11% worse
- In bed       6h 03m              6h 29m              ▼ -12% shorter
+ In bed       6h 03m              6h 29m              ▼ -13% shorter
  Efficiency   96%                 94%                 – typical
  Awake        5m / 2 awakenings   9m / 2 awakenings   – typical
  Latency      ~8m                 11m                 – typical
  Deep         45m 13%             45m                 – typical
  REM          1h 15m 21%          1h 14m              – typical
- Core         3h 50m 66%          4h 08m              ▼ -15% shorter
- Bedtime      00:05               23:58               ▲ +49m later
+ Core         3h 50m 66%          4h 08m              ▼ -16% shorter
+ Bedtime      00:05               23:58               ▲ +50m later
  Wake         06:00               06:15               – typical
  Midpoint     03:03               03:07               ▲ +26m later
- Regularity   ±51m bed ±34m mid (14 nights)           ▲ worse than usual (±39m)
+ Regularity   ±51m bed ±34m mid (14 nights)           ▲ worse than usual (±38m)
  Sleep debt   2h 10m short last night, 7 nights: 13h 07m short vs 8h target
  + better  ! worse  ~ higher/lower, no good direction
 
@@ -509,10 +535,10 @@ $ healthcli sleep
  asleep 5h 55m   00:05 → 06:00   midpoint 03:03           (stages not recorded)
 
  STAT         LAST NIGHT          6 NIGHTS            VS USUAL
- Asleep       5h 55m              6h 18m              need 7 nights (have 6)
- Bedtime      00:05               00:00               need 7 nights (have 6)
- Wake         06:00               06:18               need 7 nights (have 6)
- Midpoint     03:03               03:09               need 7 nights (have 6)
+ Asleep       5h 55m              6h 18m              need 7 nights (have 5)
+ Bedtime      00:05               00:00               need 7 nights (have 5)
+ Wake         06:00               06:18               need 7 nights (have 5)
+ Midpoint     03:03               03:09               need 7 nights (have 5)
  Regularity   ±19m bed ±13m mid (6 nights)
  Sleep debt   2h 05m short last night, 6 nights: 10h 15m short vs 8h target
  not available: in bed, efficiency, awake, latency, deep, REM, core
@@ -556,7 +582,7 @@ Installing with Homebrew or `go install` avoids this.
 
 **Does it write to my Health app?** No. It reads an export file and writes only its own SQLite database.
 
-**Which Health data is supported?** Heart rate, resting heart rate, HRV, steps, active energy, body mass, sleep and workouts. Other record types are skipped and counted in the import summary (`unknown_type`).
+**Which Health data is supported?** Sleep, workouts and about 30 metrics: heart rate, resting and walking heart rate, heart rate recovery, HRV, respiratory rate, blood oxygen, wrist temperature, VO2 max, blood pressure, blood glucose, steps, distance, flights, exercise, stand and daylight time, active and resting energy, body mass, body fat, BMI, lean body mass, height, and the walking metrics (speed, step length, asymmetry, double support, steadiness). The registry in `internal/metrics` is the full list, and `healthcli trend --help` prints the names. Other record types are skipped and counted in the import summary (`unknown_type`), and the most common ones are listed after it.
 
 ## Development
 
