@@ -184,3 +184,56 @@ func TestTodayFlagsAndErrors(t *testing.T) {
 		t.Errorf("category/compact: %v\n%s", err, out)
 	}
 }
+
+// today --json carries the same range object as the overview JSON, and only
+// for metrics that have a reference range.
+func TestTodayJSONMetricRange(t *testing.T) {
+	fixClock(t, overviewNow)
+	path := seedOverview(t, "import:small")
+	type metric struct {
+		Metric string `json:"metric"`
+		Range  *struct {
+			Low      float64 `json:"low"`
+			High     float64 `json:"high"`
+			Source   string  `json:"source"`
+			Position string  `json:"position"`
+		} `json:"range"`
+	}
+	rangeByMetric := func(args ...string) map[string]*metric {
+		t.Helper()
+		out, _, err := run(t, append([]string{"--db", path}, args...)...)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var rep struct {
+			Metrics []*metric `json:"metrics"`
+		}
+		if err := json.Unmarshal([]byte(out), &rep); err != nil {
+			t.Fatal(err)
+		}
+		got := map[string]*metric{}
+		for _, m := range rep.Metrics {
+			got[m.Metric] = m
+		}
+		return got
+	}
+	day := rangeByMetric("today", "--date", "2026-11-08", "--json")
+	over := rangeByMetric("overview", "--json")
+	checked := 0
+	for name, m := range day {
+		o := over[name]
+		if o == nil || o.Range == nil {
+			if m.Range != nil {
+				t.Errorf("%s: range in today but not in overview", name)
+			}
+			continue
+		}
+		checked++
+		if m.Range == nil || *m.Range != *o.Range {
+			t.Errorf("%s: today range %+v, overview range %+v", name, m.Range, o.Range)
+		}
+	}
+	if checked == 0 {
+		t.Error("no metric with a range was compared")
+	}
+}

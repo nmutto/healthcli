@@ -59,6 +59,9 @@ type todayMetric struct {
 	State    string   `json:"state"`           // added: ok or no_baseline
 	Verdict  string   `json:"verdict"`         // added: better, worse, changed or typical; "" without a baseline
 	Usual    *float64 `json:"usual,omitempty"` // added: the 28-day mean, same as baseline.mean
+	// Range is the metric's reference range and where the value sits, the same
+	// object as in the overview JSON; left out for metrics without one.
+	Range *stats.RangeCheck `json:"range,omitempty"` // added
 }
 
 type baselineInfo struct {
@@ -390,7 +393,7 @@ func metricJSON(row stats.MetricRow, day string) (todayMetric, error) {
 	}
 	m := todayMetric{
 		Metric: row.Metric, Label: row.Label, Unit: row.Unit, Value: jsonSafe(row.Value), Source: row.Source,
-		Category: row.Category, Polarity: row.Polarity, State: row.State, Verdict: row.Verdict, Usual: row.Mean,
+		Category: row.Category, Polarity: row.Polarity, State: row.State, Verdict: row.Verdict, Usual: row.Mean, Range: row.Range,
 		Baseline: &baselineInfo{DaysWithData: row.BaselineDays, DaysNeeded: stats.MinBaselineDays, From: from, To: to},
 	}
 	if row.Mean != nil && row.Stddev != nil && row.Value != nil {
