@@ -167,7 +167,7 @@ type MetricRow struct {
 	BaselineDays int      `json:"baseline_days_with_data"`
 	Mean         *float64 `json:"baseline_mean,omitempty"`
 	Stddev       *float64 `json:"baseline_stddev,omitempty"`
-	DeltaPct     *float64 `json:"delta_pct,omitempty"`
+	DeltaPct     *float64 `json:"delta_pct,omitempty"` // omitted when the baseline mean is 0
 	Z            *float64 `json:"z,omitempty"`
 	Comparison   *string  `json:"comparison,omitempty"` // above, below or typical
 	// Verdict is Comparison seen through Polarity: better, worse, changed
@@ -260,6 +260,9 @@ const futureSlack = 24 * time.Hour
 func meaningful(m metrics.Metric, c Comparison) bool {
 	if m.MinDelta > 0 {
 		return math.Abs(c.Delta) >= m.MinDelta
+	}
+	if !c.HasPct { // baseline mean 0: no percentage, so any change counts
+		return c.Delta != 0
 	}
 	return math.Abs(c.DeltaPct) >= MinRelativeChange
 }
@@ -553,7 +556,10 @@ func fillComparison(ctx context.Context, conn *sql.DB, row *MetricRow, m metrics
 	}
 	row.State = StateOK
 	row.Mean, row.Stddev = &b.Mean, &b.Stddev
-	row.DeltaPct, row.Z, row.Comparison = &c.DeltaPct, &c.Z, &lab
+	row.Z, row.Comparison = &c.Z, &lab
+	if c.HasPct {
+		row.DeltaPct = &c.DeltaPct
+	}
 	row.Verdict = Verdict(m.Polarity, lab)
 	return nil
 }

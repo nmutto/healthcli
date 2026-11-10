@@ -337,3 +337,24 @@ func TestHeatmapAllZeroIsLowestShade(t *testing.T) {
 		}
 	}
 }
+
+// A baseline mean of 0 has no percentage, yet a change away from it still
+// counts: 0 flights climbed for days, then 30, is better.
+func TestOverviewZeroBaselineChangeCounts(t *testing.T) {
+	conn := newDB(t)
+	for i := 0; i < 8; i++ {
+		addSample(t, conn, "flights_climbed", fmt.Sprintf("2026-10-%02d 07:00 +0000", 30-i), 0, watch)
+	}
+	addSample(t, conn, "flights_climbed", "2026-11-08 07:00 +0000", 30, watch)
+	o, err := BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := rowFor(t, o, "flights_climbed")
+	if r.Verdict != VerdictBetter {
+		t.Errorf("verdict = %q, want better", r.Verdict)
+	}
+	if r.DeltaPct != nil {
+		t.Errorf("delta_pct = %v, want nil (baseline mean is 0)", *r.DeltaPct)
+	}
+}

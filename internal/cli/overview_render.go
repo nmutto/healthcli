@@ -266,7 +266,7 @@ func headline(o *stats.Overview, v overviewView, g glyphSet, width int) string {
 		parts = append(parts, text)
 	}
 	if mover != nil {
-		parts = append(parts, fmt.Sprintf("%s %s", mover.Label, pctText(*mover.DeltaPct)))
+		parts = append(parts, fmt.Sprintf("%s %s", mover.Label, pctOrNA(mover.DeltaPct)))
 	}
 	if s := o.Sleep; v.wants(sleepName) && s.State == stats.StateOK && s.AsleepSecs > 0 {
 		parts = append(parts, "slept "+formatDuration(time.Duration(s.AsleepSecs)*time.Second))
@@ -294,6 +294,30 @@ func joinFit(parts []string, width int, g glyphSet) string {
 
 // pctText is a signed whole percent: "+24%", "-3%", "0%". Beyond +-999 it
 // is capped, so a freak value cannot break the column.
+// deltaText is the arrow and percentage of a metric row. With a baseline mean
+// of 0 there is no percentage, so only the direction and "n/a" show.
+func deltaText(r stats.MetricRow, g glyphSet) string {
+	if r.DeltaPct != nil {
+		return g.deltaArrow(*r.DeltaPct) + " " + pctText(*r.DeltaPct)
+	}
+	arrow := g.flat
+	switch {
+	case *r.Value > *r.Mean:
+		arrow = g.up
+	case *r.Value < *r.Mean:
+		arrow = g.down
+	}
+	return arrow + " n/a"
+}
+
+// pctOrNA is pctText for a percentage that may be missing.
+func pctOrNA(pct *float64) string {
+	if pct == nil {
+		return "n/a"
+	}
+	return pctText(*pct)
+}
+
 func pctText(pct float64) string {
 	r := math.Round(pct)
 	switch {
@@ -359,7 +383,7 @@ func deltaAreaIn(r stats.MetricRow, g glyphSet, st style, showBand bool, areaW i
 	switch r.State {
 	case stats.StateOK:
 		paint := verdictPaint(st, r.Verdict)
-		text := g.deltaArrow(*r.DeltaPct) + " " + pctText(*r.DeltaPct)
+		text := deltaText(r, g)
 		if w := verdictWord(r.Verdict); w != "" {
 			text += " " + w
 		}

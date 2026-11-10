@@ -135,7 +135,8 @@ type Comparison struct {
 	Value    float64
 	Mean     float64
 	Delta    float64 // Value - Mean, in the metric's unit
-	DeltaPct float64 // Delta as a percentage of Mean; 0 when Mean is 0
+	DeltaPct float64 // Delta as a percentage of Mean; 0 when Mean is 0 (see HasPct)
+	HasPct   bool    // false when Mean is 0: a percentage of zero does not exist
 	Z        float64 // Delta in standard deviations; 0 when Stddev is 0
 	Label    string  // Above, Below or Typical
 }
@@ -151,6 +152,7 @@ func Compare(value float64, b Baseline) Comparison {
 		c.Delta = 0 // same value, give or take float rounding
 	}
 	if b.Mean != 0 {
+		c.HasPct = true
 		c.DeltaPct = finite(c.Delta / math.Abs(b.Mean) * 100)
 	}
 

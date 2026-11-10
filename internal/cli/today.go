@@ -72,10 +72,10 @@ type baselineInfo struct {
 }
 
 type comparisonInfo struct {
-	Delta    float64 `json:"delta"`
-	DeltaPct float64 `json:"delta_pct"`
-	Z        float64 `json:"z"`
-	Label    string  `json:"label"` // above, below or typical
+	Delta    float64  `json:"delta"`
+	DeltaPct *float64 `json:"delta_pct"` // null when the usual is 0
+	Z        float64  `json:"z"`
+	Label    string   `json:"label"` // above, below or typical
 }
 
 type todaySleep struct {
@@ -399,7 +399,10 @@ func metricJSON(row stats.MetricRow, day string) (todayMetric, error) {
 		// The raw comparison, before the "too small to matter" rule that the
 		// verdict applies.
 		c := stats.Compare(*row.Value, stats.Baseline{Mean: *row.Mean, Stddev: *row.Stddev})
-		m.Comparison = &comparisonInfo{Delta: c.Delta, DeltaPct: c.DeltaPct, Z: c.Z, Label: c.Label}
+		m.Comparison = &comparisonInfo{Delta: c.Delta, Z: c.Z, Label: c.Label}
+		if c.HasPct {
+			m.Comparison.DeltaPct = &c.DeltaPct
+		}
 	}
 	return m, nil
 }

@@ -308,7 +308,7 @@ func TestCompare(t *testing.T) {
 	if got := Compare(79.5, flat); got.Label != Above {
 		t.Errorf("flat higher: %+v", got)
 	}
-	if got := Compare(5, Baseline{Mean: 0, Stddev: 0}); got.DeltaPct != 0 || got.Label != Above {
+	if got := Compare(5, Baseline{Mean: 0, Stddev: 0}); got.DeltaPct != 0 || got.HasPct || got.Label != Above {
 		t.Errorf("zero mean: %+v", got)
 	}
 }
