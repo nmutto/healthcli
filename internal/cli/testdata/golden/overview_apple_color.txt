@@ -71,7 +71,7 @@
  Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
  Tue Nov 03 walking     28m  2.3 km 12:00 /km 104 kcal
 
- [2m━━[0m [1mCALENDAR[0m [2m━━[0m step count per day, 12 weeks to 2026-11-08 [2m━━━━━━━━━━━━━━━━━━━━[0m
+ [2m━━[0m [1mCALENDAR[0m [2m━━[0m Steps per day, 12 weeks to 2026-11-08 [2m━━━━━━━━━━━━━━━━━━━━━━━━━[0m
      Aug Sep     Oct     Nov
  Mon [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [38;5;94m█[0m [38;5;94m█[0m
  Tue [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [2m·[0m [38;5;208m█[0m [38;5;166m█[0m
@@ -89,5 +89,5 @@
  sources: Watch 74%, iPhone 26%
  last import: 1,468 added · 9 duplicates
  skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
- days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13
+ days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13, +4 more
  [2mnot tracked in your data: 4 metrics[0m

@@ -15,7 +15,7 @@
  + Walking heart rate   90 bpm       94      ▼ -4% better
 
  ━━ ACTIVITY ━━ 8 · 2 better ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- + Steps                21,999 ste…  19,955  ▲ +10% better
+ + Steps                21,999       19,955  ▲ +10% better
  + Active energy        880 kcal     798     ▲ +10% better
    Resting energy       1,730 kcal   1,701   ▲ +2%
    Exercise time        43 min       37      ▲ +16%

@@ -48,7 +48,7 @@
  Thu Nov 05 running     31m  5.2 km 5:58 /km  410 kcal
  Mon Nov 02 cycling     55m 18.0 km 19.6 km/h 520 kcal
 
- ━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-08
+ ━━ CALENDAR ━━ Steps per day, 12 weeks to 2026-11-08 ━━━━━
      Aug Sep     Oct     Nov
  Mon · · · · · · · ▇ ▁ ▅ ▁ ▅
  Tue · · · · · · · ▅ █ ▃ ▇ ▃

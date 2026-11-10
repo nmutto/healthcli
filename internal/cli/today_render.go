@@ -219,7 +219,7 @@ func usualPlain(r stats.MetricRow) string {
 // deltaPlain is the text of the "vs usual" cell without colour or band.
 func deltaPlain(r stats.MetricRow, g glyphSet) string {
 	if r.State != stats.StateOK {
-		return fmt.Sprintf("need %dd (have %d)", stats.MinBaselineDays, r.BaselineDays)
+		return noBaselineText(r, 18)
 	}
 	text := deltaText(r, g)
 	if w := verdictWord(r); w != "" {

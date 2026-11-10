@@ -100,7 +100,7 @@
  ▁ ≤40m  ▃ ≤51m  ▅ ≤1h 00m  ▇ ≤1h 04m  █ >1h 04m
  · rest day   ◂ today   per day
 
- ━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━━━━━━
+ ━━ CALENDAR ━━ Steps per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━━━━━━━━━━━
      Aug Sep     Oct     Nov
  Mon · · · · · · · · · · ▁ ▁
  Tue · · · · · · · · · · ▇ ▅
@@ -118,5 +118,5 @@
  sources: Watch 74%, iPhone 26%
  last import: 1,468 added · 9 duplicates
  skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
- days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13
+ days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13, +4 more
  not tracked in your data: 4 metrics

@@ -15,7 +15,7 @@
    Weight          83.6 kg       ^ +1%
  + better  ! worse  ~ higher/lower
 
- == CALENDAR == step count per day, 12 weeks to 2026-11-08
+ == CALENDAR == Steps per day, 12 weeks to 2026-11-08 =====
      Aug Sep     Oct     Nov
  Mon _ _ _ _ _ _ _ _ . # - .
  Tue _ _ _ _ _ _ _ _ # @ - @

@@ -98,7 +98,7 @@ func renderHeatmap(h *stats.Heatmap, ti termInfo) []string {
 
 	// The first line is a band like every other section; the title gets
 	// shorter before it would be cut.
-	name := strings.ReplaceAll(heatTitle(h), "_", " ") + " per day"
+	name := heatTitle(h) + " per day"
 	total := ti.width - 1
 	title := name
 	for _, cand := range []string{
@@ -159,9 +159,9 @@ func renderHeatmap(h *stats.Heatmap, ti termInfo) []string {
 // metric name.
 func heatTitle(h *stats.Heatmap) string {
 	if h.Title != "" {
-		return h.Title
+		return metricLabel(h.Title)
 	}
-	return h.Metric
+	return metricLabel(h.Metric)
 }
 
 func heatFormat(h *stats.Heatmap, v float64) string {
@@ -171,11 +171,12 @@ func heatFormat(h *stats.Heatmap, v float64) string {
 	return formatValue(v, h.Metric)
 }
 
-func heatUnit(h *stats.Heatmap) string {
+func heatUnit(h *stats.Heatmap, unicode bool) string {
 	if h.Format != nil {
 		return h.Unit
 	}
-	return unitLabel(h.Metric, h.Unit)
+	u, _ := displayUnit(h.Metric, h.Unit, unicode)
+	return u
 }
 
 // restGlyph marks a rest day (a real zero). In Unicode the gap is already a
@@ -199,7 +200,7 @@ func heatTail(h *stats.Heatmap, ti termInfo, st style) []string {
 		marks = st.dim(string(g.gap)) + " no data"
 	}
 	unit := "per day"
-	if u := heatUnit(h); u != "" {
+	if u := heatUnit(h, ti.unicode); u != "" {
 		unit = u + " per day"
 	}
 	return wrapParts([]string{marks, todayMark(ti.unicode) + " today", unit}, "   ", ti.width)
@@ -344,7 +345,8 @@ the lowest shade; for workouts a dot means a rest day. Today is marked.
 The metric defaults to step_count; "sleep" (time asleep per day) and
 "workouts" (workout minutes per day, with rest days) work too. --weeks sets the
 maximum number of weeks (default 12); fewer are shown if the terminal is too
-narrow (oldest dropped).
+narrow (oldest dropped). Pages fit 50 to 100 columns ($COLUMNS or the terminal
+width); a narrower terminal is treated as 50, so lines may wrap there.
 
 JSON output (--json):
   metric, unit, today, from, thresholds (4 upper bounds of levels 1-4),

@@ -238,7 +238,7 @@ func planColumns(rows []stats.MetricRow, ti termInfo, g glyphSet, compact bool) 
 	c.labelW, c.latestW = len("METRIC"), len("LATEST")
 	for _, r := range rows {
 		c.labelW = max(c.labelW, runeLen(r.Label))
-		c.latestW = max(c.latestW, runeLen(fit(latestPlain(r, ti), latestCap, g)))
+		c.latestW = max(c.latestW, runeLen(latestFitted(r, ti, latestCap, g)))
 	}
 	if !c.foldAge {
 		for _, r := range rows {
@@ -302,10 +302,24 @@ func latestPlain(r stats.MetricRow, ti termInfo) string {
 	return withUnit(*r.Value, r.Metric, r.Unit, ti.unicode)
 }
 
+// latestFitted is latestPlain squeezed into width characters without ever
+// cutting a digit (a cut number reads as a smaller one): first the unit goes,
+// then the number turns scientific ("1.00e+14").
+func latestFitted(r stats.MetricRow, ti termInfo, width int, g glyphSet) string {
+	text := latestPlain(r, ti)
+	if r.Value == nil || runeLen(text) <= width {
+		return fit(text, width, g)
+	}
+	if num := formatValue(*r.Value, r.Metric); runeLen(num) <= width {
+		return num
+	}
+	return fit(strconv.FormatFloat(*r.Value, 'e', 2, 64), width, g)
+}
+
 // latestCell is the padded latest-value cell: the number plain, the unit dim
 // so the number stands out.
 func latestCell(r stats.MetricRow, width int, ti termInfo, g glyphSet, st style) string {
-	text := fit(latestPlain(r, ti), width, g)
+	text := latestFitted(r, ti, width, g)
 	numLen := 0
 	if r.Value != nil {
 		numLen = runeLen(formatValue(*r.Value, r.Metric))

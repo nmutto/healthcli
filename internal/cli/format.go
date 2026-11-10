@@ -150,6 +150,16 @@ func decimals(metric string) int {
 	return 0
 }
 
+// metricLabel is the name of a metric as a person reads it: the registry
+// Label ("Respiratory rate", "VO2 max"). Anything else (sleep, workouts, an
+// unknown name) is returned as given.
+func metricLabel(name string) string {
+	if m, err := metrics.Lookup(name); err == nil {
+		return m.Label
+	}
+	return name
+}
+
 // unitLabel is the unit as stored. Apple's "count" is meaningless to read,
 // so step counts say "steps".
 func unitLabel(metric, unit string) string {
