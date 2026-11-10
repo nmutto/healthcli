@@ -467,7 +467,7 @@ func colorIf(cond bool, paint func(string) string, s string) string {
 
 // verdictPaint is the colour decision: what colour a verdict gets.
 //
-//	better  -> green    worse -> bold red    changed, typical -> none
+//	better  -> green    worse -> bold red (ansiRed, 1;31)    changed, typical -> none
 //
 // "changed" is a metric beyond its usual that has no good direction
 // (neutral polarity): it says higher or lower in plain text, no colour.
