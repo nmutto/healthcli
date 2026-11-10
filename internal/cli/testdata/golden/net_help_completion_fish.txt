@@ -1,0 +1,22 @@
+Generate the autocompletion script for the fish shell.
+
+To load completions in your current shell session:
+
+	healthcli completion fish | source
+
+To load completions for every new session, execute once:
+
+	healthcli completion fish > ~/.config/fish/completions/healthcli.fish
+
+You will need to start a new shell for this setup to take effect.
+
+Usage:
+  healthcli completion fish [flags]
+
+Flags:
+  -h, --help              help for fish
+      --no-descriptions   disable completion descriptions
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text

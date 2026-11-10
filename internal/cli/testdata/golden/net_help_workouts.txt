@@ -1,0 +1,39 @@
+Show your workouts over the last --days days (default 28): totals per activity
+type with a share bar, weekly training time (--weeks, default 8) with a change
+against the average of the weeks before it (up to four, at least three), personal bests over 90 days (activities with
+at least 3 sessions), every session of the last 7 days (or of --days when that is shorter) and a calendar heatmap of workout
+minutes per day. Days without a workout in the calendar are rest days (shown
+from your first workout on). --by type draws each day's main activity as a
+letter.
+
+Columns with no data (no calories or distance recorded) are left out, and parts
+that need more sessions simply do not appear. The weekly deltas are not
+coloured green or red: more training is not automatically better.
+
+JSON output (--json):
+  today, days, count, duration_seconds, energy_kcal, distance_km (both left out
+  when never recorded), active_days, by_type[], weeks[] (start,
+  duration_seconds, count, partial, days, delta_pct), bests[] (kind, activity, day, ..., new),
+  recent[] (day, activity, start, end, duration_seconds, energy_kcal,
+  distance_km)
+All durations are seconds and absent values are left out, never null.
+
+Usage:
+  healthcli workouts [flags]
+
+Examples:
+  healthcli workouts
+  healthcli workouts --days 90 --weeks 12
+  healthcli workouts --by type
+
+Flags:
+      --ascii       use plain ASCII characters only
+      --by string   "type": draw the calendar with one letter per activity
+      --days int    window for totals, types and the recent list (1-365); the recent list is at most the last 7 days (default 28)
+  -h, --help        help for workouts
+      --no-color    never use colours
+      --weeks int   weeks of volume bars and calendar (1-53) (default 8)
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text

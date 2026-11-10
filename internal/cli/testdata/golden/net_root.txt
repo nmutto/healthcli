@@ -1,0 +1,349 @@
+$ healthcli 
+healthcli imports your Apple Health export into a local SQLite database
+and lets you log, review and query your data. Nothing leaves your machine.
+
+Usage:
+  healthcli [command]
+
+Examples:
+  healthcli import apple export.zip
+  healthcli log weight 72.5
+  healthcli today
+  healthcli overview
+  healthcli trend steps --days 30
+  healthcli query "SELECT * FROM samples LIMIT 5" --json
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  heatmap     Calendar heatmap of one metric, one cell per day
+  help        Help about any command
+  import      Import data from another source
+  log         Record a manual measurement
+  overview    One-screen summary of every metric, sleep, workouts and data health
+  query       Run a read-only SQL query
+  sleep       Last night's sleep: hypnogram, stats against your usual, calendar
+  today       Show a day's summary compared with your baseline
+  trend       Show how a metric changes over the last days
+  version     Print the healthcli version
+  workouts    Workouts: type table, weekly volume, bests, recent sessions and a calendar
+
+Flags:
+      --db string   SQLite database path (default: per-user data dir)
+  -h, --help        help for healthcli
+      --json        output JSON instead of human-readable text
+
+Use "healthcli [command] --help" for more information about a command.
+$ healthcli -h
+healthcli imports your Apple Health export into a local SQLite database
+and lets you log, review and query your data. Nothing leaves your machine.
+
+Usage:
+  healthcli [command]
+
+Examples:
+  healthcli import apple export.zip
+  healthcli log weight 72.5
+  healthcli today
+  healthcli overview
+  healthcli trend steps --days 30
+  healthcli query "SELECT * FROM samples LIMIT 5" --json
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  heatmap     Calendar heatmap of one metric, one cell per day
+  help        Help about any command
+  import      Import data from another source
+  log         Record a manual measurement
+  overview    One-screen summary of every metric, sleep, workouts and data health
+  query       Run a read-only SQL query
+  sleep       Last night's sleep: hypnogram, stats against your usual, calendar
+  today       Show a day's summary compared with your baseline
+  trend       Show how a metric changes over the last days
+  version     Print the healthcli version
+  workouts    Workouts: type table, weekly volume, bests, recent sessions and a calendar
+
+Flags:
+      --db string   SQLite database path (default: per-user data dir)
+  -h, --help        help for healthcli
+      --json        output JSON instead of human-readable text
+
+Use "healthcli [command] --help" for more information about a command.
+$ healthcli help
+healthcli imports your Apple Health export into a local SQLite database
+and lets you log, review and query your data. Nothing leaves your machine.
+
+Usage:
+  healthcli [command]
+
+Examples:
+  healthcli import apple export.zip
+  healthcli log weight 72.5
+  healthcli today
+  healthcli overview
+  healthcli trend steps --days 30
+  healthcli query "SELECT * FROM samples LIMIT 5" --json
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  heatmap     Calendar heatmap of one metric, one cell per day
+  help        Help about any command
+  import      Import data from another source
+  log         Record a manual measurement
+  overview    One-screen summary of every metric, sleep, workouts and data health
+  query       Run a read-only SQL query
+  sleep       Last night's sleep: hypnogram, stats against your usual, calendar
+  today       Show a day's summary compared with your baseline
+  trend       Show how a metric changes over the last days
+  version     Print the healthcli version
+  workouts    Workouts: type table, weekly volume, bests, recent sessions and a calendar
+
+Flags:
+      --db string   SQLite database path (default: per-user data dir)
+  -h, --help        help for healthcli
+      --json        output JSON instead of human-readable text
+
+Use "healthcli [command] --help" for more information about a command.
+$ healthcli help trend
+Show one metric over the last N days as a sparkline (a dot marks a day without
+data), with min, max and mean, the last 7 days against the 7 before, and the
+baseline (the 28 days before the last day, as in overview and today). On a
+pipe, or with --ascii, the sparkline uses plain ASCII characters instead of
+block bars (_ marks a day without data). With colour on, the bars use the same
+palette as the heatmaps: the hue of the metric (heart red, respiratory cyan,
+sleep blue, body purple and violet, orange for activity), dim for low days and
+bright for high ones.
+
+Metrics: heart_rate, resting_heart_rate, step_count, hrv_sdnn, body_mass, active_energy, respiratory_rate, apple_sleeping_wrist_temperature, oxygen_saturation, vo2_max, walking_heart_rate_average, heart_rate_recovery_one_minute, blood_pressure_systolic, blood_pressure_diastolic, blood_glucose, basal_energy, apple_exercise_time, apple_stand_time, flights_climbed, distance_walking_running, time_in_daylight, body_fat_percentage, body_mass_index, lean_body_mass, height, walking_speed, walking_step_length, walking_asymmetry, walking_double_support, apple_walking_steadiness, sleep (hours asleep per night).
+Aliases: hr, hrv, rhr, rr, spo2, steps, temp, vo2, weight, bmi.
+
+Pages fit 50 to 100 columns ($COLUMNS or the terminal width); a narrower
+terminal is treated as 50, so lines may wrap there.
+
+The window ends today unless --date says otherwise. With --verbose, a table
+lists every day with its value and source.
+
+JSON output (--json) has these fields:
+  status      "ok", or "no_data" if the window is empty (then latest_day says where data is)
+  metric, unit, from, to, days
+  daily[]     day, value (null on a gap), source        one entry per day
+  summary     days_with_data, min, min_day, max, max_day, mean   (null if no data)
+  change_7d   available, last7_mean, last7_days_with_data, previous7_mean,
+              previous7_days_with_data, delta, delta_pct
+  baseline    available, days_with_data, days_needed, mean   (the 28 days before "to")
+Sleep values are hours asleep.
+
+Usage:
+  healthcli trend <metric> [flags]
+
+Examples:
+  healthcli trend steps
+  healthcli trend weight --days 90
+  healthcli trend sleep --verbose
+  healthcli trend hr --days 14 --json
+
+Flags:
+      --ascii         use plain ASCII characters only
+      --date string   last day of the window, YYYY-MM-DD (default: today)
+      --days int      number of days to show (default 30)
+  -h, --help          help for trend
+      --no-color      never use colours
+  -v, --verbose       also print a per-day table
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text
+$ healthcli help import apple
+Import an Apple Health export file. In the Health app on your iPhone choose
+your profile picture, then "Export All Health Data", and pass the resulting file here.
+
+The file is streamed, so even multi-gigabyte exports use little memory.
+Importing the same file again adds nothing new.
+
+Usage:
+  healthcli import apple <export.zip|export.xml> [flags]
+
+Examples:
+  healthcli import apple export.zip
+  healthcli import apple export.xml --json
+
+Flags:
+  -h, --help   help for apple
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text
+$ healthcli help bogus
+Unknown help topic [`bogus`]
+Usage:
+  healthcli [command]
+
+Examples:
+  healthcli import apple export.zip
+  healthcli log weight 72.5
+  healthcli today
+  healthcli overview
+  healthcli trend steps --days 30
+  healthcli query "SELECT * FROM samples LIMIT 5" --json
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  heatmap     Calendar heatmap of one metric, one cell per day
+  help        Help about any command
+  import      Import data from another source
+  log         Record a manual measurement
+  overview    One-screen summary of every metric, sleep, workouts and data health
+  query       Run a read-only SQL query
+  sleep       Last night's sleep: hypnogram, stats against your usual, calendar
+  today       Show a day's summary compared with your baseline
+  trend       Show how a metric changes over the last days
+  version     Print the healthcli version
+  workouts    Workouts: type table, weekly volume, bests, recent sessions and a calendar
+
+Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text
+
+Use "healthcli [command] --help" for more information about a command.
+$ healthcli bogus
+--- error ---
+unknown command "bogus" for "healthcli"
+$ healthcli --bogus
+--- error ---
+unknown flag: --bogus
+$ healthcli trend --bogus
+--- error ---
+unknown flag: --bogus
+$ healthcli log -x
+--- error ---
+unknown shorthand flag: 'x' in -x
+$ healthcli version
+healthcli 0.1.0-dev (commit none, built unknown)
+$ healthcli version --json
+{"commit":"none","date":"unknown","version":"0.1.0-dev"}
+$ healthcli version extra
+--- error ---
+unknown command "extra" for "healthcli version"
+$ healthcli completion
+Generate the autocompletion script for healthcli for the specified shell.
+See each sub-command's help for details on how to use the generated script.
+
+Usage:
+  healthcli completion [command]
+
+Available Commands:
+  bash        Generate the autocompletion script for bash
+  fish        Generate the autocompletion script for fish
+  powershell  Generate the autocompletion script for powershell
+  zsh         Generate the autocompletion script for zsh
+
+Flags:
+  -h, --help   help for completion
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text
+
+Use "healthcli completion [command] --help" for more information about a command.
+$ healthcli completion bogus
+Generate the autocompletion script for healthcli for the specified shell.
+See each sub-command's help for details on how to use the generated script.
+
+Usage:
+  healthcli completion [command]
+
+Available Commands:
+  bash        Generate the autocompletion script for bash
+  fish        Generate the autocompletion script for fish
+  powershell  Generate the autocompletion script for powershell
+  zsh         Generate the autocompletion script for zsh
+
+Flags:
+  -h, --help   help for completion
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text
+
+Use "healthcli completion [command] --help" for more information about a command.
+$ healthcli completion bash extra
+--- error ---
+unknown command "extra" for "healthcli completion bash"
+$ healthcli import
+Import health data from an external source into the local database.
+
+Usage:
+  healthcli import [command]
+
+Available Commands:
+  apple       Import an Apple Health export
+
+Flags:
+  -h, --help   help for import
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text
+
+Use "healthcli import [command] --help" for more information about a command.
+$ healthcli import bogus
+Import health data from an external source into the local database.
+
+Usage:
+  healthcli import [command]
+
+Available Commands:
+  apple       Import an Apple Health export
+
+Flags:
+  -h, --help   help for import
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text
+
+Use "healthcli import [command] --help" for more information about a command.
+$ healthcli __complete trend 
+:0
+--- stderr ---
+Completion ended with directive: ShellCompDirectiveDefault
+$ healthcli __complete heatmap 
+:0
+--- stderr ---
+Completion ended with directive: ShellCompDirectiveDefault
+$ healthcli __complete 
+completion	Generate the autocompletion script for the specified shell
+heatmap	Calendar heatmap of one metric, one cell per day
+help	Help about any command
+import	Import data from another source
+log	Record a manual measurement
+overview	One-screen summary of every metric, sleep, workouts and data health
+query	Run a read-only SQL query
+sleep	Last night's sleep: hypnogram, stats against your usual, calendar
+today	Show a day's summary compared with your baseline
+trend	Show how a metric changes over the last days
+version	Print the healthcli version
+workouts	Workouts: type table, weekly volume, bests, recent sessions and a calendar
+:4
+--- stderr ---
+Completion ended with directive: ShellCompDirectiveNoFileComp
+$ healthcli __complete sleep --
+--db	SQLite database path (default: per-user data dir)
+--json	output JSON instead of human-readable text
+--ascii	use plain ASCII characters only
+--by	calendar value: asleep, bedtime, efficiency
+--help	help for sleep
+--nights	nights before the last one in the usual window (7-90)
+--no-color	never use colours
+--sleep-target	nightly sleep goal, e.g. 7h30m
+--weeks	weeks of calendar (0 hides it)
+:4
+--- stderr ---
+Completion ended with directive: ShellCompDirectiveNoFileComp
+$ healthcli __complete completion 
+bash	Generate the autocompletion script for bash
+fish	Generate the autocompletion script for fish
+powershell	Generate the autocompletion script for powershell
+zsh	Generate the autocompletion script for zsh
+:4
+--- stderr ---
+Completion ended with directive: ShellCompDirectiveNoFileComp

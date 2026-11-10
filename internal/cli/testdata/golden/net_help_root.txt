@@ -1,0 +1,34 @@
+healthcli imports your Apple Health export into a local SQLite database
+and lets you log, review and query your data. Nothing leaves your machine.
+
+Usage:
+  healthcli [command]
+
+Examples:
+  healthcli import apple export.zip
+  healthcli log weight 72.5
+  healthcli today
+  healthcli overview
+  healthcli trend steps --days 30
+  healthcli query "SELECT * FROM samples LIMIT 5" --json
+
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  heatmap     Calendar heatmap of one metric, one cell per day
+  help        Help about any command
+  import      Import data from another source
+  log         Record a manual measurement
+  overview    One-screen summary of every metric, sleep, workouts and data health
+  query       Run a read-only SQL query
+  sleep       Last night's sleep: hypnogram, stats against your usual, calendar
+  today       Show a day's summary compared with your baseline
+  trend       Show how a metric changes over the last days
+  version     Print the healthcli version
+  workouts    Workouts: type table, weekly volume, bests, recent sessions and a calendar
+
+Flags:
+      --db string   SQLite database path (default: per-user data dir)
+  -h, --help        help for healthcli
+      --json        output JSON instead of human-readable text
+
+Use "healthcli [command] --help" for more information about a command.

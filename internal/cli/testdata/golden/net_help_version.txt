@@ -1,0 +1,11 @@
+Print the healthcli version
+
+Usage:
+  healthcli version [flags]
+
+Flags:
+  -h, --help   help for version
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text

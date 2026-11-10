@@ -1,0 +1,8 @@
+bash         426 lines   16333 bytes sha256 c149b16e03994c0141c7675cc1b1037dddf202a872e022e275026965bd13ff0c
+bash         426 lines   16339 bytes sha256 39fb81f9e3805b74649b2d619949278fb65f990866898d41b08209ac3b80ae30 (no descriptions)
+zsh          212 lines    7856 bytes sha256 c93f4aadf37d3e8e2cee83430de02bff76b263ea7fde6876dd7a2717aa7a79fd
+zsh          212 lines    7862 bytes sha256 5cd84ba59ee6f64ff483009e722b15ac016ba219575e772ed2c32b1c4a485fc7 (no descriptions)
+fish         235 lines    9969 bytes sha256 49c59123b896eaa01743c084cc174edf9d23ed1ed83481c7248721a5e4fec7b0
+fish         235 lines    9975 bytes sha256 84b55617ad7f93fbb09247511cded04cfe4ce107f4e07a66145881afbeb7cfff (no descriptions)
+powershell   270 lines   10904 bytes sha256 13290d65a09fc406f1b0fad0545523fa9ab1fc2668e82e8d988d245321fdf598
+powershell   270 lines   10910 bytes sha256 838dae03924e7cf25b440695da2ffff5b9e65e15d2e1f93d0892d8598fb22d04 (no descriptions)

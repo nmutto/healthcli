@@ -1,0 +1,122 @@
+Show the latest value of each metric next to your 28-day usual, a band that
+shows where it sits, a 28-day trend line and how old the reading is; then last
+night's sleep, recent workouts, a calendar heatmap and a data-health summary.
+--category narrows the text and the --json alike, the same way as in "healthcli
+today": only the chosen categories' metrics, and the sleep and workouts parts
+only when named.
+
+Each metric is anchored on its own newest day, so a metric that was not
+recorded today still shows its last reading, with its age. A metric is "stale"
+when that reading is more than 3 days old.
+
+Only metrics that have data are listed; the rest are counted in a footer line.
+A value is "beyond your usual" when it is 1+ standard deviation from your
+28-day usual and the change is big enough to matter (2%, or a per-metric
+minimum such as 0.2 degC for wrist temperature); anything smaller is typical.
+
+Beyond-usual values are coloured by which direction is generally healthy for
+that metric: green with the word "better", red with "worse". Metrics with no
+good direction (weight, respiratory rate, ...) get no colour, only the word
+"higher" or "lower". That direction is a general guide, not medical advice.
+Stale data is yellow. Colour is never the only signal: rows with a usual to
+compare with have an arrow (stale rows and "need 7d" rows have none), and
+beyond-usual rows also carry the word.
+
+Walking double support time and walking asymmetry are judged by their level,
+not by the direction of the move: a rise that stays inside the range (double
+support up to 40%, Apple's typical walking range; asymmetry up to 35%, the
+level Apple's research uses to tell asymmetric walking apart) only says
+"higher" or "lower"; leaving the range is "worse" and coming back is "better".
+Metrics that are themselves a percentage report their change in points (pt),
+because a relative change of a small percentage means nothing.
+
+A few metrics also have a reference limit for the level itself: resting heart
+rate above 100 bpm, respiratory rate above 20 per minute and blood oxygen
+below 95%. When the latest value is outside it, a plain dim note under that
+category says so. The note never colours the row or changes its verdict (a
+level against a population is not a change against your own usual), it is a
+general guide and not medical advice, and watch readings are estimates.
+
+Metrics are grouped in category bands (vitals, activity, body, mobility) with a
+one-line summary each. A marker in the left gutter flags rows that need a look:
+"!" worse, "+" better, "~" changed. An index line under the headline lists the
+categories and counts the worse rows ("!1"); categories your data has nothing
+for are named once as "not tracked". The AGE column shows only readings 2 or
+more days old. --category vitals,sleep shows only those (vitals, activity,
+body, mobility, other, sleep, workouts); --compact drops the blank lines and
+keeps only a one-character flag in the gutter for small terminal panes; --full
+shows every section.
+
+SLEEP shows last night's hypnogram and the core rows of the sleep table (last
+night, 7 nights, vs your 28-night usual); WORKOUTS shows the totals, a table
+per activity type and the recent sessions. Both leave out silently when your
+data has none. Then comes one calendar heatmap of daily activity: steps if you
+have them, else exercise time, else active energy. --weeks sets its length
+(default 12, 0 hides all heatmaps). --heatmap steps,sleep,workouts,<metric>
+draws exactly those, in that order. --full shows the full sleep and workouts
+sections (all stat rows, weekly bars, bests, their heatmaps) and the activity
+heatmap. A single --category sleep or --category workouts also shows the full
+section, the same as "healthcli sleep" and "healthcli workouts".
+
+Pages fit 50 to 100 columns ($COLUMNS or the terminal width; a narrower
+terminal is treated as 50, so lines may wrap there). On a pipe,
+or with --ascii, only plain ASCII characters are used. NO_COLOR and --no-color
+switch colours off; FORCE_COLOR switches them on even for a pipe. Samples dated
+more than a day in the future are ignored.
+
+JSON output (--json) is the same report:
+  today, empty (true when the database has no data)
+  categories[]  name, total, better, worse, changed, typical, stale,
+             no_baseline, no_data
+  metrics[]  metric, label, category, polarity (higher_better|lower_better|
+             in_range|neutral), unit,
+             state (ok|no_baseline|stale|no_data), latest_day,
+             age_days, value, source, baseline_days_with_data, baseline_mean,
+             baseline_stddev, delta_pct, z, comparison (above|below|typical),
+             verdict (better|worse|changed|typical)
+             range {low, high, source, basis, position: below|within|above},
+             only for metrics with a reference range
+             spark (28 daily values ending today, null = no data)
+  sleep      state, night, age_days, source, *_seconds per stage, in_bed_seconds
+  workouts   days, count, duration_seconds, energy_kcal, latest
+  sleep_summary    the full sleep report ("healthcli sleep --help"); left out
+                   without sleep
+  workouts_report  the full workouts report ("healthcli workouts --help"); left
+                   out without workouts
+  heatmaps   only with --heatmap: calendars for the metrics named there, by
+             metric name (the sleep calendar is in sleep_summary.heatmap)
+  not_tracked[]  metrics with no data at all
+  heatmap    the activity grid ("healthcli heatmap --help"), left out if none
+  data       samples, sleep_nights, first_day, last_day, source_samples, last_import, gaps[]
+
+Usage:
+  healthcli overview [flags]
+
+Examples:
+  healthcli overview
+  healthcli overview --category vitals,activity
+  healthcli overview --compact
+  healthcli overview --full
+  healthcli overview --heatmap steps,sleep,workouts --weeks 26
+  healthcli overview --category sleep
+  healthcli overview --ascii --no-color
+  healthcli overview --json
+
+Flags:
+      --ascii              use plain ASCII characters only
+      --category strings   only these categories, comma list of
+                           vitals, activity, body, mobility,
+                           other, sleep, workouts
+      --compact            no blank lines between sections;
+                           gutter is one flag (! + ~)
+      --full               show every section and heatmap
+      --heatmap strings    heatmaps to show, comma list of
+                           steps|sleep|workouts|<metric> (default: steps,
+                           else exercise time, else active energy)
+  -h, --help               help for overview
+      --no-color           never use colours
+      --weeks int          weeks of every heatmap (0 hides them) (default 12)
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text

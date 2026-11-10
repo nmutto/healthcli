@@ -1,0 +1,17 @@
+Run one read-only SQL query (SELECT, WITH or EXPLAIN) against the local database and print the rows.
+The database is opened read-only; a second statement, PRAGMA and ATTACH are refused.
+Main table: samples(metric, start_ts, end_ts, value, unit, tz_offset, source).
+
+Usage:
+  healthcli query <sql> [flags]
+
+Examples:
+  healthcli query "SELECT count(*) FROM samples"
+  healthcli query "SELECT * FROM samples LIMIT 5" --json
+
+Flags:
+  -h, --help   help for query
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text

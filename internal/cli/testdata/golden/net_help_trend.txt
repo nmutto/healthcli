@@ -1,0 +1,48 @@
+Show one metric over the last N days as a sparkline (a dot marks a day without
+data), with min, max and mean, the last 7 days against the 7 before, and the
+baseline (the 28 days before the last day, as in overview and today). On a
+pipe, or with --ascii, the sparkline uses plain ASCII characters instead of
+block bars (_ marks a day without data). With colour on, the bars use the same
+palette as the heatmaps: the hue of the metric (heart red, respiratory cyan,
+sleep blue, body purple and violet, orange for activity), dim for low days and
+bright for high ones.
+
+Metrics: heart_rate, resting_heart_rate, step_count, hrv_sdnn, body_mass, active_energy, respiratory_rate, apple_sleeping_wrist_temperature, oxygen_saturation, vo2_max, walking_heart_rate_average, heart_rate_recovery_one_minute, blood_pressure_systolic, blood_pressure_diastolic, blood_glucose, basal_energy, apple_exercise_time, apple_stand_time, flights_climbed, distance_walking_running, time_in_daylight, body_fat_percentage, body_mass_index, lean_body_mass, height, walking_speed, walking_step_length, walking_asymmetry, walking_double_support, apple_walking_steadiness, sleep (hours asleep per night).
+Aliases: hr, hrv, rhr, rr, spo2, steps, temp, vo2, weight, bmi.
+
+Pages fit 50 to 100 columns ($COLUMNS or the terminal width); a narrower
+terminal is treated as 50, so lines may wrap there.
+
+The window ends today unless --date says otherwise. With --verbose, a table
+lists every day with its value and source.
+
+JSON output (--json) has these fields:
+  status      "ok", or "no_data" if the window is empty (then latest_day says where data is)
+  metric, unit, from, to, days
+  daily[]     day, value (null on a gap), source        one entry per day
+  summary     days_with_data, min, min_day, max, max_day, mean   (null if no data)
+  change_7d   available, last7_mean, last7_days_with_data, previous7_mean,
+              previous7_days_with_data, delta, delta_pct
+  baseline    available, days_with_data, days_needed, mean   (the 28 days before "to")
+Sleep values are hours asleep.
+
+Usage:
+  healthcli trend <metric> [flags]
+
+Examples:
+  healthcli trend steps
+  healthcli trend weight --days 90
+  healthcli trend sleep --verbose
+  healthcli trend hr --days 14 --json
+
+Flags:
+      --ascii         use plain ASCII characters only
+      --date string   last day of the window, YYYY-MM-DD (default: today)
+      --days int      number of days to show (default 30)
+  -h, --help          help for trend
+      --no-color      never use colours
+  -v, --verbose       also print a per-day table
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text
