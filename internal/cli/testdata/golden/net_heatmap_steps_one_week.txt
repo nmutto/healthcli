@@ -1,0 +1,12 @@
+== CALENDAR == Steps per day, 1 week to 2026-11-04 ============================
+    Nov
+Mon @
+Tue +
+Wed . <
+Thu
+Fri
+Sat
+Sun
+
+. <=3,780  + <=5,340  @ >6,120
+_ no data   < today   steps per day

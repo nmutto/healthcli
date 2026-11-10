@@ -1,0 +1,88 @@
+{
+  "metric": "step_count",
+  "unit": "count",
+  "today": "2026-11-04",
+  "from": "2026-10-26",
+  "thresholds": [
+    44,
+    51,
+    55,
+    60
+  ],
+  "days_with_data": 9,
+  "weeks": [
+    [
+      {
+        "day": "2026-10-26",
+        "value": 55,
+        "level": 3
+      },
+      {
+        "day": "2026-10-27",
+        "value": 62,
+        "level": 5
+      },
+      {
+        "day": "2026-10-28",
+        "value": 46,
+        "level": 2
+      },
+      {
+        "day": "2026-10-29",
+        "value": 53,
+        "level": 3
+      },
+      {
+        "day": "2026-10-30",
+        "value": 60,
+        "level": 4
+      },
+      {
+        "day": "2026-10-31",
+        "value": 44,
+        "level": 1
+      },
+      {
+        "day": "2026-11-01",
+        "value": 51,
+        "level": 2
+      }
+    ],
+    [
+      {
+        "day": "2026-11-02",
+        "value": 58,
+        "level": 4
+      },
+      {
+        "day": "2026-11-03",
+        "value": 42,
+        "level": 1
+      },
+      {
+        "day": "2026-11-04",
+        "level": 0
+      },
+      {
+        "day": "2026-11-05",
+        "level": 0,
+        "future": true
+      },
+      {
+        "day": "2026-11-06",
+        "level": 0,
+        "future": true
+      },
+      {
+        "day": "2026-11-07",
+        "level": 0,
+        "future": true
+      },
+      {
+        "day": "2026-11-08",
+        "level": 0,
+        "future": true
+      }
+    ]
+  ]
+}

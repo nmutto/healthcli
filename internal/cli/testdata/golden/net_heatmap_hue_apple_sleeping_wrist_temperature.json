@@ -1,0 +1,88 @@
+{
+  "metric": "apple_sleeping_wrist_temperature",
+  "unit": "degC",
+  "today": "2026-11-04",
+  "from": "2026-10-26",
+  "thresholds": [
+    60,
+    76,
+    100,
+    116
+  ],
+  "days_with_data": 9,
+  "weeks": [
+    [
+      {
+        "day": "2026-10-26",
+        "value": 72,
+        "level": 2
+      },
+      {
+        "day": "2026-10-27",
+        "value": 112,
+        "level": 4
+      },
+      {
+        "day": "2026-10-28",
+        "value": 60,
+        "level": 1
+      },
+      {
+        "day": "2026-10-29",
+        "value": 100,
+        "level": 3
+      },
+      {
+        "day": "2026-10-30",
+        "value": 48,
+        "level": 1
+      },
+      {
+        "day": "2026-10-31",
+        "value": 88,
+        "level": 3
+      },
+      {
+        "day": "2026-11-01",
+        "value": 128,
+        "level": 5
+      }
+    ],
+    [
+      {
+        "day": "2026-11-02",
+        "value": 76,
+        "level": 2
+      },
+      {
+        "day": "2026-11-03",
+        "value": 116,
+        "level": 4
+      },
+      {
+        "day": "2026-11-04",
+        "level": 0
+      },
+      {
+        "day": "2026-11-05",
+        "level": 0,
+        "future": true
+      },
+      {
+        "day": "2026-11-06",
+        "level": 0,
+        "future": true
+      },
+      {
+        "day": "2026-11-07",
+        "level": 0,
+        "future": true
+      },
+      {
+        "day": "2026-11-08",
+        "level": 0,
+        "future": true
+      }
+    ]
+  ]
+}
