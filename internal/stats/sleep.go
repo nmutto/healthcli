@@ -36,8 +36,9 @@ type SleepNight struct {
 	InBedStart, InBedEnd     int64
 	InBedStartTZ, InBedEndTZ int
 
-	// Awakenings counts awake periods of 5 minutes or more between Start and
-	// End; shorter blips are ignored. Latency is how long falling asleep took
+	// Awakenings counts every awake period between Start and End. The Watch
+	// writes short ones (a minute or two), and they are what Apple Health
+	// shows too, so there is no minimum length. Latency is how long falling asleep took
 	// (first asleep moment minus first in_bed moment), 0 when unknown: no
 	// in_bed row, or a gap over 90 minutes (the iPhone often starts "in bed"
 	// long before the Watch notices sleep, so it is only a guess).
@@ -268,9 +269,6 @@ func bestSleepSource(bySource map[string]*sleepTotals) (string, *sleepTotals) {
 	return best, bt
 }
 
-// minAwakening is the shortest awake period that counts as an awakening.
-const minAwakening = 5 * time.Minute
-
 // napGap is how far apart two pieces of sleep must be to be separate blocks.
 const napGap = 3 * time.Hour
 
@@ -322,8 +320,10 @@ func fillAsleepTimes(n *SleepNight, t *sleepTotals) {
 		n.Start, n.End, n.StartTZ, n.EndTZ = main.start, main.end, main.startTZ, main.endTZ
 		n.Nap = n.Asleep - main.asleep
 	}
+	// An awakening is an awake period inside the main block. Awake before
+	// falling asleep is latency and awake after the last wake is just being up.
 	for _, iv := range merge(t.byStage["awake"]) {
-		if iv.start >= n.Start && iv.end <= n.End && time.Duration(iv.end-iv.start)*time.Second >= minAwakening {
+		if iv.start >= n.Start && iv.end <= n.End && len(asleep) > 0 {
 			n.Awakenings++
 		}
 	}

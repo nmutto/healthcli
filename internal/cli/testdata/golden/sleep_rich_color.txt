@@ -10,7 +10,7 @@
  Asleep       5h 50m              6h 08m              [31m▼ -11% worse[0m
  In bed       6h 03m              6h 29m              [36m▼ -12% changed[0m
  Efficiency   96%                 94%                 [2m– typical[0m
- Awake        5m / 0 awakenings   9m / 1 awakening    [2m– typical[0m
+ Awake        5m / 2 awakenings   9m / 2 awakenings   [2m– typical[0m
  Latency      ~8m                 11m                 [2m– typical[0m
  Deep         45m 13%             45m                 [2m– typical[0m
  REM          1h 15m 21%          1h 14m              [2m– typical[0m

@@ -11,7 +11,7 @@ func TestSleepAsleepIsUnionOfStages(t *testing.T) {
 	// Core 23:00-02:00 and REM 01:00-03:00 overlap by an hour: asleep is 4 h, not 5 h.
 	addSleep(t, conn, "core", "2024-12-01 23:00 +0100", "2024-12-02 02:00 +0100", watch)
 	addSleep(t, conn, "rem", "2024-12-02 01:00 +0100", "2024-12-02 03:00 +0100", watch)
-	// A 12-minute and a 3-minute awake period inside the night; only the first is an awakening.
+	// A 12-minute and a 3-minute awake period inside the night: both are awakenings.
 	addSleep(t, conn, "awake", "2024-12-02 03:00 +0100", "2024-12-02 03:12 +0100", watch)
 	addSleep(t, conn, "core", "2024-12-02 03:12 +0100", "2024-12-02 04:00 +0100", watch)
 	addSleep(t, conn, "awake", "2024-12-02 04:00 +0100", "2024-12-02 04:03 +0100", watch)
@@ -28,8 +28,11 @@ func TestSleepAsleepIsUnionOfStages(t *testing.T) {
 	if want := 5*time.Hour + 45*time.Minute; n.Asleep != want {
 		t.Errorf("asleep %v, want %v", n.Asleep, want)
 	}
-	if n.Awakenings != 1 {
-		t.Errorf("awakenings %d, want 1 (the 3-minute blip is ignored)", n.Awakenings)
+	if n.Awakenings != 2 {
+		t.Errorf("awakenings %d, want 2 (short ones count too)", n.Awakenings)
+	}
+	if want := 15 * time.Minute; n.Awake != want {
+		t.Errorf("awake %v, want %v", n.Awake, want)
 	}
 	if n.Latency != 20*time.Minute {
 		t.Errorf("latency %v, want 20m", n.Latency)

@@ -10,7 +10,7 @@
  Asleep     5h 50m      6h 08m      v -11% worse
  In bed     6h 03m      6h 29m      v -12% changed
  Efficiency 96%         94%         - typical
- Awake      5m 0 wakes  9m 1 wake   - typical
+ Awake      5m 2 wakes  9m 2 wakes  - typical
  Latency    ~8m         11m         - typical
  Deep       45m 13%     45m         - typical
  REM        1h 15m 21%  1h 14m      - typical

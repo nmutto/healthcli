@@ -9,7 +9,7 @@
  STAT         LAST NIGHT          3 NIGHTS            VS USUAL
  Asleep       5h 50m              5h 59m              need 7 nights (have 3)
  Efficiency   99%                 97%                 need 7 nights (have 3)
- Awake        5m / 0 awakenings   9m / 1 awakening    need 7 nights (have 3)
+ Awake        5m / 2 awakenings   9m / 2 awakenings   need 7 nights (have 3)
  Deep         45m 13%             45m                 need 7 nights (have 3)
  REM          1h 15m 21%          1h 15m              need 7 nights (have 3)
  Core         3h 50m 66%          3h 59m              need 7 nights (have 3)
