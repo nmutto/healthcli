@@ -73,7 +73,7 @@ func runLog(cmd *cobra.Command, opts *options, metricArg, valueArg, unit, at str
 	if err := metric.CheckValue(value); err != nil {
 		return fmt.Errorf("cannot log %q: %w", valueArg, err)
 	}
-	now := time.Now()
+	now := nowFunc()
 	when, err := parseTime(at, now)
 	if err != nil {
 		return err

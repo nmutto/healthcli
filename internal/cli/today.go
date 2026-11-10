@@ -102,9 +102,6 @@ type todayWorkout struct {
 	Source          string   `json:"source"`
 }
 
-// nowFunc is the clock. Tests replace it so "today" is a fixed date.
-var nowFunc = time.Now
-
 func newTodayCmd(opts *options) *cobra.Command {
 	var date string
 	var noColor, ascii, compact bool
@@ -245,15 +242,6 @@ func checkNotFuture(date string, now time.Time) error {
 		return fmt.Errorf("bad --date %q: that day is in the future (today is %s)", date, today)
 	}
 	return nil
-}
-
-// cmdContext returns the command's context, or a background one if cobra
-// was started without any (older cobra versions leave it nil).
-func cmdContext(cmd *cobra.Command) context.Context {
-	if ctx := cmd.Context(); ctx != nil {
-		return ctx
-	}
-	return context.Background()
 }
 
 // buildToday gathers everything for date. When date has nothing at all it

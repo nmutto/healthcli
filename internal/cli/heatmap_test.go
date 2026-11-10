@@ -151,9 +151,7 @@ func TestHeatmapSleepAndWorkoutsGoldens(t *testing.T) {
 }
 
 func TestHeatmapCommandSleepWorkouts(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return heatNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, heatNow)
 
 	// No data: friendly line, exit 0.
 	for name, want := range map[string]string{
@@ -183,9 +181,7 @@ func TestHeatmapCommandSleepWorkouts(t *testing.T) {
 }
 
 func TestHeatmapCommand(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return heatNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, heatNow)
 
 	// Empty data: one friendly line, no error.
 	out, _, err := run(t, "--db", seedHeat(t, "empty"), "heatmap")
