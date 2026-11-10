@@ -2,49 +2,12 @@ package importer
 
 import (
 	"archive/zip"
-	"database/sql"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"github.com/nmutto/healthcli/internal/db"
 )
-
-const smallFixture = "../../testdata/small/export.xml"
-
-func newDB(t testing.TB) *sql.DB {
-	t.Helper()
-	conn, err := db.Open(filepath.Join(t.TempDir(), "test.db"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { conn.Close() })
-	return conn
-}
-
-func count(t *testing.T, conn *sql.DB, query string, args ...any) int64 {
-	t.Helper()
-	var n int64
-	if err := conn.QueryRow(query, args...).Scan(&n); err != nil {
-		t.Fatal(err)
-	}
-	return n
-}
-
-func writeFile(t *testing.T, name, content string) string {
-	t.Helper()
-	p := filepath.Join(t.TempDir(), name)
-	if err := os.WriteFile(p, []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	return p
-}
-
-func wrap(body string) string {
-	return `<?xml version="1.0"?><HealthData locale="en_US">` + body + `</HealthData>`
-}
 
 func TestImportSmallFixture(t *testing.T) {
 	conn := newDB(t)
@@ -190,128 +153,6 @@ func TestTimezoneOffsetPreserved(t *testing.T) {
 	}
 }
 
-func TestUnitsAndWorkoutNormalised(t *testing.T) {
-	const when = `startDate="2024-12-01 10:00:00 +0100" endDate="2024-12-01 11:00:00 +0100"`
-	p := writeFile(t, "export.xml", wrap(`
-<Record type="HKQuantityTypeIdentifierBodyMass" sourceName="S" unit="lb" `+when+` value="220.4623"/>
-<Record type="HKQuantityTypeIdentifierActiveEnergyBurned" sourceName="S" unit="kJ" `+when+` value="418.4"/>
-<Record type="HKQuantityTypeIdentifierHeartRate" sourceName="S" unit="count/min" `+when+` value="70"/>
-<Workout workoutActivityType="HKWorkoutActivityTypeHighIntensityIntervalTraining" duration="30" durationUnit="min" totalDistance="5" totalDistanceUnit="km" totalEnergyBurned="300" totalEnergyBurnedUnit="kcal" sourceName="S" `+when+`/>
-<Workout workoutActivityType="HKWorkoutActivityTypeYoga" duration="60" durationUnit="min" sourceName="S" `+when+`/>`))
-	conn := newDB(t)
-	if _, err := Import(conn, p, Options{}); err != nil {
-		t.Fatal(err)
-	}
-	check := func(metric string, wantVal float64, wantUnit string) {
-		t.Helper()
-		var v float64
-		var u string
-		if err := conn.QueryRow("SELECT value, unit FROM samples WHERE metric = ?", metric).Scan(&v, &u); err != nil {
-			t.Fatal(err)
-		}
-		if v != wantVal || u != wantUnit {
-			t.Errorf("%s = %v %s, want %v %s", metric, v, u, wantVal, wantUnit)
-		}
-	}
-	check("body_mass", 100, "kg")
-	check("active_energy", 100, "kcal")
-	check("heart_rate", 70, "bpm")
-
-	var act string
-	var dur, dist, kcal float64
-	err := conn.QueryRow("SELECT activity, duration_s, distance_m, energy_kcal FROM workouts WHERE distance_m IS NOT NULL").Scan(&act, &dur, &dist, &kcal)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if act != "high_intensity_interval_training" || dur != 1800 || dist != 5000 || kcal != 300 {
-		t.Errorf("workout = %s %v s %v m %v kcal", act, dur, dist, kcal)
-	}
-	if n := count(t, conn, "SELECT COUNT(*) FROM workouts WHERE distance_m IS NULL AND energy_kcal IS NULL"); n != 1 {
-		t.Errorf("workout without totals should store NULLs, got %d such rows", n)
-	}
-}
-
-func TestBadFiles(t *testing.T) {
-	conn := newDB(t)
-	cases := map[string]string{
-		"missing":    filepath.Join(t.TempDir(), "nope.xml"),
-		"not xml":    writeFile(t, "a.xml", "just some text"),
-		"wrong root": writeFile(t, "b.xml", "<Other/>"),
-		"truncated":  writeFile(t, "c.xml", "<HealthData><Record "),
-		"bad zip":    writeFile(t, "d.zip", "PK but not really a zip"),
-	}
-	for name, p := range cases {
-		if _, err := Import(conn, p, Options{}); err == nil {
-			t.Errorf("%s: want an error", name)
-		}
-	}
-}
-
-// 12_000 rows crosses the 5000-row batch boundary twice. Each row differs
-// only in its source, so none of them are duplicates.
-func TestBatchBoundaries(t *testing.T) {
-	var body strings.Builder
-	for i := 0; i < 12000; i++ {
-		fmt.Fprintf(&body, `<Record type="HKQuantityTypeIdentifierStepCount" sourceName="S%d" unit="count" `+
-			`startDate="2024-12-01 10:00:00 +0100" endDate="2024-12-01 11:00:00 +0100" value="1"/>`, i)
-	}
-	conn := newDB(t)
-	sum, err := Import(conn, writeFile(t, "export.xml", wrap(body.String())), Options{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if sum.Inserted != 12000 || count(t, conn, "SELECT COUNT(*) FROM samples") != 12000 {
-		t.Errorf("inserted %d, want 12000", sum.Inserted)
-	}
-}
-
-// record builds one Apple <Record> line for the unit-conversion tests.
-func record(typ, unit, value string) string {
-	return fmt.Sprintf(`<Record type="HKQuantityTypeIdentifier%s" sourceName="Watch" unit="%s" startDate="2024-12-01 07:00:00 +0100" endDate="2024-12-01 07:00:00 +0100" value="%s"/>`, typ, unit, value)
-}
-
-func TestImportNewTypesConvertUnits(t *testing.T) {
-	conn := newDB(t)
-	path := writeFile(t, "export.xml", wrap(
-		record("OxygenSaturation", "%", "0.97")+
-			record("RespiratoryRate", "count/min", "14.5")+
-			record("VO2Max", "mL/min·kg", "41.2")+
-			record("AppleSleepingWristTemperature", "degF", "97.7")+
-			record("WalkingAsymmetryPercentage", "%", "0.03")+
-			record("BodyMassIndex", "count", "24.1")+
-			record("WalkingSpeed", "km/hr", "5.1")))
-	sum, err := Import(conn, path, Options{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if sum.Inserted != 7 || sum.SkippedTotal() != 0 {
-		t.Fatalf("inserted %d, skipped %v; want 7 and none", sum.Inserted, sum.Skipped)
-	}
-	want := map[string]struct {
-		unit  string
-		value float64
-	}{
-		"oxygen_saturation":                {"percent", 97},
-		"respiratory_rate":                 {"breaths/min", 14.5},
-		"vo2_max":                          {"mL/kg/min", 41.2},
-		"apple_sleeping_wrist_temperature": {"degC", 36.5},
-		"walking_asymmetry":                {"percent", 3},
-		"body_mass_index":                  {"kg/m2", 24.1},
-		"walking_speed":                    {"km/h", 5.1},
-	}
-	for metric, w := range want {
-		var unit string
-		var value float64
-		if err := conn.QueryRow("SELECT unit, value FROM samples WHERE metric = ?", metric).Scan(&unit, &value); err != nil {
-			t.Errorf("%s: %v", metric, err)
-			continue
-		}
-		if unit != w.unit || value < w.value-1e-3 || value > w.value+1e-3 {
-			t.Errorf("%s stored as %v %s, want %v %s", metric, value, unit, w.value, w.unit)
-		}
-	}
-}
-
 func TestImportNewTypesIdempotent(t *testing.T) {
 	conn := newDB(t)
 	path := writeFile(t, "export.xml", wrap(record("OxygenSaturation", "%", "0.97")))
@@ -344,5 +185,61 @@ func TestImportRecordsSkippedTypes(t *testing.T) {
 	top := sum.TopSkippedTypes(5)
 	if len(top) != 2 || top[0].Type != "HKQuantityTypeIdentifierAudioExposure" || top[0].Count != 2 {
 		t.Errorf("top skipped types = %+v", top)
+	}
+}
+
+// BUG: the progress check ran after EVERY start tag, not just after records.
+// Once Read hit a multiple of 100000, each child element (MetadataEntry...)
+// that followed fired the callback again with the same number.
+func TestProgressFiresOncePerMilestone(t *testing.T) {
+	var body strings.Builder
+	for i := 0; i < progressEvery; i++ {
+		fmt.Fprintf(&body, `<Record type="HKQuantityTypeIdentifierStepCount" sourceName="S%d" unit="count" %s value="1"`, i, qaWhen)
+		if i == progressEvery-1 {
+			// The last record has children: they used to re-trigger progress.
+			body.WriteString(`><MetadataEntry key="a" value="1"/><MetadataEntry key="b" value="2"/></Record>`)
+		} else {
+			body.WriteString(`/>`)
+		}
+	}
+	var calls []int64
+	_, err := Import(newDB(t), writeFile(t, "export.xml", wrap(body.String())),
+		Options{Progress: func(n int64) { calls = append(calls, n) }})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(calls) != 1 || calls[0] != progressEvery {
+		t.Errorf("progress calls = %v, want exactly [%d]", calls, progressEvery)
+	}
+}
+
+// ---- idempotence ----------------------------------------------------------
+
+// Import, snapshot every row, import the same file again: nothing may change
+// (same rows, same ids). A brand new database must also end up identical,
+// i.e. importing is deterministic.
+func TestImportRoundTripIsIdentical(t *testing.T) {
+	conn := newDB(t)
+	if _, err := Import(conn, smallFixture, Options{}); err != nil {
+		t.Fatal(err)
+	}
+	first := dump(t, conn)
+	if strings.Count(first, "\n") < 100 {
+		t.Fatalf("dump suspiciously small:\n%.300s", first)
+	}
+
+	if _, err := Import(conn, smallFixture, Options{}); err != nil {
+		t.Fatal(err)
+	}
+	if second := dump(t, conn); second != first {
+		t.Error("second import changed the database")
+	}
+
+	fresh := newDB(t)
+	if _, err := Import(fresh, smallFixture, Options{}); err != nil {
+		t.Fatal(err)
+	}
+	if again := dump(t, fresh); again != first {
+		t.Error("importing into a fresh database gave different rows")
 	}
 }

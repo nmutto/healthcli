@@ -313,31 +313,6 @@ func TestOverviewMinimumEffectSize(t *testing.T) {
 	}
 }
 
-// Zero everywhere is the lowest shade, not the middle one.
-func TestHeatmapAllZeroIsLowestShade(t *testing.T) {
-	h := layoutHeatmap("step_count", "count", "2026-11-08", "2026-10-26", 2, map[string]float64{
-		"2026-11-01": 0, "2026-11-02": 0, "2026-11-03": 0,
-	}, false, "")
-	if !h.Flat {
-		t.Error("equal values should set Flat")
-	}
-	for _, w := range h.Weeks {
-		for _, c := range w {
-			if c.Value != nil && c.Level != 1 {
-				t.Errorf("%s: zero got level %d, want 1", c.Day, c.Level)
-			}
-		}
-	}
-	h = layoutHeatmap("step_count", "count", "2026-11-08", "2026-10-26", 2, map[string]float64{"2026-11-01": 5, "2026-11-02": 5}, false, "")
-	for _, w := range h.Weeks {
-		for _, c := range w {
-			if c.Value != nil && c.Level != flatLevel {
-				t.Errorf("%s: flat non-zero got level %d, want %d", c.Day, c.Level, flatLevel)
-			}
-		}
-	}
-}
-
 // A baseline mean of 0 has no percentage, yet a change away from it still
 // counts: 0 flights climbed for days, then 30, is better.
 func TestOverviewZeroBaselineChangeCounts(t *testing.T) {

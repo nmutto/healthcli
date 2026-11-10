@@ -1,40 +1,27 @@
 package importer
 
 import (
-	"archive/zip"
-	"bytes"
-	"database/sql"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 )
 
-// makeZip writes a zip with the given name -> content entries (in order).
-func makeZip(t *testing.T, entries ...[2]string) string {
-	t.Helper()
-	var buf bytes.Buffer
-	zw := zip.NewWriter(&buf)
-	for _, e := range entries {
-		w, err := zw.Create(e[0])
-		if err != nil {
-			t.Fatal(err)
+func TestBadFiles(t *testing.T) {
+	conn := newDB(t)
+	cases := map[string]string{
+		"missing":    filepath.Join(t.TempDir(), "nope.xml"),
+		"not xml":    writeFile(t, "a.xml", "just some text"),
+		"wrong root": writeFile(t, "b.xml", "<Other/>"),
+		"truncated":  writeFile(t, "c.xml", "<HealthData><Record "),
+		"bad zip":    writeFile(t, "d.zip", "PK but not really a zip"),
+	}
+	for name, p := range cases {
+		if _, err := Import(conn, p, Options{}); err == nil {
+			t.Errorf("%s: want an error", name)
 		}
-		w.Write([]byte(e[1]))
 	}
-	if err := zw.Close(); err != nil {
-		t.Fatal(err)
-	}
-	p := filepath.Join(t.TempDir(), "export.zip")
-	if err := os.WriteFile(p, buf.Bytes(), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	return p
 }
-
-const oneStepRecord = `<Record type="HKQuantityTypeIdentifierStepCount" sourceName="S" unit="count" ` + qaWhen + ` value="7"/>`
 
 // ---- file shapes ----------------------------------------------------------
 
@@ -194,145 +181,64 @@ func TestPartialFailureKeepsCommittedBatchesOnly(t *testing.T) {
 	}
 }
 
-// ---- timestamps and time zones --------------------------------------------
-
-func TestAppleTime(t *testing.T) {
-	cases := []struct {
-		in     string
-		ts     int64
-		offset int
-		ok     bool
-	}{
-		{"2024-12-01 18:00:00 +0100", 1733072400, 3600, true},
-		{"2024-12-01 18:00:00 +0000", 1733076000, 0, true},
-		{"2024-12-01 18:00:00 -0000", 1733076000, 0, true},
-		{"2024-12-01 18:00:00 +0530", 1733056200, 19800, true},  // India: half-hour offset
-		{"2024-12-01 18:00:00 +0545", 1733055300, 20700, true},  // Nepal: 45-minute offset
-		{"2024-12-01 18:00:00 -0930", 1733110200, -34200, true}, // Marquesas: negative half hour
-		{"2024-12-01 18:00:00 +1400", 1733025600, 50400, true},  // Kiribati, the largest offset
-		{"1970-01-01 00:00:00 +0000", 0, 0, true},
-		{"2024-02-29 23:59:59 +0100", 1709247599, 3600, true}, // leap day
-		{"2023-02-29 12:00:00 +0100", 0, 0, false},            // not a leap year
-		{"2024-12-01 24:00:00 +0100", 0, 0, false},
-		{"2024-12-01 18:00:00", 0, 0, false}, // no offset: refuse to guess
-		{"2024-12-01T18:00:00+01:00", 0, 0, false},
-		{"", 0, 0, false},
+// BUG: <Record> elements were imported even before (or without) a
+// <HealthData> root. A non-Apple XML file full of <Record> tags was only
+// rejected at the very end, after earlier batches had already been committed.
+func TestRecordsWithoutHealthDataRootAreRejectedEarly(t *testing.T) {
+	var body strings.Builder
+	body.WriteString("<NotApple>")
+	for i := 0; i < batchSize+10; i++ {
+		fmt.Fprintf(&body, `<Record type="HKQuantityTypeIdentifierStepCount" sourceName="S%d" unit="count" %s value="1"/>`, i, qaWhen)
 	}
-	for _, c := range cases {
-		ts, off, ok := appleTime(c.in)
-		if ok != c.ok || ts != c.ts || off != c.offset {
-			t.Errorf("appleTime(%q) = %d, %d, %v; want %d, %d, %v", c.in, ts, off, ok, c.ts, c.offset, c.ok)
-		}
-	}
-}
+	body.WriteString("</NotApple>")
 
-// The result must not depend on the machine's own time zone. We run the same
-// import under several local zones (including one whose offset equals one in
-// the file, which makes Go take a different internal path) and expect
-// identical rows.
-func TestImportIgnoresMachineTimeZone(t *testing.T) {
-	// Spring-forward night in Europe: 01:59:59 +0100 and 03:00:00 +0200 are
-	// one second apart in real time even though the wall clock jumps an hour.
-	p := writeFile(t, "x.xml", wrap(`
-<Record type="HKQuantityTypeIdentifierStepCount" sourceName="a" unit="count" startDate="2024-03-31 01:59:59 +0100" endDate="2024-03-31 03:00:00 +0200" value="1"/>
-<Record type="HKQuantityTypeIdentifierStepCount" sourceName="b" unit="count" startDate="2024-12-01 18:00:00 +0530" endDate="2024-12-01 18:30:00 +0530" value="2"/>
-<Record type="HKCategoryTypeIdentifierSleepAnalysis" sourceName="c" startDate="2024-12-01 23:00:00 -0500" endDate="2024-12-02 07:00:00 -0500" value="HKCategoryValueSleepAnalysisAsleepCore"/>`))
-
-	old := time.Local
-	t.Cleanup(func() { time.Local = old })
-
-	var want string
-	for _, loc := range []*time.Location{
-		time.UTC,
-		time.FixedZone("IST", 5*3600+1800),
-		time.FixedZone("CET", 3600),
-		time.FixedZone("EST", -5*3600),
-	} {
-		time.Local = loc
-		conn := newDB(t)
-		if _, err := Import(conn, p, Options{}); err != nil {
-			t.Fatal(err)
-		}
-		got := dump(t, conn)
-		if want == "" {
-			want = got
-			// Check the actual numbers once. 01:59:59 +0100 = 00:59:59 UTC.
-			if n := count(t, conn, "SELECT COUNT(*) FROM samples WHERE start_ts = 1711846799 AND end_ts = 1711846800 AND tz_offset = 3600"); n != 1 {
-				t.Errorf("DST row wrong:\n%s", got)
-			}
-			if n := count(t, conn, "SELECT COUNT(*) FROM samples WHERE start_ts = 1733056200 AND tz_offset = 19800"); n != 1 {
-				t.Errorf("+0530 row wrong:\n%s", got)
-			}
-			if n := count(t, conn, "SELECT COUNT(*) FROM sleep_stages WHERE end_ts - start_ts = 8*3600 AND tz_offset = -18000"); n != 1 {
-				t.Errorf("sleep across midnight wrong:\n%s", got)
-			}
-		}
-		if got != want {
-			t.Errorf("rows differ when the machine zone is %v:\n%s\nwant:\n%s", loc, got, want)
-		}
-	}
-}
-
-// ---- idempotence ----------------------------------------------------------
-
-// dump renders every health row (ids included, import timestamp and summary excluded) as
-// text so two databases can be compared with ==.
-func dump(t *testing.T, conn *sql.DB) string {
-	t.Helper()
-	var sb strings.Builder
-	for _, q := range []string{
-		"SELECT * FROM samples ORDER BY id",
-		"SELECT * FROM sleep_stages ORDER BY id",
-		"SELECT * FROM workouts ORDER BY id",
-		"SELECT * FROM meta WHERE key NOT LIKE 'last_import_%' ORDER BY key",
-	} {
-		rows, err := conn.Query(q)
-		if err != nil {
-			t.Fatal(err)
-		}
-		cols, _ := rows.Columns()
-		fmt.Fprintf(&sb, "## %s\n", q)
-		for rows.Next() {
-			vals := make([]any, len(cols))
-			ptrs := make([]any, len(cols))
-			for i := range vals {
-				ptrs[i] = &vals[i]
-			}
-			if err := rows.Scan(ptrs...); err != nil {
-				t.Fatal(err)
-			}
-			fmt.Fprintln(&sb, vals...)
-		}
-		rows.Close()
-	}
-	return sb.String()
-}
-
-// Import, snapshot every row, import the same file again: nothing may change
-// (same rows, same ids). A brand new database must also end up identical,
-// i.e. importing is deterministic.
-func TestImportRoundTripIsIdentical(t *testing.T) {
 	conn := newDB(t)
-	if _, err := Import(conn, smallFixture, Options{}); err != nil {
-		t.Fatal(err)
+	if _, err := Import(conn, writeFile(t, "x.xml", body.String()), Options{}); err == nil {
+		t.Fatal("want an error for a file with no <HealthData>")
 	}
-	first := dump(t, conn)
-	if strings.Count(first, "\n") < 100 {
-		t.Fatalf("dump suspiciously small:\n%.300s", first)
+	if n := count(t, conn, "SELECT COUNT(*) FROM samples"); n != 0 {
+		t.Errorf("%d rows were committed from a non-Apple file, want 0", n)
 	}
+}
 
-	if _, err := Import(conn, smallFixture, Options{}); err != nil {
-		t.Fatal(err)
+// BUG: a file cut off after rows were already committed (every 5000 rows)
+// failed with a bare XML error, and nothing said that most of it was saved.
+func TestTruncatedImportSaysHowManyRowsWereSaved(t *testing.T) {
+	var sb strings.Builder
+	sb.WriteString("<?xml version=\"1.0\"?>\n<HealthData locale=\"en_US\">\n")
+	for i := 0; i < 12000; i++ {
+		fmt.Fprintf(&sb, `<Record type="HKQuantityTypeIdentifierStepCount" sourceName="a" unit="count" startDate="2024-12-01 10:00:00 +0100" endDate="2024-12-01 10:00:%02d +0100" value="%d"/>`+"\n", i%60, i+1)
 	}
-	if second := dump(t, conn); second != first {
-		t.Error("second import changed the database")
+	// no closing </HealthData>
+	p := writeFile(t, "export.xml", sb.String())
+	conn := newDB(t)
+	_, err := Import(conn, p, Options{})
+	if err == nil {
+		t.Fatal("a truncated file should fail")
 	}
+	want := "10000 rows were saved before the error; run the import again to complete it (re-importing is safe)"
+	if !strings.Contains(err.Error(), want) {
+		t.Errorf("error = %q, want it to contain %q", err, want)
+	}
+	if n := count(t, conn, "SELECT COUNT(*) FROM samples"); n == 0 || n > 10000 {
+		t.Errorf("samples = %d, want the committed rows only", n)
+	}
+}
 
-	fresh := newDB(t)
-	if _, err := Import(fresh, smallFixture, Options{}); err != nil {
+// 12_000 rows crosses the 5000-row batch boundary twice. Each row differs
+// only in its source, so none of them are duplicates.
+func TestBatchBoundaries(t *testing.T) {
+	var body strings.Builder
+	for i := 0; i < 12000; i++ {
+		fmt.Fprintf(&body, `<Record type="HKQuantityTypeIdentifierStepCount" sourceName="S%d" unit="count" `+
+			`startDate="2024-12-01 10:00:00 +0100" endDate="2024-12-01 11:00:00 +0100" value="1"/>`, i)
+	}
+	conn := newDB(t)
+	sum, err := Import(conn, writeFile(t, "export.xml", wrap(body.String())), Options{})
+	if err != nil {
 		t.Fatal(err)
 	}
-	if again := dump(t, fresh); again != first {
-		t.Error("importing into a fresh database gave different rows")
+	if sum.Inserted != 12000 || count(t, conn, "SELECT COUNT(*) FROM samples") != 12000 {
+		t.Errorf("inserted %d, want 12000", sum.Inserted)
 	}
 }

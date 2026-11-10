@@ -96,3 +96,18 @@ func TestLatestDayFor(t *testing.T) {
 		t.Errorf("sleep: %q, %v, %v", day, found, err)
 	}
 }
+
+func TestLatestSample(t *testing.T) {
+	conn := newDB(t)
+	addSample(t, conn, "body_mass", "2024-12-01 07:00 +0100", 79.0, watch)
+	addSample(t, conn, "body_mass", "2024-12-04 07:00 -0500", 78.0, "manual")
+	addSample(t, conn, "body_mass", "2024-12-04 07:00 -0500", 78.5, iphone) // same moment: iPhone beats manual
+
+	s, err := LatestSample(context.Background(), conn, "weight")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s.Value != 78.5 || s.Source != iphone || s.Day != "2024-12-04" || s.Start.Hour() != 7 || s.Metric != "body_mass" {
+		t.Errorf("got %+v", s)
+	}
+}
