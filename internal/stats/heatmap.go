@@ -78,50 +78,39 @@ func BuildHeatmap(ctx context.Context, conn *sql.DB, metric string, weeks int, n
 		byDay[dv.Day] = dv.Value
 	}
 	// No Format here: the renderer formats a registry metric by name.
-	spec := HeatSpec{Title: m.Name, Unit: m.Unit, Hue: metricHues[m.Name]}
+	spec := HeatSpec{Title: m.Name, Unit: m.Unit, Hue: m.Hue}
 	return HeatmapFromDays(spec, now, weeks, byDay)
 }
 
-// HeatSpec says how to title, label and shade one heatmap. Any source of
-// "a number per day" (steps, sleep, workouts) can use the same engine.
-// Colour families a heatmap can ask for. The CLI turns them into ramps.
+// Colour families a heatmap can ask for. They are defined in metrics, next to
+// the registry that assigns them; the names are repeated here for callers.
 const (
-	HueOrange = "orange" // steps and other activity (the default)
-	HueGreen  = "green"  // workouts
-	HueBlue   = "blue"   // sleep
-	HueRed    = "red"    // heart rate metrics
-	HueCyan   = "cyan"   // respiratory rate
-	HuePurple = "purple" // wrist temperature
-	HueViolet = "violet" // body mass
+	HueOrange = metrics.HueOrange // steps and other activity (the default)
+	HueGreen  = metrics.HueGreen  // workouts
+	HueBlue   = metrics.HueBlue   // sleep
+	HueRed    = metrics.HueRed    // heart rate metrics
+	HueCyan   = metrics.HueCyan   // respiratory rate
+	HuePurple = metrics.HuePurple // wrist temperature
+	HueViolet = metrics.HueViolet // body mass
 )
 
 // HueFor is the colour family of a metric's heatmaps and trend lines: the
-// Apple Health category colour, orange for everything without one. "sleep"
-// (the trend of hours asleep) is blue.
+// Apple Health category colour from the registry, "" (orange) for everything
+// without one. "sleep" (the trend of hours asleep) is blue. Only canonical
+// names count, not aliases.
 func HueFor(metric string) string {
 	if metric == "sleep" {
 		return HueBlue
 	}
-	return metricHues[metric]
+	m, err := metrics.Lookup(metric)
+	if err != nil || m.Name != metric {
+		return ""
+	}
+	return m.Hue
 }
 
-// metricHues follows the colours of the Apple Health app categories: Heart is
-// red, Respiratory cyan, Body Measurements purple (body mass deep violet).
-// Mobility, activity and everything else stay orange (HueOrange, the empty
-// string), and sleep and workouts set their own hue.
-var metricHues = map[string]string{
-	// Heart
-	"heart_rate": HueRed, "resting_heart_rate": HueRed, "walking_heart_rate_average": HueRed,
-	"heart_rate_recovery_one_minute": HueRed, "hrv_sdnn": HueRed, "vo2_max": HueRed,
-	"blood_pressure_systolic": HueRed, "blood_pressure_diastolic": HueRed,
-	// Respiratory
-	"respiratory_rate": HueCyan, "oxygen_saturation": HueCyan,
-	// Body measurements
-	"apple_sleeping_wrist_temperature": HuePurple, "body_fat_percentage": HuePurple,
-	"body_mass_index": HuePurple, "lean_body_mass": HuePurple, "height": HuePurple,
-	"body_mass": HueViolet,
-}
-
+// HeatSpec says how to title, label and shade one heatmap. Any source of
+// "a number per day" (steps, sleep, workouts) can use the same engine.
 type HeatSpec struct {
 	Title  string // "step_count", "sleep", "workouts"
 	Unit   string
