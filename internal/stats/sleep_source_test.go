@@ -43,3 +43,26 @@ func TestSleepSourceNeedsAsleepTime(t *testing.T) {
 		})
 	}
 }
+
+// Awake counts only inside the main block, like the awakenings do. Awake
+// before falling asleep is latency and awake after waking is just being up.
+func TestSleepAwakeIsInsideTheMainBlockOnly(t *testing.T) {
+	conn := newDB(t)
+	addSleep(t, conn, "awake", "2024-12-01 22:30 +0100", "2024-12-01 23:00 +0100", watch) // before sleep
+	addSleep(t, conn, "core", "2024-12-01 23:00 +0100", "2024-12-02 02:00 +0100", watch)
+	addSleep(t, conn, "awake", "2024-12-02 02:00 +0100", "2024-12-02 02:10 +0100", watch) // awakening
+	addSleep(t, conn, "core", "2024-12-02 02:10 +0100", "2024-12-02 07:00 +0100", watch)
+	addSleep(t, conn, "awake", "2024-12-02 07:00 +0100", "2024-12-02 07:45 +0100", watch) // up
+	nights, err := SleepNights(context.Background(), conn, "2024-12-02", "2024-12-02")
+	if err != nil || len(nights) != 1 {
+		t.Fatalf("%v %+v", err, nights)
+	}
+	n := nights[0]
+	if n.Awake != 10*time.Minute || n.Awakenings != 1 {
+		t.Errorf("awake %v in %d awakenings, want 10m in 1", n.Awake, n.Awakenings)
+	}
+	// Efficiency without in_bed rows: 7h 50m asleep, 10m awake inside the night.
+	if pct, _, ok := n.Efficiency(); !ok || pct < 97.9 || pct > 97.95 {
+		t.Errorf("efficiency %.2f ok=%v, want 97.92", pct, ok)
+	}
+}

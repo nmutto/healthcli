@@ -104,7 +104,7 @@
     "deep_seconds": 5400,
     "rem_seconds": 3600,
     "unspecified_seconds": 0,
-    "awake_seconds": 900,
+    "awake_seconds": 0,
     "in_bed_seconds": 0
   },
   "workouts": [
@@ -166,9 +166,9 @@
       "deep_seconds": 5400,
       "rem_seconds": 3600,
       "unspecified_seconds": 0,
-      "awake_seconds": 900,
+      "awake_seconds": 0,
       "in_bed_seconds": 0,
-      "efficiency_pct": 96.55172413793103,
+      "efficiency_pct": 100,
       "awakenings": 0,
       "bedtime": "23:00",
       "wake": "06:00",
@@ -194,8 +194,8 @@
     "seven_nights": {
       "nights": 1,
       "asleep_seconds": 25200,
-      "efficiency_pct": 96.55172413793103,
-      "awake_seconds": 900,
+      "efficiency_pct": 100,
+      "awake_seconds": 0,
       "awakenings": 0,
       "deep_seconds": 5400,
       "rem_seconds": 3600,
@@ -207,8 +207,8 @@
     "fourteen_nights": {
       "nights": 1,
       "asleep_seconds": 25200,
-      "efficiency_pct": 96.55172413793103,
-      "awake_seconds": 900,
+      "efficiency_pct": 100,
+      "awake_seconds": 0,
       "awakenings": 0,
       "deep_seconds": 5400,
       "rem_seconds": 3600,

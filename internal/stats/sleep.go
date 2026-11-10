@@ -59,7 +59,7 @@ type SleepNight struct {
 	Deep        time.Duration
 	REM         time.Duration
 	Unspecified time.Duration // "asleep_unspecified": older iOS, other apps
-	Awake       time.Duration
+	Awake       time.Duration // awake time inside the main block only
 
 	// InBed is time in bed, often written by the iPhone while the Watch writes
 	// the stages. It is picked separately (same priority rule) so a Watch
@@ -67,6 +67,11 @@ type SleepNight struct {
 	// nobody recorded it.
 	InBed       time.Duration
 	InBedSource string
+
+	// hadAwakeRows is true when the source wrote any awake row that night,
+	// also outside the main block. Efficiency without in_bed rows needs it:
+	// no awake rows means "not measured", not "never awake".
+	hadAwakeRows bool
 }
 
 // nightShift moves a stage row's end time forward 6 hours before taking
@@ -231,7 +236,6 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 			n.Deep = t.total("deep")
 			n.REM = t.total("rem")
 			n.Unspecified = t.total("asleep_unspecified")
-			n.Awake = t.total("awake")
 			fillAsleepTimes(&n, t)
 			addOtherSourceNaps(&n, t, stages[night])
 		}
@@ -365,7 +369,7 @@ func mainBlock(blocks []block) block {
 	return best
 }
 
-// fillAsleepTimes sets Asleep, Nap, Start, End, Awakenings and Segments of n
+// fillAsleepTimes sets Asleep, Nap, Start, End, Awake, Awakenings and Segments of n
 // from the stage rows of one source.
 func fillAsleepTimes(n *SleepNight, t *sleepTotals) {
 	asleep := t.asleepUnion()
@@ -375,12 +379,21 @@ func fillAsleepTimes(n *SleepNight, t *sleepTotals) {
 		n.Start, n.End, n.StartTZ, n.EndTZ = main.start, main.end, main.startTZ, main.endTZ
 		n.Nap = n.Asleep - main.asleep
 	}
-	// An awakening is an awake period inside the main block. Awake before
-	// falling asleep is latency and awake after the last wake is just being up.
-	for _, iv := range merge(t.byStage["awake"]) {
-		if iv.start >= n.Start && iv.end <= n.End && len(asleep) > 0 {
-			n.Awakenings++
+	// An awakening is an awake period inside the main block, and Awake is
+	// their total time. Awake before falling asleep is latency and awake
+	// after the last wake is just being up, so awake rows are clipped to
+	// Start..End.
+	n.hadAwakeRows = len(t.byStage["awake"]) > 0
+	if len(asleep) > 0 {
+		var inside []interval
+		for _, iv := range merge(t.byStage["awake"]) {
+			iv.start, iv.end = max(iv.start, n.Start), min(iv.end, n.End)
+			if iv.end > iv.start {
+				inside = append(inside, iv)
+			}
 		}
+		n.Awakenings = len(inside)
+		n.Awake = length(inside)
 	}
 	for stage, ivs := range t.byStage {
 		if stage == "in_bed" {

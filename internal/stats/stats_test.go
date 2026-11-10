@@ -365,6 +365,7 @@ func TestSleepCrossingMidnight(t *testing.T) {
 		Night: "2024-12-02", Source: watch, Rows: 6,
 		Core: 4*time.Hour + 30*time.Minute, Deep: time.Hour, REM: 90 * time.Minute, Awake: 20 * time.Minute,
 		Asleep: 8 * time.Hour, Nap: time.Hour, InBed: 8 * time.Hour, InBedSource: iphone,
+		hadAwakeRows: true,
 	}
 	// The timing fields are checked in sleep_summary_test.go.
 	want.Start, want.End, want.TZ, want.Segments = n.Start, n.End, n.TZ, n.Segments

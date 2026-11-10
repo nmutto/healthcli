@@ -140,7 +140,8 @@ type SegView struct {
 func (n SleepNight) HasStages() bool { return n.Core+n.Deep+n.REM > 0 }
 
 // Efficiency is time asleep as a percentage of time in bed. Without in_bed
-// rows it falls back to asleep / (asleep + awake), which needs awake rows.
+// rows it falls back to asleep / (asleep + awake inside the night), which
+// needs awake rows (all of them may lie outside the night, which means 100%).
 // Over 100% (the Watch's sleep outlasts the iPhone's in-bed time) it is
 // capped at 100 and clamped reports true. ok is false when it cannot be
 // worked out.
@@ -151,7 +152,7 @@ func (n SleepNight) Efficiency() (pct float64, clamped, ok bool) {
 		return 0, false, false
 	case n.InBed > 0:
 		denom = n.InBed
-	case n.Awake > 0:
+	case n.Awake > 0 || n.hadAwakeRows:
 		denom = n.Asleep - n.Nap + n.Awake
 	default:
 		return 0, false, false

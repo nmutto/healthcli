@@ -31,7 +31,7 @@
  Asleep     7h 00m      7h 00m      need 7 nights (have 1)
  In bed     8h 30m      8h 30m      need 7 nights (have 1)
  Efficiency 82%         82%         need 7 nights (have 1)
- Awake      15m 0 wakes 15m 0 wakes need 7 nights (have 1)
+ Awake      0m 0 wakes  0m 0 wakes  need 7 nights (have 1)
  Deep       1h 30m 21%  1h 30m      need 7 nights (have 1)
  REM        40m 10%     40m         need 7 nights (have 1)
  Bedtime    23:00       23:00       need 7 nights (have 1)
