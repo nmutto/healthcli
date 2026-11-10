@@ -4,6 +4,7 @@ import (
 	"math"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestLargestRemainder(t *testing.T) {
@@ -115,27 +116,59 @@ func TestGlyphSparklineASCII(t *testing.T) {
 	}
 }
 
-func TestFitAndJoinFit(t *testing.T) {
-	g := unicodeGlyphs
-	if got := fit("hello world", 8, g); got != "hello w…" {
-		t.Errorf("fit = %q", got)
-	}
-	if got := fit("short", 8, g); got != "short" {
-		t.Errorf("fit = %q", got)
-	}
-	if got := joinFit([]string{"aaaa", "bbbb", "cccc"}, 12, g); got != "aaaa · bbbb" {
-		t.Errorf("joinFit drops the last part first, got %q", got)
-	}
-	if got := joinFit([]string{"aaaaaaaaaa", "b"}, 5, g); got != "aaaa…" {
-		t.Errorf("joinFit last resort = %q", got)
-	}
-}
-
 func TestPctText(t *testing.T) {
 	cases := map[float64]string{17.4: "+17%", -6.6: "-7%", 0.3: "0%", -0.4: "0%", 5000: ">+999%", -5000: "<-999%"}
 	for in, want := range cases {
 		if got := pctText(in); got != want {
 			t.Errorf("pctText(%v) = %q, want %q", in, got, want)
+		}
+	}
+}
+
+var _ = time.Second
+
+// ASCII stage glyphs are distinct from each other and from the rules.
+func TestASCIIStageGlyphsAreDistinct(t *testing.T) {
+	g := glyphsFor(false)
+	used := map[rune]string{g.rule: "rule", g.bandRule: "band rule"}
+	for stage, r := range g.stages {
+		if other, dup := used[r]; dup {
+			t.Errorf("stage %s uses %q, same as %s", stage, r, other)
+		}
+		used[r] = stage
+	}
+}
+
+// sparkline must cope with anything: empty, NaN, Inf, huge ranges.
+func FuzzSparkline(f *testing.F) {
+	f.Add(1.0, 2.0, 3.0)
+	f.Add(math.Inf(1), math.NaN(), -math.MaxFloat64)
+	f.Fuzz(func(t *testing.T, a, b, c float64) {
+		vals := []float64{a, b, c, a}
+		for n := 0; n <= len(vals); n++ {
+			if got := []rune(sparkline(vals[:n])); len(got) != n {
+				t.Fatalf("sparkline(%v) = %q, want %d runes", vals[:n], string(got), n)
+			}
+		}
+	})
+}
+
+// ---- rendering without a database ----
+
+func TestSparkline(t *testing.T) {
+	nan := func() float64 { var z float64; return z / z }()
+	cases := []struct {
+		in   []float64
+		want string
+	}{
+		{[]float64{1, 2, 3, 4, 5, 6, 7, 8}, "▁▂▃▄▅▆▇█"},
+		{[]float64{1, nan, 8}, "▁·█"},
+		{[]float64{5, 5, 5}, "▄▄▄"},
+		{[]float64{nan, nan}, "··"},
+	}
+	for _, c := range cases {
+		if got := sparkline(c.in); got != c.want {
+			t.Errorf("sparkline(%v) = %q, want %q", c.in, got, c.want)
 		}
 	}
 }

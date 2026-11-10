@@ -2,11 +2,12 @@ package cli
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
-
-const smallExport = "../../testdata/small/export.xml"
 
 func TestImportAppleJSONAndIdempotent(t *testing.T) {
 	db := tempDB(t)
@@ -47,4 +48,63 @@ func TestImportAppleMissingFile(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "file not found") {
 		t.Errorf("err = %v, want a 'file not found' error", err)
 	}
+}
+
+var (
+	elapsedLine = regexp.MustCompile(`(?m)^Elapsed:.*$`)
+	sparseDir   = filepath.Join("..", "..", "testdata", "sparse", "export.xml")
+)
+
+// netImport runs an import and hides the only moving part (the elapsed time)
+// and the temporary folder.
+func netImport(t *testing.T, root, path string, args ...string) string {
+	t.Helper()
+	out := netSequence(t, path, append([]string{"import", "apple"}, args...))
+	out = elapsedLine.ReplaceAllString(out, "Elapsed:    <time>")
+	out = strings.ReplaceAll(out, root, "<tmp>")
+	var js map[string]any
+	if i := strings.Index(out, "{"); i >= 0 && json.Unmarshal([]byte(out[i:]), &js) == nil {
+		delete(js, "elapsed_seconds")
+		b, _ := json.MarshalIndent(js, "", "  ")
+		out = out[:i] + string(b) + "\n"
+	}
+	return out
+}
+
+func TestNetImport(t *testing.T) {
+	root := t.TempDir()
+	garbage := filepath.Join(root, "export.xml")
+	if err := os.WriteFile(garbage, []byte("<HealthData><Record type="), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	notAnExport := filepath.Join(root, "notes.txt")
+	if err := os.WriteFile(notAnExport, []byte("hello"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var b strings.Builder
+	small, sparse := tempDB(t), tempDB(t)
+	b.WriteString("# small, text, then again (all duplicates)\n")
+	b.WriteString(netImport(t, root, small, smallExport))
+	b.WriteString(netImport(t, root, small, smallExport))
+	b.WriteString("# small, json, again\n")
+	b.WriteString(netImport(t, root, tempDB(t), smallExport, "--json"))
+	b.WriteString("# sparse device\n")
+	b.WriteString(netImport(t, root, sparse, sparseDir))
+	b.WriteString(netImport(t, root, tempDB(t), sparseDir, "--json"))
+	b.WriteString("# failures\n")
+	b.WriteString(netImport(t, root, tempDB(t), filepath.Join(root, "missing.zip")))
+	b.WriteString(netImport(t, root, tempDB(t), garbage))
+	b.WriteString(netImport(t, root, tempDB(t), notAnExport))
+	b.WriteString(netImport(t, root, tempDB(t)))
+	b.WriteString(netImport(t, root, tempDB(t), smallExport, smallExport))
+	checkViewGolden(t, "net_import.txt", b.String())
+
+	// What the import left behind, seen from the other commands.
+	var after strings.Builder
+	after.WriteString(netSequence(t, small,
+		[]string{"query", "SELECT key FROM meta ORDER BY key"},
+		[]string{"query", "SELECT count(*) AS samples FROM samples"},
+		[]string{"query", "SELECT count(*) AS stages FROM sleep_stages"},
+		[]string{"query", "SELECT count(*) AS workouts FROM workouts"}))
+	checkViewGolden(t, "net_import_state.txt", after.String())
 }
