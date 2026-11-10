@@ -2,9 +2,11 @@ package cli
 
 import (
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"strings"
 	"text/tabwriter"
 
@@ -177,8 +179,8 @@ func readRows(rows *sql.Rows) ([]string, [][]any, error) {
 			return nil, nil, err
 		}
 		for i, v := range vals {
-			if b, ok := v.([]byte); ok { // BLOB/TEXT may arrive as bytes
-				vals[i] = string(b)
+			if b, ok := v.([]byte); ok { // a BLOB: show it as hex, not as broken text
+				vals[i] = hex.EncodeToString(b)
 			}
 		}
 		data = append(data, vals)
@@ -194,11 +196,12 @@ func writeJSON(w io.Writer, cols []string, data [][]any) error {
 		_, err := io.WriteString(w, "[]\n")
 		return err
 	}
+	keys := uniqueKeys(cols)
 	var sb strings.Builder
 	sb.WriteString("[\n")
 	for r, row := range data {
 		sb.WriteString("  {")
-		for i, c := range cols {
+		for i, c := range keys {
 			if i > 0 {
 				sb.WriteString(", ")
 			}
@@ -206,7 +209,7 @@ func writeJSON(w io.Writer, cols []string, data [][]any) error {
 			if err != nil {
 				return err
 			}
-			val, err := json.Marshal(row[i])
+			val, err := json.Marshal(jsonValue(row[i]))
 			if err != nil {
 				return err
 			}
@@ -223,6 +226,30 @@ func writeJSON(w io.Writer, cols []string, data [][]any) error {
 	sb.WriteString("]\n")
 	_, err := io.WriteString(w, sb.String())
 	return err
+}
+
+// jsonValue turns numbers JSON cannot hold (Inf and NaN) into null.
+func jsonValue(v any) any {
+	if f, ok := v.(float64); ok && (math.IsInf(f, 0) || math.IsNaN(f)) {
+		return nil
+	}
+	return v
+}
+
+// uniqueKeys gives repeated column names a suffix (a, a_2, a_3) so the JSON
+// objects never hold the same key twice.
+func uniqueKeys(cols []string) []string {
+	used := map[string]bool{}
+	keys := make([]string, len(cols))
+	for i, c := range cols {
+		key := c
+		for n := 2; used[key]; n++ {
+			key = fmt.Sprintf("%s_%d", c, n)
+		}
+		used[key] = true
+		keys[i] = key
+	}
+	return keys
 }
 
 func writeTable(w io.Writer, cols []string, data [][]any) error {

@@ -93,3 +93,18 @@ func TestQueryRejectsSecondStatement(t *testing.T) {
 		t.Errorf("want a one-statement error, got %v", err)
 	}
 }
+
+func TestQueryJSONEdgeCases(t *testing.T) {
+	db := emptyDB(t)
+	cases := []struct{ sql, want string }{
+		{"select 1e999 as big, -1e999 as small", `[` + "\n" + `  {"big": null, "small": null}` + "\n" + `]` + "\n"},
+		{"select x'00ff10' as b, 'text' as t", `[` + "\n" + `  {"b": "00ff10", "t": "text"}` + "\n" + `]` + "\n"},
+		{"select 1 as a, 2 as a, 3 as a, 4 as a_2", `[` + "\n" + `  {"a": 1, "a_2": 2, "a_3": 3, "a_2_2": 4}` + "\n" + `]` + "\n"},
+	}
+	for _, c := range cases {
+		out, _, err := run(t, "--db", db, "query", c.sql, "--json")
+		if err != nil || out != c.want {
+			t.Errorf("%s:\n got %q, %v\nwant %q", c.sql, out, err, c.want)
+		}
+	}
+}
