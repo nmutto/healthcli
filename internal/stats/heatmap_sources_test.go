@@ -82,3 +82,14 @@ func TestHeatmapFromDaysRestAfterHistoryBeforeWindow(t *testing.T) {
 		t.Errorf("%s should be a rest day, got %+v", c.Day, c)
 	}
 }
+
+// Weeks before the first workout are not "zero weeks": they are left out.
+func TestWeeklyVolumeSkipsWeeksBeforeFirstWorkout(t *testing.T) {
+	all := []Workout{
+		{Day: "2026-11-03", Duration: 30 * time.Minute}, // Tuesday of the week of 2026-11-02
+	}
+	got := weeklyVolume(all, "2026-11-09", 8)
+	if len(got) != 2 || got[0].Start != "2026-11-02" || got[1].Start != "2026-11-09" {
+		t.Fatalf("weeks = %+v, want only 2026-11-02 and 2026-11-09", got)
+	}
+}
