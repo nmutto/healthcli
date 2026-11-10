@@ -195,8 +195,10 @@ var asleepStages = []string{"core", "deep", "rem", "asleep_unspecified"}
 // sorted by night. Nights without any rows are left out.
 //
 // Source rule: per night, the stage totals (everything except in_bed) come
-// from the single best source that has stage rows that night; in_bed comes
-// from the single best source that has in_bed rows that night.
+// from the single best source, chosen by bestSleepSource: only sources with
+// asleep time whose main block is near the longest main block count, then
+// class priority, then more asleep time, then more rows. in_bed comes from
+// the single best source that has in_bed rows that night.
 func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]SleepNight, error) {
 	lo, hi, err := utcWindow(fromDay, toDay)
 	if err != nil {
