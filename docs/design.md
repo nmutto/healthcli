@@ -99,7 +99,7 @@ Order: title, headline, index line, category tables, SLEEP, WORKOUTS, heatmaps, 
 
 ## Overview colours
 
-Colour in `overview` follows `metrics.Metric.Polarity`: beyond usual (|z| >= 1 and a change of at least 2%, or the metric's `MinDelta`) and in the healthy direction is green ("better"), the other way red ("worse"); neutral metrics are cyan ("changed"); anything smaller is typical (plain); stale is yellow. Each beyond-usual row prints its word, so colour is never the only signal. This replaces the earlier "never green/red" rule. Words and arrows always repeat the colour, and the code says polarity is a general guide, not medical advice. Rows are only metrics that have samples (the rest are counted as `not_tracked`).
+Colour in `overview` follows `metrics.Metric.Polarity`: beyond usual (|z| >= 1 and a change of at least 2%, or the metric's `MinDelta`) and in the healthy direction is green ("better"), the other way bold red ("worse"); neutral metrics say "higher" or "lower" in plain text (verdict "changed" in JSON, `~` in the gutter); anything smaller is typical (plain); stale is yellow. Each beyond-usual row prints its word, so colour is never the only signal. This replaces the earlier "never green/red" rule. Words and arrows always repeat the colour, and the code says polarity is a general guide, not medical advice. Rows are only metrics that have samples (the rest are counted as `not_tracked`).
 
 ## `today` as a one-day overview
 

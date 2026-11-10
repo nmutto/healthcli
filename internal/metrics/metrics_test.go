@@ -178,3 +178,41 @@ func TestUserPercentIsNotAFraction(t *testing.T) {
 		t.Errorf("97 %% = %v, %v; want 97", got, err)
 	}
 }
+
+// A reference range has at least one bound, a low bound under the high one,
+// and a source, and only metrics where it is a plain note qualify: none of
+// the metrics with a range is a polarity-neutral body measure.
+func TestRangesAreSane(t *testing.T) {
+	for _, name := range Names() {
+		m, _ := Lookup(name)
+		r := m.Range
+		if r == nil {
+			continue
+		}
+		if r.Low <= 0 && r.High <= 0 {
+			t.Errorf("%s: range has no bound", name)
+		}
+		if r.Low > 0 && r.High > 0 && r.Low >= r.High {
+			t.Errorf("%s: low %v is not under high %v", name, r.Low, r.High)
+		}
+		if r.Source == "" {
+			t.Errorf("%s: range has no source", name)
+		}
+	}
+	// The ranges the user approved (a one-sided limit each), and no others.
+	want := map[string]Range{
+		"respiratory_rate":   {High: 20},
+		"oxygen_saturation":  {Low: 95},
+		"resting_heart_rate": {High: 100},
+	}
+	for _, name := range Names() {
+		m, _ := Lookup(name)
+		w, ok := want[name]
+		switch {
+		case ok && (m.Range == nil || m.Range.Low != w.Low || m.Range.High != w.High):
+			t.Errorf("%s: range = %+v, want low %v high %v", name, m.Range, w.Low, w.High)
+		case !ok && m.Range != nil:
+			t.Errorf("%s has a range that was not approved: %+v", name, m.Range)
+		}
+	}
+}

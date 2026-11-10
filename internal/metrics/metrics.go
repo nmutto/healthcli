@@ -72,6 +72,10 @@ type Metric struct {
 	MinDelta float64
 	// Polarity is the general-population guide described on the type.
 	Polarity Polarity
+	// Range, when set, is a reference limit for the LEVEL of the metric (see
+	// Range). Nil for most metrics: only limits with a solid, simple anchor
+	// are listed.
+	Range *Range
 	// Daily is how the samples of one local day become a single value.
 	// See docs/design.md ("Read side") for why each metric uses its kind.
 	Daily Aggregation
@@ -83,6 +87,18 @@ type Metric struct {
 	// would be wrong for a person typing a value: Apple writes percentages as
 	// fractions (unit "%", value 0.97), but `log spo2 97 %` means 97 percent.
 	AppleConversions map[string]float64
+}
+
+// Range is a general-population reference limit for the level of a metric, in
+// the metric's unit. It judges a level against a population, where a verdict
+// judges a change against the person's own usual, so it never colours a row:
+// it only adds a plain note when the latest value is outside it. A zero bound
+// means no limit on that side (a resting heart rate below 60 is normal in
+// trained people, so that metric only has High). It is a general guide, not
+// medical advice, and wearable readings are estimates.
+type Range struct {
+	Low, High float64
+	Source    string // where the limit comes from, for docs and JSON
 }
 
 // poundsToKg is the exact definition of the avoirdupois pound.
@@ -127,7 +143,7 @@ var toMinutes = map[string]float64{"s": 1.0 / 60, "hr": 60, "h": 60}
 var known = []Metric{
 	// The original six, in their original order (the overview lists them first).
 	{Name: "heart_rate", Label: "Heart rate", Category: Vitals, Unit: "bpm", Polarity: Neutral, Daily: Avg, Conversions: perMin},
-	{Name: "resting_heart_rate", Label: "Resting heart rate", Category: Vitals, Unit: "bpm", Polarity: LowerBetter, Daily: Avg, Conversions: perMin},
+	{Name: "resting_heart_rate", Label: "Resting heart rate", Category: Vitals, Unit: "bpm", Polarity: LowerBetter, Range: &Range{High: 100, Source: "adult resting heart rate, 60-100 bpm"}, Daily: Avg, Conversions: perMin},
 	{Name: "step_count", Label: "Steps", Category: Activity, Unit: "count", Polarity: HigherBetter, Daily: Sum},
 	{Name: "hrv_sdnn", Label: "Heart rate variability", Category: Vitals, Unit: "ms", Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"s": 1000}},
 	{Name: "body_mass", Label: "Weight", Category: Body, Unit: "kg", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
@@ -135,9 +151,9 @@ var known = []Metric{
 
 	// Newer metrics, grouped by category.
 	// Vitals
-	{Name: "respiratory_rate", Label: "Respiratory rate", Category: Vitals, Unit: "breaths/min", Decimals: 1, MinDelta: 0.5, Polarity: Neutral, Daily: Avg, Conversions: perMin},
+	{Name: "respiratory_rate", Label: "Respiratory rate", Category: Vitals, Unit: "breaths/min", Decimals: 1, MinDelta: 0.5, Polarity: Neutral, Range: &Range{High: 20, Source: "adult resting respiratory rate, 12-20 breaths/min"}, Daily: Avg, Conversions: perMin},
 	{Name: "apple_sleeping_wrist_temperature", Label: "Wrist temperature", Category: Vitals, Unit: "degC", Decimals: 1, MinDelta: 0.2, Polarity: Neutral, Daily: Avg, Conversions: map[string]float64{"c": 1, "°c": 1}},
-	{Name: "oxygen_saturation", Label: "Blood oxygen", Category: Vitals, Unit: "percent", MinDelta: 1, Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "oxygen_saturation", Label: "Blood oxygen", Category: Vitals, Unit: "percent", MinDelta: 1, Polarity: HigherBetter, Range: &Range{Low: 95, Source: "typical healthy adult reading, 95% and above"}, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
 	{Name: "vo2_max", Label: "VO2 max", Category: Vitals, Unit: "mL/kg/min", Decimals: 1, Polarity: HigherBetter, Daily: Latest, Conversions: vo2Spellings},
 	{Name: "walking_heart_rate_average", Label: "Walking heart rate", Category: Vitals, Unit: "bpm", Polarity: LowerBetter, Daily: Avg, Conversions: perMin},
 	{Name: "heart_rate_recovery_one_minute", Label: "Heart rate recovery", Category: Vitals, Unit: "bpm", Polarity: HigherBetter, Daily: Avg, Conversions: perMin},

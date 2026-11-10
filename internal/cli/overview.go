@@ -46,6 +46,13 @@ good direction (weight, respiratory rate, ...) get no colour, only the word
 Stale data is yellow. Colour is never the only signal: every row has an
 arrow, and beyond-usual rows also carry the word.
 
+A few metrics also have a reference limit for the level itself: resting heart
+rate above 100 bpm, respiratory rate above 20 per minute and blood oxygen
+below 95%. When the latest value is outside it, a plain dim note under that
+category says so. The note never colours the row or changes its verdict (a
+level against a population is not a change against your own usual), it is a
+general guide and not medical advice, and watch readings are estimates.
+
 Metrics are grouped in category bands (vitals, activity, body, mobility) with a
 one-line summary each. A marker in the left gutter flags rows that need a look:
 "!" worse, "+" better, "~" changed. An index line under the headline lists the

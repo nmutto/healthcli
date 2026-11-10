@@ -247,13 +247,19 @@ func dayTable(d *stats.DayReport, ti termInfo, g glyphSet, st style, v overviewV
 	b.WriteString(st.dim(strings.TrimRight(head, " ")) + "\n")
 
 	var current string
+	var notes []string
 	for _, r := range rows {
 		if r.Category != current {
 			current = r.Category
+			b.WriteString(rangeNoteLines(notes, ti, st))
+			notes = nil
 			if !v.compact {
 				b.WriteString("\n")
 			}
 			b.WriteString(categoryBand(current, summaryFor(d.Categories, current), ti, g, st))
+		}
+		if n := rangeNote(r, ti); n != "" {
+			notes = append(notes, n)
 		}
 		line := rowPrefix(r, c.gutter, st)
 		line += padRight(fit(dayLabel(r, c.short), c.labelW, g), c.labelW) + "  " + latestCell(r, c.latestW, ti, g, st) + "  "
@@ -261,6 +267,7 @@ func dayTable(d *stats.DayReport, ti termInfo, g glyphSet, st style, v overviewV
 		line += deltaAreaIn(r, g, st, c.band, c.areaW, false, c.textW)
 		b.WriteString(strings.TrimRight(line, " ") + "\n")
 	}
+	b.WriteString(rangeNoteLines(notes, ti, st))
 	return b.String()
 }
 

@@ -729,3 +729,65 @@ func TestOverviewColourAddsNoWords(t *testing.T) {
 		}
 	}
 }
+
+// A value outside its reference limit gets a plain dim note under the rows
+// of its category; the row itself and its colours are untouched.
+func TestRangeNoteUnderTheCategory(t *testing.T) {
+	rep := overviewReport(t, "full")
+	for i := range rep.Metrics {
+		if rep.Metrics[i].Metric == "resting_heart_rate" {
+			v := 105.0
+			rep.Metrics[i].Value = &v
+			rep.Metrics[i].Range = &stats.RangeCheck{High: 100, Source: "test", Position: stats.RangeAbove}
+		}
+	}
+	got := renderOverview(rep, termInfo{width: 80, unicode: true}, testView)
+	// The note is wrapped at 80 columns, so look for it with the line breaks removed.
+	note := "Resting HR 105 bpm is above the usual adult limit of 100 bpm (general guide, not medical advice)"
+	if flat := strings.Join(strings.Fields(got), " "); !strings.Contains(flat, note) {
+		t.Fatalf("missing the note %q:\n%s", note, got)
+	}
+	// The note sits after the last VITALS row and before the next band, on
+	// lines of its own that do not start with a margin marker.
+	lines := strings.Split(got, "\n")
+	noteAt, nextBand := -1, -1
+	for i, l := range lines {
+		switch {
+		case noteAt < 0 && strings.Contains(l, "Resting HR 105 bpm is above"):
+			noteAt = i
+		case noteAt >= 0 && nextBand < 0 && strings.Contains(l, "ACTIVITY"):
+			nextBand = i
+		}
+	}
+	if noteAt < 0 || nextBand < 0 || noteAt > nextBand {
+		t.Errorf("note at line %d, next band at %d: the note belongs under the VITALS rows:\n%s", noteAt, nextBand, got)
+	}
+	if noteAt >= 0 && strings.TrimSpace(lines[noteAt])[0] == '!' {
+		t.Errorf("a range note must not use the worse marker: %q", lines[noteAt])
+	}
+
+	rep2 := overviewReport(t, "full") // within range: no note
+	if strings.Contains(renderOverview(rep2, termInfo{width: 80, unicode: true}, testView), "usual adult") {
+		t.Errorf("no note expected when the value is within range")
+	}
+}
+
+// A value that rounds to its own limit ("95%" below 95%) shows more digits.
+func TestRangeNoteShowsDigitsWhenRoundingHidesTheGap(t *testing.T) {
+	v := 94.6
+	r := stats.MetricRow{Metric: "oxygen_saturation", Label: "Blood oxygen", Unit: "percent", Value: &v,
+		Range: &stats.RangeCheck{Low: 95, Position: stats.RangeBelow}}
+	want := "Blood oxygen 94.60% is below the usual adult level of 95% (general guide, not medical advice)"
+	if got := rangeNote(r, termInfo{unicode: true}); got != want {
+		t.Errorf("note = %q, want %q", got, want)
+	}
+	r.Value = new(float64)
+	*r.Value = 93
+	if got := rangeNote(r, termInfo{unicode: true}); got != "Blood oxygen 93% is below the usual adult level of 95% (general guide, not medical advice)" {
+		t.Errorf("plain case: %q", got)
+	}
+	r.Range.Position = stats.RangeWithin
+	if got := rangeNote(r, termInfo{unicode: true}); got != "" {
+		t.Errorf("within range gave a note: %q", got)
+	}
+}

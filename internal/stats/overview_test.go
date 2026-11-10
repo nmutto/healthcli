@@ -395,3 +395,63 @@ func TestOverviewStaleRowCountsBaselineDays(t *testing.T) {
 		t.Errorf("state %q baseline days %d, want stale with 9", r.State, r.BaselineDays)
 	}
 }
+
+// A value outside a metric's reference limit is noted, and the note is
+// independent of the verdict: a level against a population is not a change.
+func TestRangeCheckPositions(t *testing.T) {
+	cases := []struct {
+		metric string
+		value  float64
+		want   string // "" = the metric has no range check at all
+	}{
+		{"respiratory_rate", 22, RangeAbove},
+		{"respiratory_rate", 20, RangeWithin},
+		{"respiratory_rate", 9, RangeWithin}, // sleeping rates run low: no low limit
+		{"oxygen_saturation", 93, RangeBelow},
+		{"oxygen_saturation", 95, RangeWithin},
+		{"resting_heart_rate", 105, RangeAbove},
+		{"resting_heart_rate", 48, RangeWithin}, // trained people: no low limit
+		{"step_count", 1, ""},
+		{"body_mass", 120, ""},
+	}
+	for _, c := range cases {
+		m, err := metrics.Lookup(c.metric)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := rangeCheck(m, c.value)
+		switch {
+		case c.want == "" && got != nil:
+			t.Errorf("%s %v: unexpected range %+v", c.metric, c.value, got)
+		case c.want != "" && (got == nil || got.Position != c.want):
+			t.Errorf("%s %v: got %+v, want position %s", c.metric, c.value, got, c.want)
+		}
+	}
+}
+
+func TestRangeDoesNotChangeTheVerdict(t *testing.T) {
+	conn := newDB(t)
+	// Ten days at 14, then 22 (above the 20 limit): beyond usual and above the range.
+	for i := 1; i <= 10; i++ {
+		addSample(t, conn, "respiratory_rate", fmt.Sprintf("2026-10-%02d 03:00 +0000", 20+i-1), 14+float64(i%2)*0.2, watch)
+	}
+	addSample(t, conn, "respiratory_rate", "2026-11-08 03:00 +0000", 22, watch)
+	// Resting HR stays inside 60-100 but moves a lot: a verdict, no range note.
+	for i := 1; i <= 10; i++ {
+		addSample(t, conn, "resting_heart_rate", fmt.Sprintf("2026-10-%02d 07:00 +0000", 20+i-1), 70+float64(i%2), watch)
+	}
+	addSample(t, conn, "resting_heart_rate", "2026-11-08 07:00 +0000", 90, watch)
+
+	o, err := BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp := rowFor(t, o, "respiratory_rate")
+	if resp.Range == nil || resp.Range.Position != RangeAbove || resp.Verdict != VerdictChanged {
+		t.Errorf("respiratory rate: range %+v verdict %q, want above and changed", resp.Range, resp.Verdict)
+	}
+	hr := rowFor(t, o, "resting_heart_rate")
+	if hr.Range == nil || hr.Range.Position != RangeWithin || hr.Verdict != VerdictWorse {
+		t.Errorf("resting HR: range %+v verdict %q, want within and worse", hr.Range, hr.Verdict)
+	}
+}

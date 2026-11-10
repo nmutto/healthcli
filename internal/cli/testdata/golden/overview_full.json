@@ -69,6 +69,11 @@
       "z": 3.829790233561456,
       "comparison": "above",
       "verdict": "worse",
+      "range": {
+        "high": 100,
+        "source": "adult resting heart rate, 60-100 bpm",
+        "position": "within"
+      },
       "spark": [
         59,
         61,

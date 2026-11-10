@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/nmutto/healthcli/internal/metrics"
@@ -161,15 +162,58 @@ func metricTable(o *stats.Overview, ti termInfo, g glyphSet, st style, v overvie
 	b.WriteString(st.dim(strings.TrimRight(head, " ")) + "\n")
 
 	var current string
+	var notes []string
 	for _, r := range rows {
 		if r.Category != current {
 			current = r.Category
+			b.WriteString(rangeNoteLines(notes, ti, st))
+			notes = nil
 			if !v.compact {
 				b.WriteString("\n")
 			}
 			b.WriteString(categoryBand(current, summaryFor(o.Categories, current), ti, g, st))
 		}
 		b.WriteString(metricRow(r, cols, ti, g, st))
+		if n := rangeNote(r, ti); n != "" {
+			notes = append(notes, n)
+		}
+	}
+	b.WriteString(rangeNoteLines(notes, ti, st))
+	return b.String()
+}
+
+// rangeNote is the plain note for a latest value outside the metric's
+// reference limit, or "" (also for a metric with no limit). It says where the
+// level is and nothing about the change: the verdict and the note are two
+// different facts. A general guide, not medical advice.
+func rangeNote(r stats.MetricRow, ti termInfo) string {
+	if r.Range == nil || r.Value == nil {
+		return ""
+	}
+	var word, limitWord string
+	var limit float64
+	switch r.Range.Position {
+	case stats.RangeAbove:
+		word, limitWord, limit = "above", "limit", r.Range.High
+	case stats.RangeBelow:
+		word, limitWord, limit = "below", "level", r.Range.Low
+	default:
+		return ""
+	}
+	value := withUnit(*r.Value, r.Metric, r.Unit, ti.unicode)
+	limitText := withUnit(limit, r.Metric, r.Unit, ti.unicode)
+	if value == limitText { // rounding hides the gap ("95%" is below 95%): show more digits
+		value = joinUnit(strconv.FormatFloat(*r.Value, 'f', 2, 64), r.Metric, r.Unit, ti.unicode)
+	}
+	return fmt.Sprintf("%s %s is %s the usual adult %s of %s (general guide, not medical advice)",
+		r.Label, value, word, limitWord, limitText)
+}
+
+// rangeNoteLines writes the notes of one category as dim lines under its rows.
+func rangeNoteLines(notes []string, ti termInfo, st style) string {
+	var b strings.Builder
+	for _, n := range notes {
+		b.WriteString(strings.Join(wrapDim(n, ti.width, st), "\n") + "\n")
 	}
 	return b.String()
 }

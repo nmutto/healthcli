@@ -175,9 +175,46 @@ type MetricRow struct {
 	// Empty unless State is ok. See Verdict for the caveat.
 	Verdict string `json:"verdict,omitempty"`
 
+	// Range is where the value sits against the metric's reference limit,
+	// only for metrics that have one and a value that is not stale. It never
+	// changes the verdict: a level against a population is not a change.
+	Range *RangeCheck `json:"range,omitempty"`
+
 	// Spark is one value per day for the last SparkDays days ending today
 	// (null = no data that day).
 	Spark []*float64 `json:"spark"`
+}
+
+// Positions of a value against a metric's reference limit.
+const (
+	RangeBelow  = "below"
+	RangeWithin = "within"
+	RangeAbove  = "above"
+)
+
+// RangeCheck is a metric's reference limit and where the latest value sits.
+// A bound that is 0 (left out of the JSON) is no limit on that side.
+type RangeCheck struct {
+	Low      float64 `json:"low,omitempty"`
+	High     float64 `json:"high,omitempty"`
+	Source   string  `json:"source"`
+	Position string  `json:"position"` // below, within or above
+}
+
+// rangeCheck places v against the metric's reference limit; nil when the
+// metric has none.
+func rangeCheck(m metrics.Metric, v float64) *RangeCheck {
+	if m.Range == nil {
+		return nil
+	}
+	rc := &RangeCheck{Low: m.Range.Low, High: m.Range.High, Source: m.Range.Source, Position: RangeWithin}
+	switch {
+	case m.Range.Low > 0 && v < m.Range.Low:
+		rc.Position = RangeBelow
+	case m.Range.High > 0 && v > m.Range.High:
+		rc.Position = RangeAbove
+	}
+	return rc
 }
 
 // Differs reports whether this row's value is unusual for the person.
@@ -542,6 +579,7 @@ func newRow(m metrics.Metric) MetricRow {
 // row: the daily value v of `day` set against the 28 days before it. The
 // overview anchors it on each metric's newest day, "today" on the day shown.
 func fillComparison(ctx context.Context, conn *sql.DB, row *MetricRow, m metrics.Metric, day string, v float64) error {
+	row.Range = rangeCheck(m, v) // independent of the baseline
 	b, err := BaselineFor(ctx, conn, m.Name, day, DefaultBaselineDays)
 	row.BaselineDays = b.N
 	if errors.Is(err, ErrNotEnoughData) {

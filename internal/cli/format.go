@@ -189,7 +189,11 @@ func displayUnit(metric, unit string, unicode bool) (text string, glued bool) {
 
 // withUnit is value and display unit together: "97%", "36.4 °C", "7,412 steps".
 func withUnit(v float64, metric, unit string, unicode bool) string {
-	s := formatValue(v, metric)
+	return joinUnit(formatValue(v, metric), metric, unit, unicode)
+}
+
+// joinUnit puts the display unit after an already formatted number.
+func joinUnit(s, metric, unit string, unicode bool) string {
 	u, glued := displayUnit(metric, unit, unicode)
 	switch {
 	case u == "":
