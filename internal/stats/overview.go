@@ -336,7 +336,7 @@ func (o *Overview) buildRichSections(ctx context.Context, conn *sql.DB, now time
 	if !sleep.Empty {
 		o.SleepSummary = sleep
 	}
-	wk, err := BuildWorkoutsReport(ctx, conn, o.Today, workoutsReportDays, workoutsReportWeeks)
+	wk, err := BuildWorkoutsReportWithHeatmap(ctx, conn, o.Today, workoutsReportDays, workoutsReportWeeks, min(opts.HeatWeeks, MaxHeatmapWeeks))
 	if err != nil {
 		return err
 	}

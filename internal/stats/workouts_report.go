@@ -86,9 +86,17 @@ type Best struct {
 // BuildWorkoutsReport summarises the last `days` days ending on `today`, a
 // `weeks`-week volume chart and the 90-day bests, all from one read.
 func BuildWorkoutsReport(ctx context.Context, conn *sql.DB, today string, days, weeks int) (*WorkoutsReport, error) {
+	return BuildWorkoutsReportWithHeatmap(ctx, conn, today, days, weeks, weeks)
+}
+
+// BuildWorkoutsReportWithHeatmap is BuildWorkoutsReport for a heatmap that
+// is `heatWeeks` weeks long, which can be longer than the volume chart (the
+// overview draws an 8-week chart next to a heatmap of up to a year).
+func BuildWorkoutsReportWithHeatmap(ctx context.Context, conn *sql.DB, today string, days, weeks, heatWeeks int) (*WorkoutsReport, error) {
 	// Read far enough back for every part: bests, the weekly chart (plus the
-	// weeks its deltas compare with) and the heatmap.
-	back := max(BestsDays, days, 7*(weeks+5))
+	// weeks its deltas compare with) and the heatmap (which starts on the
+	// Monday heatWeeks calendar weeks back).
+	back := max(BestsDays, days, 7*(weeks+5), 7*heatWeeks+6)
 	from, err := AddDays(today, -(back - 1))
 	if err != nil {
 		return nil, err

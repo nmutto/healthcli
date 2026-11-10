@@ -93,3 +93,31 @@ func TestWeeklyVolumeSkipsWeeksBeforeFirstWorkout(t *testing.T) {
 		t.Fatalf("weeks = %+v, want only 2026-11-02 and 2026-11-09", got)
 	}
 }
+
+// The overview draws a long heatmap next to an 8-week chart: the report must
+// read back as far as the heatmap starts, not only as far as the chart.
+func TestWorkoutsReportReadsBackFarEnoughForTheHeatmap(t *testing.T) {
+	conn := newDB(t)
+	addWorkout(t, conn, "running", "2026-11-09 07:00 +0000", "2026-11-09 07:30 +0000", watch)
+	addWorkout(t, conn, "running", "2026-01-12 07:00 +0000", "2026-01-12 07:45 +0000", watch) // 43 weeks back
+
+	short, err := BuildWorkoutsReport(context.Background(), conn, "2026-11-09", 28, 8)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := short.MinutesByDay["2026-01-12"]; ok {
+		t.Errorf("an 8-week report should not hold a workout from 43 weeks back")
+	}
+	long, err := BuildWorkoutsReportWithHeatmap(context.Background(), conn, "2026-11-09", 28, 8, 50)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if long.MinutesByDay["2026-01-12"] != 45 {
+		t.Errorf("minutes by day = %v, want the January workout (45)", long.MinutesByDay)
+	}
+	// The chart stays 8 weeks long: with the January workout in view, none of
+	// its weeks lie before the first workout.
+	if len(long.Weeks) != 8 {
+		t.Errorf("the volume chart has %d weeks, want 8", len(long.Weeks))
+	}
+}
