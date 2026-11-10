@@ -2,6 +2,7 @@ package stats
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 )
@@ -119,5 +120,27 @@ func TestWorkoutsReportReadsBackFarEnoughForTheHeatmap(t *testing.T) {
 	// its weeks lie before the first workout.
 	if len(long.Weeks) != 8 {
 		t.Errorf("the volume chart has %d weeks, want 8", len(long.Weeks))
+	}
+}
+
+// The recent list is every session of the last 7 days (today included), newest
+// first, however many there are, and nothing older.
+func TestRecentWorkoutsAreTheLastSevenDays(t *testing.T) {
+	conn := newDB(t)
+	addWorkout(t, conn, "running", "2026-11-02 07:00 +0000", "2026-11-02 07:30 +0000", watch)             // 7 days back: out
+	for _, w := range [][2]string{{"03", "08"}, {"05", "08"}, {"07", "08"}, {"07", "18"}, {"09", "08"}} { // two on the 7th
+		addWorkout(t, conn, "cycling", "2026-11-"+w[0]+" "+w[1]+":00 +0000", "2026-11-"+w[0]+" "+w[1]+":45 +0000", watch)
+	}
+	r, err := BuildWorkoutsReport(context.Background(), conn, "2026-11-09", 28, 8)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var days []string
+	for _, w := range r.Recent {
+		days = append(days, w.Day)
+	}
+	want := []string{"2026-11-09", "2026-11-07", "2026-11-07", "2026-11-05", "2026-11-03"}
+	if fmt.Sprint(days) != fmt.Sprint(want) {
+		t.Errorf("recent days = %v, want %v", days, want)
 	}
 }

@@ -70,6 +70,7 @@
  RECENT
  Sat Nov 07 running     51m  8.5 km 6:00 /km  551 kcal
  Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
+ Tue Nov 03 walking     28m  2.3 km 12:00 /km 104 kcal
 
  ━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-08
      Aug Sep     Oct     Nov

@@ -9,6 +9,7 @@
  RECENT
  Sat Nov 07 cycling  1h 07m 21.0 km 18.8 km/h 550 kcal
  Fri Nov 06 walking     33m  4.3 km 7:40 /km  210 kcal
+ Wed Nov 04 running  1h 10m 11.0 km 6:22 /km  580 kcal
 
  WEEK OF TIME                                    N VS AVG
  Sep 21  █████████████░░░░░░░░░░░ 3h 00m         3 ▼ -23%

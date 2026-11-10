@@ -224,8 +224,6 @@ $ healthcli --db demo.db overview --full
  Sat Nov 07 running     51m  8.5 km 6:00 /km  551 kcal
  Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
  Tue Nov 03 walking     28m  2.3 km 12:00 /km 104 kcal
- Sun Nov 01 running     58m  9.7 km 6:00 /km  632 kcal
- Fri Oct 30 cycling     40m 13.4 km 20.0 km/h 402 kcal
 
  BESTS (90 d)
  longest   running 1h 00m, Oct 26 *new*
@@ -398,7 +396,7 @@ _ no data   < today   steps per day
 
 ### Workouts
 
-`healthcli workouts [--days N] [--weeks N] [--by type]` shows totals per activity type with a share bar, weekly training time (the current week is marked and gets no change figure), personal bests over 90 days (an activity needs 3 sessions), the newest sessions and a calendar of workout minutes per day, where empty days after your first workout are rest days. `--by type` draws each day's main activity as a letter. Columns with no data (no calories or distance recorded) disappear, and with no workouts you get one line, not an error. `--json` prints the report (durations in seconds; values that are absent are left out, never `null`).
+`healthcli workouts [--days N] [--weeks N] [--by type]` shows totals per activity type with a share bar, weekly training time (the current week is marked and gets no change figure), personal bests over 90 days (an activity needs 3 sessions), every session of the last 7 days and a calendar of workout minutes per day, where empty days after your first workout are rest days. `--by type` draws each day's main activity as a letter. Columns with no data (no calories or distance recorded) disappear, and with no workouts you get one line, not an error. `--json` prints the report (durations in seconds; values that are absent are left out, never `null`).
 
 Synthetic data, not real:
 
@@ -416,8 +414,6 @@ $ healthcli workouts
  Sat Nov 07 cycling  1h 07m 21.0 km 18.8 km/h 550 kcal
  Fri Nov 06 walking     33m  4.3 km 7:40 /km  210 kcal
  Wed Nov 04 running  1h 10m 11.0 km 6:22 /km  580 kcal
- Mon Nov 02 cycling  1h 12m 21.0 km 17.5 km/h 500 kcal
- Sat Oct 31 yoga        49m
 
  WEEK OF TIME                                    N VS AVG
  Sep 21  █████████████░░░░░░░░░░░ 3h 00m         3 ▼ -23%

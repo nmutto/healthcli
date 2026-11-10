@@ -1361,16 +1361,6 @@
         "energy_kcal": 520,
         "distance_km": 18,
         "source": "Test Apple Watch"
-      },
-      {
-        "day": "2026-10-30",
-        "activity": "running",
-        "start": "2026-10-30T18:00:00Z",
-        "end": "2026-10-30T18:52:00Z",
-        "duration_seconds": 3120,
-        "energy_kcal": 630,
-        "distance_km": 8,
-        "source": "Test Apple Watch"
       }
     ]
   }

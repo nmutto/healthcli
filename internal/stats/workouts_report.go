@@ -19,8 +19,9 @@ const (
 	bestMinSessions = 3
 	// paceMinMeters: very short GPS tracks give silly paces, so a "fastest" needs this.
 	paceMinMeters = 3000
-	// recentCount is how many sessions the recent list shows.
-	recentCount = 5
+	// recentDays is how far back the recent list goes: every session of the
+	// last 7 days, today included.
+	recentDays = 7
 )
 
 // WorkoutsReport is the WORKOUTS section. kcal and km totals are nil when no
@@ -129,8 +130,12 @@ func BuildWorkoutsReportWithHeatmap(ctx context.Context, conn *sql.DB, today str
 	r.fillDays(all)
 	r.Weeks = weeklyVolume(all, today, weeks)
 	r.Bests = bests(all, today, winFrom)
-	for i := len(window) - 1; i >= 0 && len(r.Recent) < recentCount; i-- {
-		r.Recent = append(r.Recent, window[i])
+	recentFrom, err := AddDays(today, -(recentDays - 1))
+	if err != nil {
+		return nil, err
+	}
+	for i := len(all) - 1; i >= 0 && all[i].Day >= recentFrom; i-- { // newest first
+		r.Recent = append(r.Recent, all[i])
 	}
 	return r, nil
 }

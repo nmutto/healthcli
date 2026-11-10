@@ -50,7 +50,7 @@ func renderWorkoutsSection(r *stats.WorkoutsReport, ti termInfo, width int, opts
 	lines := []string{indent + bandLine("WORKOUTS", wkSummary(r, bandRoom("WORKOUTS", total)), total, g, st), ""}
 	lines = append(lines, wkTypeTable(r, g, st, width)...)
 	lines = append(lines, "")
-	lines = append(lines, wkRecent(r, g, st, width, opts.Full)...)
+	lines = append(lines, wkRecent(r, g, st, width)...)
 	if !opts.Full {
 		return lines
 	}
@@ -200,18 +200,11 @@ func wkBar(frac float64, width int, g glyphSet) string {
 	return strings.Repeat(string(g.stages["deep"]), n) + strings.Repeat(string(g.stages["awake"]), width-n)
 }
 
-// wkRecent lists the newest sessions. Columns (distance, pace, kcal) that no
-// shown row has are dropped, and the rightmost go first when the line is too wide.
-func wkRecent(r *stats.WorkoutsReport, g glyphSet, st style, width int, full bool) []string {
-	n := 3
-	if full {
-		n = 5
-	}
-	if width < 70 {
-		n = min(n, 2)
-	}
-	rows := r.Recent[:min(n, len(r.Recent))]
-	return wkSessionRows(rows, "RECENT", 10, func(w stats.Workout) string { return w.Start.Format("Mon Jan 02") }, g, st, width)
+// wkRecent lists every session of the last 7 days, newest first. Columns
+// (distance, pace, kcal) that no shown row has are dropped, and the rightmost
+// go first when the line is too wide.
+func wkRecent(r *stats.WorkoutsReport, g glyphSet, st style, width int) []string {
+	return wkSessionRows(r.Recent, "RECENT", 10, func(w stats.Workout) string { return w.Start.Format("Mon Jan 02") }, g, st, width)
 }
 
 // wkSessionRows draws sessions as a title line and one row each:
