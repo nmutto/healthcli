@@ -511,6 +511,12 @@ func buildRow(ctx context.Context, conn *sql.DB, name, today string, maxStart in
 
 	if row.AgeDays > StaleDays {
 		row.State = StateStale
+		// No comparison for a stale value, but the baseline day count is real.
+		b, err := BaselineFor(ctx, conn, m.Name, latest.Day, DefaultBaselineDays)
+		if err != nil && !errors.Is(err, ErrNotEnoughData) {
+			return MetricRow{}, err
+		}
+		row.BaselineDays = b.N
 		return row, nil
 	}
 	if err := fillComparison(ctx, conn, &row, m, latest.Day, v); err != nil {

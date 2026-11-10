@@ -379,3 +379,19 @@ func TestOverviewPercentMetricsUseMinDelta(t *testing.T) {
 		t.Errorf("verdict = %q, want worse (z=%v)", r.Verdict, *r.Z)
 	}
 }
+
+// A stale row still reports how many baseline days its metric has.
+func TestOverviewStaleRowCountsBaselineDays(t *testing.T) {
+	conn := newDB(t)
+	for i := 0; i < 10; i++ { // newest reading is 8 days old: stale
+		addSample(t, conn, "step_count", fmt.Sprintf("2026-10-%02d 07:00 +0000", 31-i-1), 8000, watch)
+	}
+	o, err := BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := rowFor(t, o, "step_count")
+	if r.State != StateStale || r.BaselineDays != 9 {
+		t.Errorf("state %q baseline days %d, want stale with 9", r.State, r.BaselineDays)
+	}
+}
