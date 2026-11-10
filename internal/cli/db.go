@@ -30,11 +30,14 @@ func requireDB(path string) error {
 	return nil
 }
 
-// openDB opens the database, creating it when missing. The caller must Close
-// the result.
+// openDB opens an existing database for the read commands (today, overview,
+// sleep, ...). It never creates one. The caller must Close the result.
 func openDB(opts *options) (*sql.DB, error) {
 	path, err := dbPath(opts)
 	if err != nil {
+		return nil, err
+	}
+	if err := requireDB(path); err != nil {
 		return nil, err
 	}
 	return db.Open(path)
@@ -50,4 +53,14 @@ func openReadOnlyDB(opts *options) (*sql.DB, error) {
 		return nil, err
 	}
 	return db.OpenReadOnly(path)
+}
+
+// openOrCreateDB is for the commands that write (import, log): the database
+// is created on first use.
+func openOrCreateDB(opts *options) (*sql.DB, error) {
+	path, err := dbPath(opts)
+	if err != nil {
+		return nil, err
+	}
+	return db.Open(path)
 }

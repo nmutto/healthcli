@@ -11,7 +11,7 @@ import (
 )
 
 func runImportApple(cmd *cobra.Command, opts *options, file string) error {
-	conn, err := openDB(opts)
+	conn, err := openOrCreateDB(opts)
 	if err != nil {
 		return err
 	}

@@ -74,7 +74,7 @@ func runLog(cmd *cobra.Command, opts *options, metricArg, valueArg, unit, at str
 	_, offset := when.Zone()
 	ts := when.Unix()
 
-	conn, err := openDB(opts)
+	conn, err := openOrCreateDB(opts)
 	if err != nil {
 		return err
 	}
