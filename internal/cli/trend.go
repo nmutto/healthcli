@@ -213,7 +213,7 @@ func buildTrend(ctx context.Context, conn *sql.DB, metric, unit, end string, day
 
 	if len(shown) == 0 {
 		r.Status = statusNoData
-		if latest, ok, err := latestDayFor(ctx, conn, metric); err != nil {
+		if latest, ok, err := stats.LatestDayFor(ctx, conn, metric); err != nil {
 			return nil, err
 		} else if ok {
 			r.LatestDay = latest
@@ -349,20 +349,4 @@ func trendBaseline(ctx context.Context, conn *sql.DB, metric, end string, byDay 
 		tb.Available, tb.Mean = true, &b.Mean
 	}
 	return tb, nil
-}
-
-// latestDayFor finds the newest day that has data for metric, to point the
-// user at a window that is not empty.
-func latestDayFor(ctx context.Context, conn *sql.DB, metric string) (string, bool, error) {
-	if metric == sleepMetric {
-		var d sql.NullString
-		err := conn.QueryRowContext(ctx,
-			`SELECT max(date(end_ts + tz_offset + 21600, 'unixepoch')) FROM sleep_stages WHERE stage != 'in_bed'`).Scan(&d)
-		return d.String, d.Valid, err
-	}
-	s, err := stats.LatestSample(ctx, conn, metric)
-	if errors.Is(err, stats.ErrNoData) {
-		return "", false, nil
-	}
-	return s.Day, err == nil, err
 }
