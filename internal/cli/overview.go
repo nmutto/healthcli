@@ -46,6 +46,14 @@ good direction (weight, respiratory rate, ...) get no colour, only the word
 Stale data is yellow. Colour is never the only signal: every row has an
 arrow, and beyond-usual rows also carry the word.
 
+Walking double support time and walking asymmetry are judged by their level,
+not by the direction of the move: a rise that stays inside the range (double
+support up to 40%, Apple's typical walking range; asymmetry up to 35%, the
+level Apple's research uses to tell asymmetric walking apart) only says
+"higher" or "lower"; leaving the range is "worse" and coming back is "better".
+Metrics that are themselves a percentage report their change in points (pt),
+because a relative change of a small percentage means nothing.
+
 A few metrics also have a reference limit for the level itself: resting heart
 rate above 100 bpm, respiratory rate above 20 per minute and blood oxygen
 below 95%. When the latest value is outside it, a plain dim note under that

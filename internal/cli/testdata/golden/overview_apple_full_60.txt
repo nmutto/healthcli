@@ -1,7 +1,7 @@
  healthcli overview          db: demo.db · imported 1 d ago
  ──────────────────────────────────────────────────────────
- 3 better, 3 worse, 1 changed, 12 typical vs usual
- VITALS 9 !1 · ACTIVITY 8 · BODY 4 · MOBILITY 5 !2 · SLEEP
+ 3 better, 1 worse, 3 changed, 12 typical vs usual
+ VITALS 9 !1 · ACTIVITY 8 · BODY 4 · MOBILITY 5 · SLEEP
  WORKOUTS
 
    METRIC               LATEST          VS 28-DAY USUAL
@@ -12,7 +12,7 @@
    HRV                  46 ms           ▼ -4%
  ~ Respiratory rate     15.6/min        ▲ +9% higher
    Wrist temperature    36.0 °C         – 0%
-   Blood oxygen         97%             – 0%
+   Blood oxygen         97%             ▲ +0.2pt
    VO2 max              41.9 mL/kg/min  stale 6 d
  + Walking heart rate   90 bpm          ▼ -4% better
    Heart rate recovery  26 bpm          need 7d (have 6)
@@ -33,11 +33,11 @@
    BMI                  24.0            need 7d (have 4)
    Lean body mass       63.2 kg         need 7d (have 4)
 
- ━━ MOBILITY ━━ 5 · 2 worse · 1 stale ━━━━━━━━━━━━━━━━━━━━━
+ ━━ MOBILITY ━━ 5 · 2 changed · 1 stale ━━━━━━━━━━━━━━━━━━━
    Walking speed        5.5 km/h        ▲ +2%
    Step length          73 cm           ▲ +2%
- ! Walking asymmetry    4.9%            ▲ +38% worse
- ! Double support time  30.7%           ▲ +7% worse
+ ~ Walking asymmetry    4.9%            ▲ +1.4pt higher
+ ~ Double support time  30.7%           ▲ +2.1pt higher
    Walking steadiness   94%             stale 6 d
  + better  ! worse  ~ higher/lower
 

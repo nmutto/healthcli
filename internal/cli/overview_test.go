@@ -791,3 +791,42 @@ func TestRangeNoteShowsDigitsWhenRoundingHidesTheGap(t *testing.T) {
 		t.Errorf("within range gave a note: %q", got)
 	}
 }
+
+// A metric that is itself a percentage reports its change in points, never a
+// relative percent of a small number ("1% to 2%" is not "+100%").
+func TestPercentMetricsReportPoints(t *testing.T) {
+	g := unicodeGlyphs
+	row := func(v, mean float64) stats.MetricRow {
+		pct := (v - mean) / mean * 100
+		return stats.MetricRow{Unit: "percent", Value: &v, Mean: &mean, DeltaPct: &pct}
+	}
+	for _, c := range []struct {
+		v, mean float64
+		want    string
+	}{
+		{2.6, 1, "▲ +1.6pt"}, {1, 2.6, "▼ -1.6pt"}, {31, 28.6, "▲ +2.4pt"}, {97.2, 97, "▲ +0.2pt"},
+		{94, 97, "▼ -3pt"}, {97.02, 97, "– 0pt"},
+	} {
+		if got := deltaText(row(c.v, c.mean), g); got != c.want {
+			t.Errorf("%v vs %v: %q, want %q", c.v, c.mean, got, c.want)
+		}
+	}
+	// Other metrics keep their relative percent.
+	v, mean := 110.0, 100.0
+	pct := 10.0
+	if got := deltaText(stats.MetricRow{Unit: "bpm", Value: &v, Mean: &mean, DeltaPct: &pct}, g); got != "▲ +10%" {
+		t.Errorf("bpm: %q", got)
+	}
+}
+
+// A limit with its own Basis says what it is, and a double support time past
+// 40% gets a note that names Apple's range, not "the usual adult limit".
+func TestRangeNoteUsesTheBasis(t *testing.T) {
+	v := 43.0
+	r := stats.MetricRow{Metric: "walking_double_support", Label: "Double support time", Unit: "percent", Value: &v,
+		Range: &stats.RangeCheck{High: 40, Basis: "the top of Apple's typical walking range", Position: stats.RangeAbove}}
+	want := "Double support time 43.0% is above 40.0%, the top of Apple's typical walking range (general guide, not medical advice)"
+	if got := rangeNote(r, termInfo{unicode: true}); got != want {
+		t.Errorf("note = %q, want %q", got, want)
+	}
+}

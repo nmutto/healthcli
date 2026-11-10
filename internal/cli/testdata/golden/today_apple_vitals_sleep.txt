@@ -11,7 +11,7 @@
    HRV                 46 ms     48     ▼ -4%         ···░●░░···
  ~ Respiratory rate    15.6/min  14.3   ▲ +9% higher  ···░░░░●··
    Wrist temperature   36.0 °C   35.9   – 0%          ···░░●░···
-   Blood oxygen        97%       97     – 0%          ···░░●░···
+   Blood oxygen        97%       97     ▲ +0.2pt      ···░░●░···
  + Walking heart rate  90 bpm    94     ▼ -4% better  ···●░░░···
  + better  ! worse  ~ higher/lower, no good direction
  7 tracked metrics have no reading on this day

@@ -1,7 +1,7 @@
  [1mhealthcli overview[0m                              [2mdb: demo.db · imported 1 d ago[0m
  ──────────────────────────────────────────────────────────────────────────────
- 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
- VITALS 9 !1 · ACTIVITY 8 · BODY 4 · MOBILITY 5 !2 · SLEEP · WORKOUTS
+ 3 better, 1 worse, 3 changed, 12 typical vs your 28-day usual · Resting HR +6%
+ VITALS 9 !1 · ACTIVITY 8 · BODY 4 · MOBILITY 5 · SLEEP · WORKOUTS
 
 [2m   METRIC                      LATEST          VS 28-DAY USUAL               AGE[0m
 
@@ -11,7 +11,7 @@
    HRV                         46[2m ms[0m           ▼ -4%             ···░●░░···
  ~ Respiratory rate            15.6[2m/min[0m        ▲ +9% higher      ···░░░░●··
    Wrist temperature           36.0[2m °C[0m         – 0%              ···░░●░···
-   Blood oxygen                97[2m%[0m             – 0%              ···░░●░···
+   Blood oxygen                97[2m%[0m             ▲ +0.2pt          ···░░●░···
    VO2 max                     41.9[2m mL/kg/min[0m  [33mstale                       [0m  [33m6 d[0m
  [32m+[0m Walking heart rate          90[2m bpm[0m          [32m▼ -4% better[0m      ···[32m●[0m░░░···
    Heart rate recovery         26[2m bpm[0m          [2mneed 7d (have 6)            [0m
@@ -32,11 +32,11 @@
    BMI                         24.0            [2mneed 7d (have 4)            [0m
    Lean body mass              63.2[2m kg[0m         [2mneed 7d (have 4)            [0m
 
- [2m━━[0m [1mMOBILITY[0m [2m━━[0m 5 metrics · 2 worse · 1 stale [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
+ [2m━━[0m [1mMOBILITY[0m [2m━━[0m 5 metrics · 2 changed · 1 stale [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
    Walking speed               5.5[2m km/h[0m        ▲ +2%             ···░░●░···
    Step length                 73[2m cm[0m           ▲ +2%             ···░░░●···
- [1;31m![0m Walking asymmetry           4.9[2m%[0m            [1;31m▲ +38% worse[0m      ···░░░░[1;31m●[0m··
- [1;31m![0m Double support time         30.7[2m%[0m           [1;31m▲ +7% worse[0m       ···░░░░[1;31m●[0m··
+ ~ Walking asymmetry           4.9[2m%[0m            ▲ +1.4pt higher   ···░░░░●··
+ ~ Double support time         30.7[2m%[0m           ▲ +2.1pt higher   ···░░░░●··
    Walking steadiness          94[2m%[0m             [33mstale                       [0m  [33m6 d[0m
  [32m+[0m[2m better[0m  [1;31m![0m[2m worse[0m  [2m~ higher/lower, no good direction[0m
 

@@ -55,7 +55,7 @@ type todayMetric struct {
 	Comparison *comparisonInfo `json:"comparison"` // null unless the baseline is available
 
 	Category string   `json:"category"`        // added: vitals, activity, body, mobility or other
-	Polarity string   `json:"polarity"`        // added: higher_better, lower_better or neutral
+	Polarity string   `json:"polarity"`        // added: higher_better, lower_better, in_range or neutral
 	State    string   `json:"state"`           // added: ok or no_baseline
 	Verdict  string   `json:"verdict"`         // added: better, worse, changed or typical; "" without a baseline
 	Usual    *float64 `json:"usual,omitempty"` // added: the 28-day mean, same as baseline.mean

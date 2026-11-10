@@ -455,3 +455,81 @@ func TestRangeDoesNotChangeTheVerdict(t *testing.T) {
 		t.Errorf("resting HR: range %+v verdict %q, want within and worse", hr.Range, hr.Verdict)
 	}
 }
+
+// An InRange metric is judged by the level against the band, not by the
+// direction of the move.
+func TestRangeVerdict(t *testing.T) {
+	band := &metrics.Range{Low: 20, High: 40}
+	cases := []struct {
+		name         string
+		value, usual float64
+		comparison   string
+		want         string
+	}{
+		{"inside before and after, moved up", 35, 28, Above, VerdictChanged},
+		{"inside before and after, moved down", 22, 30, Below, VerdictChanged},
+		{"left the band upward", 43, 36, Above, VerdictWorse},
+		{"left the band downward", 17, 24, Below, VerdictWorse},
+		{"came back into the band", 38, 44, Below, VerdictBetter},
+		{"outside and farther out", 48, 44, Above, VerdictWorse},
+		{"outside and nearer", 41, 44, Below, VerdictBetter},
+		{"too small a move to matter", 35, 34, Typical, VerdictTypical},
+	}
+	for _, c := range cases {
+		if got := RangeVerdict(band, c.value, c.usual, c.comparison); got != c.want {
+			t.Errorf("%s: %s, want %s", c.name, got, c.want)
+		}
+	}
+	// One-sided band (only an upper limit): below the limit is never judged.
+	if got := RangeVerdict(&metrics.Range{High: 10}, 2, 6, Below); got != VerdictChanged {
+		t.Errorf("one-sided, inside: %s, want changed", got)
+	}
+	if got := RangeVerdict(&metrics.Range{High: 10}, 14, 8, Above); got != VerdictWorse {
+		t.Errorf("one-sided, left the band: %s, want worse", got)
+	}
+}
+
+// The cases: a double support time that rises but stays under the
+// top of its typical range is not "worse"; one that leaves it is. A walking
+// asymmetry near 0% that doubles stays unjudged.
+func TestMobilityMetricsAreJudgedByTheirRange(t *testing.T) {
+	conn := newDB(t)
+	days := func(metric string, usual, last float64) {
+		for i := 1; i <= 10; i++ {
+			addSample(t, conn, metric, fmt.Sprintf("2026-10-%02d 12:00 +0000", 20+i-1), usual+float64(i%2)*0.2, watch)
+		}
+		addSample(t, conn, metric, "2026-11-08 12:00 +0000", last, watch)
+	}
+	days("walking_double_support", 28, 33)   // up 5 points, still under 40
+	days("walking_asymmetry", 1, 2.6)        // "+160%", still near 0
+	days("apple_walking_steadiness", 80, 70) // no range yet: higher is better, so a fall is worse
+
+	o, err := BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for metric, want := range map[string]string{
+		"walking_double_support":   VerdictChanged,
+		"walking_asymmetry":        VerdictChanged,
+		"apple_walking_steadiness": VerdictWorse,
+	} {
+		if got := rowFor(t, o, metric).Verdict; got != want {
+			t.Errorf("%s: verdict %q, want %q", metric, got, want)
+		}
+	}
+
+	// Past the top of the range (usual 36 -> 44) is worse, and a note follows.
+	conn2 := newDB(t)
+	for i := 1; i <= 10; i++ {
+		addSample(t, conn2, "walking_double_support", fmt.Sprintf("2026-10-%02d 12:00 +0000", 20+i-1), 36+float64(i%2)*0.2, watch)
+	}
+	addSample(t, conn2, "walking_double_support", "2026-11-08 12:00 +0000", 44, watch)
+	o2, err := BuildOverview(context.Background(), conn2, overviewNow, DefaultOverviewOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := rowFor(t, o2, "walking_double_support")
+	if r.Verdict != VerdictWorse || r.Range == nil || r.Range.Position != RangeAbove {
+		t.Errorf("double support 44: verdict %q range %+v, want worse and above", r.Verdict, r.Range)
+	}
+}

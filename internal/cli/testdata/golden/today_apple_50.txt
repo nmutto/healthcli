@@ -1,35 +1,34 @@
  Sunday 2026-11-08 (yesterday)
  ────────────────────────────────────────────────
- 3 better, 3 worse, 1 changed, 12 typical
- VITALS 7 !1 · ACTIVITY 8 · MOBILITY 4 !2
- SLEEP
+ 3 better, 1 worse, 3 changed, 12 typical
+ VITALS 7 !1 · ACTIVITY 8 · MOBILITY 4 · SLEEP
 
-   METRIC            LATEST  USUAL   VS USUAL
+   METRIC          LATEST  USUAL   VS USUAL
 
  ━━ VITALS ━━ 7 · 1 better · 1 worse · 1 changed
-   Avg heart rate    76 bpm  75      ▲ +2%
- ! Resting HR        60 bpm  57      ▲ +6% worse
-   HRV               46 ms   48      ▼ -4%
- ~ Respiratory rate  15.6/…  14.3    ▲ +9% higher
-   Wrist temperatu…  36.0 …  35.9    – 0%
-   Blood oxygen      97%     97      – 0%
- + Walking heart r…  90 bpm  94      ▼ -4% better
+   Avg heart rate  76 bpm  75      ▲ +2%
+ ! Resting HR      60 bpm  57      ▲ +6% worse
+   HRV             46 ms   48      ▼ -4%
+ ~ Respiratory r…  15.6/…  14.3    ▲ +9% higher
+   Wrist tempera…  36.0 …  35.9    – 0%
+   Blood oxygen    97%     97      ▲ +0.2pt
+ + Walking heart…  90 bpm  94      ▼ -4% better
 
  ━━ ACTIVITY ━━ 8 · 2 better ━━━━━━━━━━━━━━━━━━━━
- + Steps             21,99…  19,955  ▲ +10% better
- + Active energy     880 k…  798     ▲ +10% better
-   Resting energy    1,730…  1,701   ▲ +2%
-   Exercise time     43 min  37      ▲ +16%
-   Stand time        364 m…  411     ▼ -12%
-   Flights climbed   8 fli…  13      ▼ -39%
-   Walk + run dist…  6.5 km  6.5     – 0%
-   Time in daylight  53 min  47      ▲ +14%
+ + Steps           21,99…  19,955  ▲ +10% better
+ + Active energy   880 k…  798     ▲ +10% better
+   Resting energy  1,730…  1,701   ▲ +2%
+   Exercise time   43 min  37      ▲ +16%
+   Stand time      364 m…  411     ▼ -12%
+   Flights climb…  8 fli…  13      ▼ -39%
+   Walk + run di…  6.5 km  6.5     – 0%
+   Time in dayli…  53 min  47      ▲ +14%
 
- ━━ MOBILITY ━━ 4 · 2 worse ━━━━━━━━━━━━━━━━━━━━━
-   Walking speed     5.5 k…  5.4     ▲ +2%
-   Step length       73 cm   72      ▲ +2%
- ! Walking asymmet…  4.9%    3.5     ▲ +38% worse
- ! Double support …  30.7%   28.6    ▲ +7% worse
+ ━━ MOBILITY ━━ 4 · 2 changed ━━━━━━━━━━━━━━━━━━━
+   Walking speed   5.5 k…  5.4     ▲ +2%
+   Step length     73 cm   72      ▲ +2%
+ ~ Walking asymm…  4.9%    3.5     ▲ +1.4pt higher
+ ~ Double suppor…  30.7%   28.6    ▲ +2.1pt higher
  + better  ! worse  ~ higher/lower
  7 tracked metrics have no reading on this day
 

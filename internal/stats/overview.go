@@ -154,7 +154,7 @@ type MetricRow struct {
 	Label     string   `json:"label"`
 	Short     string   `json:"-"` // Label for narrow tables
 	Category  string   `json:"category"`
-	Polarity  string   `json:"polarity"` // higher_better, lower_better or neutral
+	Polarity  string   `json:"polarity"` // higher_better, lower_better, in_range or neutral
 	Unit      string   `json:"unit"`
 	State     string   `json:"state"`
 	LatestDay string   `json:"latest_day,omitempty"` // empty for no_data
@@ -198,7 +198,8 @@ type RangeCheck struct {
 	Low      float64 `json:"low,omitempty"`
 	High     float64 `json:"high,omitempty"`
 	Source   string  `json:"source"`
-	Position string  `json:"position"` // below, within or above
+	Basis    string  `json:"basis,omitempty"` // what the limit is, in a few words, for the note
+	Position string  `json:"position"`        // below, within or above
 }
 
 // rangeCheck places v against the metric's reference limit; nil when the
@@ -207,7 +208,7 @@ func rangeCheck(m metrics.Metric, v float64) *RangeCheck {
 	if m.Range == nil {
 		return nil
 	}
-	rc := &RangeCheck{Low: m.Range.Low, High: m.Range.High, Source: m.Range.Source, Position: RangeWithin}
+	rc := &RangeCheck{Low: m.Range.Low, High: m.Range.High, Source: m.Range.Source, Basis: m.Range.Basis, Position: RangeWithin}
 	switch {
 	case m.Range.Low > 0 && v < m.Range.Low:
 		rc.Position = RangeBelow
@@ -457,6 +458,43 @@ func buildOverviewHeatmap(ctx context.Context, conn *sql.DB, o *Overview, now ti
 	return nil, nil
 }
 
+// RangeVerdict is the verdict of an InRange metric: the LEVEL against the
+// metric's range, not the direction of the move. Inside the band before and
+// after, a move is not judged ("changed": plain higher or lower). Otherwise
+// what counts is the distance outside the band: nearer than the usual is
+// better, farther is worse. comparison is the usual above/below/typical
+// label, so a move too small to matter stays typical.
+func RangeVerdict(r *metrics.Range, value, usual float64, comparison string) string {
+	if comparison != Above && comparison != Below {
+		return VerdictTypical
+	}
+	if r == nil {
+		return VerdictChanged
+	}
+	now, before := outsideBy(r, value), outsideBy(r, usual)
+	switch {
+	case now == 0 && before == 0:
+		return VerdictChanged
+	case now < before:
+		return VerdictBetter
+	case now > before:
+		return VerdictWorse
+	}
+	return VerdictChanged
+}
+
+// outsideBy is how far v is outside the range: 0 inside it (or when the
+// side has no bound).
+func outsideBy(r *metrics.Range, v float64) float64 {
+	switch {
+	case r.Low > 0 && v < r.Low:
+		return r.Low - v
+	case r.High > 0 && v > r.High:
+		return v - r.High
+	}
+	return 0
+}
+
 // Verdicts: a metric's comparison seen through its polarity.
 const (
 	VerdictBetter  = "better"
@@ -604,7 +642,11 @@ func fillComparison(ctx context.Context, conn *sql.DB, row *MetricRow, m metrics
 	if c.HasPct {
 		row.DeltaPct = &c.DeltaPct
 	}
-	row.Verdict = Verdict(m.Polarity, lab)
+	if m.Polarity == metrics.InRange {
+		row.Verdict = RangeVerdict(m.Range, v, b.Mean, lab)
+	} else {
+		row.Verdict = Verdict(m.Polarity, lab)
+	}
 	return nil
 }
 

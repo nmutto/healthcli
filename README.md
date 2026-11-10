@@ -85,8 +85,8 @@ One screen with every metric, last night's sleep, recent workouts, an activity c
 $ healthcli --db demo.db overview
  healthcli overview                              db: demo.db · imported 1 d ago
  ──────────────────────────────────────────────────────────────────────────────
- 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
- VITALS 9 !1 · ACTIVITY 8 · BODY 4 · MOBILITY 5 !2 · SLEEP · WORKOUTS
+ 3 better, 1 worse, 3 changed, 12 typical vs your 28-day usual · Resting HR +6%
+ VITALS 9 !1 · ACTIVITY 8 · BODY 4 · MOBILITY 5 · SLEEP · WORKOUTS
 
    METRIC                      LATEST          VS 28-DAY USUAL               AGE
 
@@ -96,7 +96,7 @@ $ healthcli --db demo.db overview
    HRV                         46 ms           ▼ -4%             ···░●░░···
  ~ Respiratory rate            15.6/min        ▲ +9% higher      ···░░░░●··
    Wrist temperature           36.0 °C         – 0%              ···░░●░···
-   Blood oxygen                97%             – 0%              ···░░●░···
+   Blood oxygen                97%             ▲ +0.2pt          ···░░●░···
    VO2 max                     41.9 mL/kg/min  stale                         6 d
  + Walking heart rate          90 bpm          ▼ -4% better      ···●░░░···
    Heart rate recovery         26 bpm          need 7d (have 6)
@@ -117,11 +117,11 @@ $ healthcli --db demo.db overview
    BMI                         24.0            need 7d (have 4)
    Lean body mass              63.2 kg         need 7d (have 4)
 
- ━━ MOBILITY ━━ 5 metrics · 2 worse · 1 stale ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ━━ MOBILITY ━━ 5 metrics · 2 changed · 1 stale ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Walking speed               5.5 km/h        ▲ +2%             ···░░●░···
    Step length                 73 cm           ▲ +2%             ···░░░●···
- ! Walking asymmetry           4.9%            ▲ +38% worse      ···░░░░●··
- ! Double support time         30.7%           ▲ +7% worse       ···░░░░●··
+ ~ Walking asymmetry           4.9%            ▲ +1.4pt higher   ···░░░░●··
+ ~ Double support time         30.7%           ▲ +2.1pt higher   ···░░░░●··
    Walking steadiness          94%             stale                         6 d
  + better  ! worse  ~ higher/lower, no good direction
 
@@ -250,7 +250,7 @@ $ healthcli --db demo.db overview --full
 
 The same full sections are available on their own as `healthcli sleep` and `healthcli workouts`.
 
-Each metric is compared with its own 28-day usual and shows its own newest day and age. When a value is beyond your usual (1+ standard deviation, and a change of at least 2% or a small per-metric minimum) it is coloured by which direction is generally healthy for that metric: **green** and the word "better", **red** and "worse". Metrics with no good direction (weight, respiratory rate, wrist temperature) have no colour and say "higher" or "lower" in plain text. Every beyond-usual row has its word, so nothing depends on colour; typical rows are plain. The legend names the margin markers, so it reads the same without colour. Stale readings are yellow. The legend is the line under the table. Three metrics also have a reference limit for the level itself (resting heart rate above 100 bpm, respiratory rate above 20/min, blood oxygen below 95%): when the latest value is outside it, a plain dim note under that category says so (for example "Blood oxygen 93% is below the usual adult level of 95% (general guide, not medical advice)"). The note never colours a row or changes its word, because a level against a population is not a change against your own usual; watch readings are estimates, and this is not medical advice.
+Each metric is compared with its own 28-day usual and shows its own newest day and age. When a value is beyond your usual (1+ standard deviation, and a change of at least 2% or a small per-metric minimum) it is coloured by which direction is generally healthy for that metric: **green** and the word "better", **red** and "worse". Metrics with no good direction (weight, respiratory rate, wrist temperature) have no colour and say "higher" or "lower" in plain text. Every beyond-usual row has its word, so nothing depends on colour; typical rows are plain. The legend names the margin markers, so it reads the same without colour. Stale readings are yellow. The legend is the line under the table. Walking double support time and walking asymmetry are judged by their level: a rise that stays inside the range (up to 40% for double support, Apple's typical walking range; up to 35% for asymmetry) says only "higher" or "lower", leaving it is "worse" and coming back is "better". Metrics that are themselves a percentage show their change in points (`pt`), not a relative percent. Three metrics also have a reference limit for the level itself (resting heart rate above 100 bpm, respiratory rate above 20/min, blood oxygen below 95%): when the latest value is outside it, a plain dim note under that category says so (for example "Blood oxygen 93% is below the usual adult level of 95% (general guide, not medical advice)"). The note never colours a row or changes its word, because a level against a population is not a change against your own usual; watch readings are estimates, and this is not medical advice.
 
 > The better/worse direction is a general guide, not medical advice. What is healthy for one person (an athlete's low resting heart rate, deliberate weight change) can differ.
 
@@ -262,44 +262,44 @@ A day's summary against your recent baseline: `today` is a one-day slice of the 
 $ healthcli --db demo.db today --date 2026-11-08
  Sunday 2026-11-08 (yesterday)
  ──────────────────────────────────────────────────────────────────────────────
- 3 better, 3 worse, 1 changed, 12 typical vs your 28-day usual · Resting HR +6%
- VITALS 7 !1 · ACTIVITY 8 · MOBILITY 4 !2 · SLEEP
+ 3 better, 1 worse, 3 changed, 12 typical vs your 28-day usual · Resting HR +6%
+ VITALS 7 !1 · ACTIVITY 8 · MOBILITY 4 · SLEEP
 
    METRIC                      LATEST        USUAL   VS USUAL
 
  ━━ VITALS ━━ 7 metrics · 1 better · 1 worse · 1 changed ━━━━━━━━━━━━━━━━━━━━━━
-   Avg heart rate              76 bpm        75      ▲ +2%          ···░░░●···
- ! Resting HR                  60 bpm        57      ▲ +6% worse    ···░░░░●··
-   HRV                         46 ms         48      ▼ -4%          ···░●░░···
- ~ Respiratory rate            15.6/min      14.3    ▲ +9% higher   ···░░░░●··
-   Wrist temperature           36.0 °C       35.9    – 0%           ···░░●░···
-   Blood oxygen                97%           97      – 0%           ···░░●░···
- + Walking heart rate          90 bpm        94      ▼ -4% better   ···●░░░···
+   Avg heart rate              76 bpm        75      ▲ +2%            ···░░░●···
+ ! Resting HR                  60 bpm        57      ▲ +6% worse      ···░░░░●··
+   HRV                         46 ms         48      ▼ -4%            ···░●░░···
+ ~ Respiratory rate            15.6/min      14.3    ▲ +9% higher     ···░░░░●··
+   Wrist temperature           36.0 °C       35.9    – 0%             ···░░●░···
+   Blood oxygen                97%           97      ▲ +0.2pt         ···░░●░···
+ + Walking heart rate          90 bpm        94      ▼ -4% better     ···●░░░···
 
  ━━ ACTIVITY ━━ 8 metrics · 2 better ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- + Steps                       21,999 steps  19,955  ▲ +10% better  ···░░░●···
- + Active energy               880 kcal      798     ▲ +10% better  ···░░░●···
-   Resting energy              1,730 kcal    1,701   ▲ +2%          ···░░░●···
-   Exercise time               43 min        37      ▲ +16%         ···░░●░···
-   Stand time                  364 min       411     ▼ -12%         ···░●░░···
-   Flights climbed             8 flights     13      ▼ -39%         ···●░░░···
-   Walking + running distance  6.5 km        6.5     – 0%           ···░░●░···
-   Time in daylight            53 min        47      ▲ +14%         ···░░●░···
+ + Steps                       21,999 steps  19,955  ▲ +10% better    ···░░░●···
+ + Active energy               880 kcal      798     ▲ +10% better    ···░░░●···
+   Resting energy              1,730 kcal    1,701   ▲ +2%            ···░░░●···
+   Exercise time               43 min        37      ▲ +16%           ···░░●░···
+   Stand time                  364 min       411     ▼ -12%           ···░●░░···
+   Flights climbed             8 flights     13      ▼ -39%           ···●░░░···
+   Walking + running distance  6.5 km        6.5     – 0%             ···░░●░···
+   Time in daylight            53 min        47      ▲ +14%           ···░░●░···
 
- ━━ MOBILITY ━━ 4 metrics · 2 worse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   Walking speed               5.5 km/h      5.4     ▲ +2%          ···░░●░···
-   Step length                 73 cm         72      ▲ +2%          ···░░░●···
- ! Walking asymmetry           4.9%          3.5     ▲ +38% worse   ···░░░░●··
- ! Double support time         30.7%         28.6    ▲ +7% worse    ···░░░░●··
+ ━━ MOBILITY ━━ 4 metrics · 2 changed ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Walking speed               5.5 km/h      5.4     ▲ +2%            ···░░●░···
+   Step length                 73 cm         72      ▲ +2%            ···░░░●···
+ ~ Walking asymmetry           4.9%          3.5     ▲ +1.4pt higher  ···░░░░●··
+ ~ Double support time         30.7%         28.6    ▲ +2.1pt higher  ···░░░░●··
  + better  ! worse  ~ higher/lower, no good direction
  7 tracked metrics have no reading on this day
 
  ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
        23:12                                                              06:30
- awake                       ░░░                        ░░
+ awake                       ░░░                        ░░                     
  REM                    ▓▓▓▓▓                      ▓▓▓▓▓                     ▓▓
- core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒
- deep          ████                     █████                      ████
+ core  ▒▒▒▒▒▒▒▒    ▒▒▒▒▒        ▒▒▒▒▒▒▒▒     ▒▒▒▒▒▒       ▒▒▒▒▒▒▒▒▒    ▒▒▒▒▒▒  
+ deep          ████                     █████                      ████        
               00        01        02        03        04        05        06
 
  STAT         LAST NIGHT          7 NIGHTS            VS 12-NIGHT USUAL

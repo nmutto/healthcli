@@ -205,6 +205,10 @@ func rangeNote(r stats.MetricRow, ti termInfo) string {
 	if value == limitText { // rounding hides the gap ("95%" is below 95%): show more digits
 		value = joinUnit(strconv.FormatFloat(*r.Value, 'f', 2, 64), r.Metric, r.Unit, ti.unicode)
 	}
+	if r.Range.Basis != "" {
+		return fmt.Sprintf("%s %s is %s %s, %s (general guide, not medical advice)",
+			r.Label, value, word, limitText, r.Range.Basis)
+	}
 	return fmt.Sprintf("%s %s is %s the usual adult %s of %s (general guide, not medical advice)",
 		r.Label, value, word, limitWord, limitText)
 }

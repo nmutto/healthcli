@@ -5,6 +5,7 @@ import (
 	"math"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -269,7 +270,7 @@ func headline(o *stats.Overview, v overviewView, g glyphSet, width int) string {
 		parts = append(parts, text)
 	}
 	if mover != nil {
-		parts = append(parts, fmt.Sprintf("%s %s", mover.Label, pctOrNA(mover.DeltaPct)))
+		parts = append(parts, fmt.Sprintf("%s %s", mover.Label, moveText(*mover)))
 	}
 	if s := o.Sleep; v.wants(sleepName) && s.State == stats.StateOK && s.AsleepSecs > 0 {
 		parts = append(parts, "slept "+formatDuration(time.Duration(s.AsleepSecs)*time.Second))
@@ -300,6 +301,17 @@ func joinFit(parts []string, width int, g glyphSet) string {
 // deltaText is the arrow and percentage of a metric row. With a baseline mean
 // of 0 there is no percentage, so only the direction and "n/a" show.
 func deltaText(r stats.MetricRow, g glyphSet) string {
+	if inPoints(r) {
+		d := math.Round((*r.Value-*r.Mean)*10) / 10 // the digit the text shows
+		arrow := g.flat
+		switch {
+		case d > 0:
+			arrow = g.up
+		case d < 0:
+			arrow = g.down
+		}
+		return arrow + " " + pointsText(d)
+	}
 	if r.DeltaPct != nil {
 		return g.deltaArrow(*r.DeltaPct) + " " + pctText(*r.DeltaPct)
 	}
@@ -311,6 +323,38 @@ func deltaText(r stats.MetricRow, g glyphSet) string {
 		arrow = g.down
 	}
 	return arrow + " n/a"
+}
+
+// inPoints is true for a metric that is itself a percentage (blood oxygen,
+// body fat, walking asymmetry, ...): its change is told in percentage points,
+// because a relative change of a small percentage is noise ("1% to 2%" is
+// +100%, and says nothing).
+func inPoints(r stats.MetricRow) bool {
+	return r.Unit == "percent" && r.Value != nil && r.Mean != nil
+}
+
+// pointsText is a signed change in percentage points with one digit at most:
+// "+1.2pt", "-3pt", "0pt".
+func pointsText(d float64) string {
+	s := strconv.FormatFloat(math.Round(d*10)/10, 'f', 1, 64)
+	s = strings.TrimSuffix(s, ".0")
+	switch s {
+	case "0", "-0":
+		return "0pt"
+	}
+	if d > 0 {
+		s = "+" + s
+	}
+	return s + "pt"
+}
+
+// moveText is the size of a row's change for the headline: a percentage, or
+// percentage points for a metric that is itself a percentage.
+func moveText(r stats.MetricRow) string {
+	if inPoints(r) {
+		return pointsText(*r.Value - *r.Mean)
+	}
+	return pctOrNA(r.DeltaPct)
 }
 
 // pctOrNA is pctText for a percentage that may be missing.

@@ -47,11 +47,16 @@ const (
 	HigherBetter Polarity = "higher_better"
 	LowerBetter  Polarity = "lower_better"
 	Neutral      Polarity = "neutral"
+	// InRange is for a metric that has no good direction but a healthy band:
+	// what matters is whether the level stays inside Metric.Range, not whether
+	// it went up or down. A move inside the band is not judged; leaving it is
+	// worse and coming back is better (see stats.RangeVerdict).
+	InRange Polarity = "in_range"
 )
 
-// Valid reports whether p is one of the three known polarities.
+// Valid reports whether p is one of the four known polarities.
 func (p Polarity) Valid() bool {
-	return p == HigherBetter || p == LowerBetter || p == Neutral
+	return p == HigherBetter || p == LowerBetter || p == Neutral || p == InRange
 }
 
 // Metric describes one kind of measurement.
@@ -99,6 +104,9 @@ type Metric struct {
 type Range struct {
 	Low, High float64
 	Source    string // where the limit comes from, for docs and JSON
+	// Basis says in the note what the limit is, in a few words ("the top of
+	// Apple's typical walking range"). Empty: "the usual adult limit".
+	Basis string
 }
 
 // poundsToKg is the exact definition of the avoirdupois pound.
@@ -184,8 +192,12 @@ var known = []Metric{
 	{Name: "walking_speed", Label: "Walking speed", Category: Mobility, Unit: "km/h", Decimals: 1, Polarity: HigherBetter, Daily: Avg,
 		Conversions: map[string]float64{"km/hr": 1, "mi/hr": 1.609344, "mph": 1.609344, "m/s": 3.6}},
 	{Name: "walking_step_length", Label: "Step length", Category: Mobility, Unit: "cm", Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"m": 100, "in": 2.54, "ft": 30.48}},
-	{Name: "walking_asymmetry", Label: "Walking asymmetry", Category: Mobility, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: LowerBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
-	{Name: "walking_double_support", Label: "Double support time", Category: Mobility, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: LowerBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "walking_asymmetry", Label: "Walking asymmetry", Category: Mobility, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: InRange,
+		Range: &Range{High: 35, Source: "Apple white paper 'Measuring Walking Quality Through iPhone Mobility Metrics' (2022): 35% is the iPhone value that best separates asymmetric from symmetric walkers; Apple gives no healthy range", Basis: "the level Apple's research uses to tell asymmetric walking apart"},
+		Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "walking_double_support", Label: "Double support time", Category: Mobility, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: InRange,
+		Range: &Range{High: 40, Source: "Apple white paper 'Measuring Walking Quality Through iPhone Mobility Metrics' (2022): typical walking is 20-40%, lower is better", Basis: "the top of Apple's typical walking range"},
+		Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
 	{Name: "apple_walking_steadiness", Label: "Walking steadiness", Category: Mobility, Unit: "percent", MinDelta: 1, Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
 }
 

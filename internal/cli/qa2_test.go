@@ -94,7 +94,7 @@ func TestAwakeZeroIsTypical(t *testing.T) {
 func TestCategoryScopesHeadlineAndLegend(t *testing.T) {
 	all := overviewText(t, "import:small", uni80, overviewView{})
 	vitals := overviewText(t, "import:small", uni80, overviewView{categories: []string{"vitals"}})
-	if !strings.Contains(all, "3 better, 3 worse") || strings.Contains(vitals, "3 better, 3 worse") {
+	if !strings.Contains(all, "3 better, 1 worse") || strings.Contains(vitals, "3 better, 1 worse") {
 		t.Errorf("headline must count only the shown categories:\n%s", vitals)
 	}
 	if strings.Contains(vitals, "slept") || strings.Contains(vitals, "Walking asymmetry") {

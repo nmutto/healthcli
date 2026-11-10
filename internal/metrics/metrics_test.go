@@ -128,7 +128,7 @@ func TestPolarityGuide(t *testing.T) {
 		"hrv_sdnn": HigherBetter, "vo2_max": HigherBetter, "step_count": HigherBetter,
 		"oxygen_saturation": HigherBetter, "walking_speed": HigherBetter, "apple_walking_steadiness": HigherBetter,
 		"resting_heart_rate": LowerBetter, "walking_heart_rate_average": LowerBetter, "blood_pressure_systolic": LowerBetter,
-		"walking_asymmetry": LowerBetter, "walking_double_support": LowerBetter,
+		"walking_asymmetry": InRange, "walking_double_support": InRange,
 		"heart_rate": Neutral, "body_mass": Neutral, "body_mass_index": Neutral, "body_fat_percentage": Neutral,
 		"height": Neutral, "apple_sleeping_wrist_temperature": Neutral, "respiratory_rate": Neutral,
 	}
@@ -199,11 +199,15 @@ func TestRangesAreSane(t *testing.T) {
 			t.Errorf("%s: range has no source", name)
 		}
 	}
-	// The ranges the user approved (a one-sided limit each), and no others.
+	// The ranges that have a source (a one-sided limit each), and no others.
+	// Walking steadiness has none yet: Apple does not publish its Low and
+	// Very Low cut-offs and none could be verified.
 	want := map[string]Range{
-		"respiratory_rate":   {High: 20},
-		"oxygen_saturation":  {Low: 95},
-		"resting_heart_rate": {High: 100},
+		"respiratory_rate":       {High: 20},
+		"oxygen_saturation":      {Low: 95},
+		"resting_heart_rate":     {High: 100},
+		"walking_double_support": {High: 40},
+		"walking_asymmetry":      {High: 35},
 	}
 	for _, name := range Names() {
 		m, _ := Lookup(name)
@@ -213,6 +217,16 @@ func TestRangesAreSane(t *testing.T) {
 			t.Errorf("%s: range = %+v, want low %v high %v", name, m.Range, w.Low, w.High)
 		case !ok && m.Range != nil:
 			t.Errorf("%s has a range that was not approved: %+v", name, m.Range)
+		}
+	}
+}
+
+// An in-range metric is judged by its range, so it must have one.
+func TestInRangeMetricsHaveARange(t *testing.T) {
+	for _, name := range Names() {
+		m, _ := Lookup(name)
+		if m.Polarity == InRange && m.Range == nil {
+			t.Errorf("%s is in_range but has no Range", name)
 		}
 	}
 }
