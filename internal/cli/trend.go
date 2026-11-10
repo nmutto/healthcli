@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"os"
 	"strings"
 
@@ -200,7 +199,10 @@ func buildTrend(ctx context.Context, conn *sql.DB, metric, unit, end string, day
 	var shown []float64 // values with data, for the summary
 	var shownDays []string
 	for i := 0; i < days; i++ {
-		day, _ := stats.AddDays(from, i)
+		day, err := stats.AddDays(from, i)
+		if err != nil {
+			return nil, err
+		}
 		td := trendDay{Day: day}
 		if dv, ok := byDay[day]; ok {
 			v := dv.Value
@@ -219,10 +221,17 @@ func buildTrend(ctx context.Context, conn *sql.DB, metric, unit, end string, day
 			r.LatestDay = latest
 		}
 	} else {
-		r.Summary = summarize(shown, shownDays)
+		sum := stats.Summarize(shown, shownDays)
+		r.Summary = &trendStats{DaysWithData: sum.DaysWithData, Min: sum.Min, MinDay: sum.MinDay,
+			Max: sum.Max, MaxDay: sum.MaxDay, Mean: sum.Mean}
 	}
 
-	r.Change = weekChange(byDay, end)
+	wc, err := stats.WeekChangeFor(byDay, end)
+	if err != nil {
+		return nil, err
+	}
+	r.Change = trendChange{Available: wc.Available, Last7Mean: wc.Last7Mean, Last7Days: wc.Last7Days,
+		PrevMean: wc.PrevMean, PrevDays: wc.PrevDays, Delta: wc.Delta, DeltaPct: wc.DeltaPct}
 	r.Baseline, err = trendBaseline(ctx, conn, metric, end, byDay)
 	if err != nil {
 		return nil, err
@@ -257,84 +266,17 @@ func readValues(ctx context.Context, conn *sql.DB, metric, from, to string) (map
 	return out, nil
 }
 
-func summarize(values []float64, days []string) *trendStats {
-	s := &trendStats{DaysWithData: len(values), Min: values[0], MinDay: days[0], Max: values[0], MaxDay: days[0]}
-	var sum float64
-	for i, v := range values {
-		sum += v
-		if v < s.Min {
-			s.Min, s.MinDay = v, days[i]
-		}
-		if v > s.Max {
-			s.Max, s.MaxDay = v, days[i]
-		}
-	}
-	s.Mean = sum / float64(len(values))
-	return s
-}
-
-// meanOver averages the days from..to (inclusive) that have data.
-func meanOver(byDay map[string]stats.DayValue, from, to string) (mean float64, n int) {
-	var sum float64
-	for d := from; d <= to; {
-		if dv, ok := byDay[d]; ok {
-			sum += dv.Value
-			n++
-		}
-		next, err := stats.AddDays(d, 1)
-		if err != nil {
-			break // end of the calendar; never loop on ""
-		}
-		d = next
-	}
-	if n == 0 {
-		return 0, 0
-	}
-	return sum / float64(n), n
-}
-
-// weekChange compares the 7 days ending on end with the 7 before them.
-func weekChange(byDay map[string]stats.DayValue, end string) trendChange {
-	lastFrom, _ := stats.AddDays(end, -6)
-	prevTo, _ := stats.AddDays(end, -7)
-	prevFrom, _ := stats.AddDays(end, -13)
-	last, ln := meanOver(byDay, lastFrom, end)
-	prev, pn := meanOver(byDay, prevFrom, prevTo)
-	c := trendChange{Last7Days: ln, PrevDays: pn}
-	if ln > 0 {
-		c.Last7Mean = &last
-	}
-	if pn > 0 {
-		c.PrevMean = &prev
-	}
-	if ln > 0 && pn > 0 {
-		c.Available = true
-		d := last - prev
-		if math.Abs(d) <= 1e-9*math.Max(1, math.Abs(prev)) {
-			d = 0 // float noise, not a real change
-		}
-		c.Delta = &d
-		pct := 0.0
-		if prev != 0 {
-			pct = d / math.Abs(prev) * 100
-		}
-		c.DeltaPct = &pct
-	}
-	return c
-}
-
 // trendBaseline is the baseline of the 28 days BEFORE end, the same one
 // overview and today compare their latest day against (end itself is left out).
 func trendBaseline(ctx context.Context, conn *sql.DB, metric, end string, byDay map[string]stats.DayValue) (trendBase, error) {
 	tb := trendBase{DaysNeeded: stats.MinBaselineDays}
 	if metric == sleepMetric {
-		// Sleep is not in the registry, so stats.BaselineFor cannot be used;
-		// apply the same rule (mean of the 28 days before, at least 7 with data).
-		from, _ := stats.AddDays(end, -stats.DefaultBaselineDays)
-		to, _ := stats.AddDays(end, -1)
-		mean, n := meanOver(byDay, from, to)
+		mean, n, ok, err := stats.SleepBaseline(byDay, end)
+		if err != nil {
+			return tb, err
+		}
 		tb.DaysWithData = n
-		if n >= stats.MinBaselineDays {
+		if ok {
 			tb.Available, tb.Mean = true, &mean
 		}
 		return tb, nil
