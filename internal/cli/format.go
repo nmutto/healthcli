@@ -237,13 +237,3 @@ func formatPct(p float64) string {
 	}
 	return s + "%"
 }
-
-// padRight pads s with spaces to n characters (runes, not bytes, so "·" and
-// "▲" count as one). Padding is done on plain text BEFORE coloring, because
-// invisible ANSI codes would otherwise count toward the width.
-func padRight(s string, n int) string {
-	if w := len([]rune(s)); w < n {
-		return s + strings.Repeat(" ", n-w)
-	}
-	return s
-}

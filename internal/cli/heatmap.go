@@ -318,24 +318,6 @@ func heatLevelsUsed(weeks [][]stats.HeatDay) [stats.HeatLevels + 1]bool {
 	return used
 }
 
-// wrapParts joins parts with sep, starting a new line before a part that
-// would run past width columns (colour codes do not count).
-func wrapParts(parts []string, sep string, width int) []string {
-	var lines []string
-	line := ""
-	for _, p := range parts {
-		if line != "" && runeLen(stripANSI(line))+len(sep)+runeLen(stripANSI(p)) > width {
-			lines = append(lines, line)
-			line = ""
-		}
-		if line != "" {
-			line += sep
-		}
-		line += p
-	}
-	return append(lines, line)
-}
-
 func newHeatmapCmd(opts *options) *cobra.Command {
 	var weeks int
 	var noColor, ascii bool
