@@ -830,3 +830,45 @@ func TestRangeNoteUsesTheBasis(t *testing.T) {
 		t.Errorf("note = %q, want %q", got, want)
 	}
 }
+
+// Every workouts figure in the overview uses the same 28-day window: the
+// headline count, the table's "active N of 28 d" and workouts_report.
+func TestOverviewWorkoutsUseOneWindow(t *testing.T) {
+	old := nowFunc
+	nowFunc = func() time.Time { return overviewNow }
+	defer func() { nowFunc = old }()
+
+	path := seedOverview(t, "full")
+	conn, err := db.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 29 days back: outside 28 days, inside the old 30-day window.
+	start := overviewNow.AddDate(0, 0, -29).Add(-2 * time.Hour).Unix()
+	if _, err := conn.Exec(`INSERT INTO workouts (activity, start_ts, end_ts, duration_s, tz_offset, source)
+		VALUES ('rowing', ?, ?, 1800, 0, 'Test Apple Watch')`, start, start+1800); err != nil {
+		t.Fatal(err)
+	}
+	conn.Close()
+
+	var o struct {
+		Workouts struct {
+			Days  int `json:"days"`
+			Count int `json:"count"`
+		} `json:"workouts"`
+		Report struct {
+			Days  int `json:"days"`
+			Count int `json:"count"`
+		} `json:"workouts_report"`
+	}
+	out, _, err := run(t, "--db", path, "overview", "--json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal([]byte(out), &o); err != nil {
+		t.Fatal(err)
+	}
+	if o.Workouts.Days != 28 || o.Report.Days != 28 || o.Workouts.Count != o.Report.Count {
+		t.Errorf("workouts %+v and workouts_report %+v must share one 28-day window", o.Workouts, o.Report)
+	}
+}

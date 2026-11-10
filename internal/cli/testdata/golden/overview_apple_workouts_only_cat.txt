@@ -1,6 +1,6 @@
  healthcli overview                              db: demo.db · imported 1 d ago
  ──────────────────────────────────────────────────────────────────────────────
- 7 workouts in 30 d
+ 7 workouts in 28 d
  WORKOUTS
 
  ━━ WORKOUTS ━━ 7 sessions  6h 13m  3,243 kcal  71.1 km  active 7 of 28 d ━━━━━
