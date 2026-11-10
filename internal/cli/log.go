@@ -23,11 +23,16 @@ func newLogCmd(opts *options) *cobra.Command {
 		Short: "Record a manual measurement",
 		Long: `Log a single measurement with the current time (or --at).
 
-Metrics: heart_rate, resting_heart_rate, step_count, hrv_sdnn, body_mass,
-active_energy. Aliases: weight (body_mass), hr (heart_rate), steps (step_count).
+Every metric healthcli knows works (the error for an unknown name lists them).
+Aliases: hr (heart_rate), hrv (hrv_sdnn), rhr (resting_heart_rate),
+rr (respiratory_rate), spo2 (oxygen_saturation), steps (step_count),
+temp (apple_sleeping_wrist_temperature), vo2 (vo2_max), weight (body_mass),
+bmi (body_mass_index).
 Weight is stored in kg; use --unit lb to enter pounds.
+Percentages are typed as 0-100 (97 for 97%); blood oxygen below 50 is refused.
 
---at accepts RFC3339 ("2025-03-01T08:30:00Z") or local time ("2025-03-01 08:30").`,
+--at accepts RFC3339 ("2025-03-01T08:30:00Z") or local time ("2025-03-01 08:30"),
+up to one day in the future.`,
 		Example: `  healthcli log weight 72.5
   healthcli log weight 160 --unit lb
   healthcli log hr 58 --at "2025-03-01 07:45"
@@ -47,8 +52,8 @@ func runLog(cmd *cobra.Command, opts *options, metricArg, valueArg, unit, at str
 	if err != nil {
 		return err
 	}
-	raw, err := strconv.ParseFloat(valueArg, 64)
-	if err != nil || math.IsNaN(raw) || math.IsInf(raw, 0) {
+	raw, ok := metrics.ParseNumber(valueArg)
+	if !ok {
 		return fmt.Errorf("value %q is not a number", valueArg)
 	}
 	value, err := metric.ToCanonical(raw, unit)
@@ -63,9 +68,18 @@ func runLog(cmd *cobra.Command, opts *options, metricArg, valueArg, unit, at str
 	if value < 0 || (value == 0 && metric.Name != "step_count" && metric.Name != "active_energy") {
 		return fmt.Errorf("value %q is not a plausible %s", valueArg, metric.Name)
 	}
-	when, err := parseTime(at, time.Now())
+	// Checked before anything is read from the database, so an impossible
+	// value is reported as such and not as a duplicate.
+	if err := metric.CheckValue(value); err != nil {
+		return fmt.Errorf("cannot log %q: %w", valueArg, err)
+	}
+	now := time.Now()
+	when, err := parseTime(at, now)
 	if err != nil {
 		return err
+	}
+	if when.After(now.Add(24 * time.Hour)) {
+		return fmt.Errorf("--at %q is more than a day in the future", at)
 	}
 
 	// tz_offset is seconds east of UTC of the time as typed: the offset written

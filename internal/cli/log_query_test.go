@@ -242,3 +242,66 @@ func TestLogAtExplicitOffsetIsStored(t *testing.T) {
 		}
 	}
 }
+
+// BUG: hex floats and underscores were accepted, and impossible values were
+// stored (or reported as "already logged") because the duplicate check ran
+// before any plausibility check.
+func TestLogRejectsImplausibleInput(t *testing.T) {
+	db := emptyDB(t)
+	future := time.Now().Add(48 * time.Hour).Format(time.RFC3339)
+	for _, args := range [][]string{
+		{"weight", "0x1p6"}, {"weight", "1_0"},
+		{"steps", "1e300"}, {"weight", "1e12"},
+		{"spo2", "0.97"}, {"spo2", "101"}, {"body_fat_percentage", "150"},
+		{"weight", "70", "--at", future},
+	} {
+		if _, _, err := run(t, append([]string{"--db", db, "log"}, args...)...); err == nil {
+			t.Errorf("log %v should fail", args)
+		}
+	}
+	out, _, err := run(t, "--db", db, "query", "SELECT count(*) AS n FROM samples", "--json")
+	if err != nil || !strings.Contains(out, `"n": 0`) {
+		t.Errorf("nothing should have been stored, got %q, %v", out, err)
+	}
+}
+
+// The plausibility check runs before the duplicate check.
+func TestLogImplausibleValueIsNotCalledADuplicate(t *testing.T) {
+	db := tempDB(t)
+	at := []string{"--at", "2025-03-01T08:30:00Z"}
+	run(t, append([]string{"--db", db, "log", "weight", "70"}, at...)...)
+	_, _, err := run(t, append([]string{"--db", db, "log", "weight", "1e12"}, at...)...)
+	if err == nil || strings.Contains(err.Error(), "already logged") {
+		t.Errorf("want a size error, got %v", err)
+	}
+	_, _, err = run(t, "--db", db, "log", "spo2", "0.97")
+	if err == nil || !strings.Contains(err.Error(), "type 97 for 97%") {
+		t.Errorf("want the 97 hint, got %v", err)
+	}
+}
+
+func TestLogAcceptsPlausibleEdges(t *testing.T) {
+	db := tempDB(t)
+	soon := time.Now().Add(2 * time.Hour).Format(time.RFC3339)
+	for _, args := range [][]string{
+		{"spo2", "97", "--at", "2025-03-01 08:00"}, {"spo2", "50", "--at", "2025-03-01 09:00"},
+		{"body_fat_percentage", "100"},
+		{"steps", "9999999"}, {"weight", "70", "--at", soon},
+	} {
+		if _, _, err := run(t, append([]string{"--db", db, "log"}, args...)...); err != nil {
+			t.Errorf("log %v: %v", args, err)
+		}
+	}
+}
+
+func TestLogHelpListsAliases(t *testing.T) {
+	out, _, err := run(t, "log", "--help")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, a := range []string{"hr", "hrv", "rhr", "rr", "spo2", "steps", "temp", "vo2", "weight", "bmi"} {
+		if !strings.Contains(out, a+" (") {
+			t.Errorf("log --help does not list the alias %q", a)
+		}
+	}
+}
