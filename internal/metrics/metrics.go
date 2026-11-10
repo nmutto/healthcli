@@ -137,7 +137,7 @@ var known = []Metric{
 	// Vitals
 	{Name: "respiratory_rate", Label: "Respiratory rate", Category: Vitals, Unit: "breaths/min", Decimals: 1, MinDelta: 0.5, Polarity: Neutral, Daily: Avg, Conversions: perMin},
 	{Name: "apple_sleeping_wrist_temperature", Label: "Wrist temperature", Category: Vitals, Unit: "degC", Decimals: 1, MinDelta: 0.2, Polarity: Neutral, Daily: Avg, Conversions: map[string]float64{"c": 1, "°c": 1}},
-	{Name: "oxygen_saturation", Label: "Blood oxygen", Category: Vitals, Unit: "percent", Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "oxygen_saturation", Label: "Blood oxygen", Category: Vitals, Unit: "percent", MinDelta: 1, Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
 	{Name: "vo2_max", Label: "VO2 max", Category: Vitals, Unit: "mL/kg/min", Decimals: 1, Polarity: HigherBetter, Daily: Latest, Conversions: vo2Spellings},
 	{Name: "walking_heart_rate_average", Label: "Walking heart rate", Category: Vitals, Unit: "bpm", Polarity: LowerBetter, Daily: Avg, Conversions: perMin},
 	{Name: "heart_rate_recovery_one_minute", Label: "Heart rate recovery", Category: Vitals, Unit: "bpm", Polarity: HigherBetter, Daily: Avg, Conversions: perMin},
@@ -158,7 +158,7 @@ var known = []Metric{
 	{Name: "time_in_daylight", Label: "Time in daylight", Category: Activity, Unit: "min", Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
 
 	// Body
-	{Name: "body_fat_percentage", Label: "Body fat", Category: Body, Unit: "percent", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "body_fat_percentage", Label: "Body fat", Category: Body, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
 	// Apple's BMI unit is the dimensionless "count".
 	{Name: "body_mass_index", Label: "BMI", Category: Body, Unit: "kg/m2", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"count": 1}},
 	{Name: "lean_body_mass", Label: "Lean body mass", Category: Body, Unit: "kg", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
@@ -168,9 +168,9 @@ var known = []Metric{
 	{Name: "walking_speed", Label: "Walking speed", Category: Mobility, Unit: "km/h", Decimals: 1, Polarity: HigherBetter, Daily: Avg,
 		Conversions: map[string]float64{"km/hr": 1, "mi/hr": 1.609344, "mph": 1.609344, "m/s": 3.6}},
 	{Name: "walking_step_length", Label: "Step length", Category: Mobility, Unit: "cm", Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"m": 100, "in": 2.54, "ft": 30.48}},
-	{Name: "walking_asymmetry", Label: "Walking asymmetry", Category: Mobility, Unit: "percent", Decimals: 1, Polarity: LowerBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
-	{Name: "walking_double_support", Label: "Double support time", Category: Mobility, Unit: "percent", Decimals: 1, Polarity: LowerBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
-	{Name: "apple_walking_steadiness", Label: "Walking steadiness", Category: Mobility, Unit: "percent", Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "walking_asymmetry", Label: "Walking asymmetry", Category: Mobility, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: LowerBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "walking_double_support", Label: "Double support time", Category: Mobility, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: LowerBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "apple_walking_steadiness", Label: "Walking steadiness", Category: Mobility, Unit: "percent", MinDelta: 1, Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
 }
 
 // appleTypes maps Apple's HealthKit identifiers to our metric names. Anything

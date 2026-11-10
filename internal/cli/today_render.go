@@ -221,7 +221,7 @@ func deltaPlain(r stats.MetricRow, g glyphSet) string {
 	if r.State != stats.StateOK {
 		return fmt.Sprintf("need %dd (have %d)", stats.MinBaselineDays, r.BaselineDays)
 	}
-	text := g.deltaArrow(*r.DeltaPct) + " " + pctText(*r.DeltaPct)
+	text := deltaText(r, g)
 	if w := verdictWord(r.Verdict); w != "" {
 		text += " " + w
 	}

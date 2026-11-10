@@ -135,6 +135,12 @@ func LatestSample(ctx context.Context, conn *sql.DB, metric string) (Sample, err
 	return latestSampleUpTo(ctx, conn, metric, math.MaxInt64)
 }
 
+// LatestSampleUpTo is LatestSample ignoring samples that start after maxStart
+// (Unix seconds): callers use it to skip future-dated samples.
+func LatestSampleUpTo(ctx context.Context, conn *sql.DB, metric string, maxStart int64) (Sample, error) {
+	return latestSampleUpTo(ctx, conn, metric, maxStart)
+}
+
 // latestSampleUpTo is LatestSample ignoring samples that start after maxStart
 // (Unix seconds). The overview uses it to skip future-dated samples.
 func latestSampleUpTo(ctx context.Context, conn *sql.DB, metric string, maxStart int64) (Sample, error) {

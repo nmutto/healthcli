@@ -258,7 +258,7 @@
       "age_days": 9,
       "value": 72.4,
       "source": "manual",
-      "baseline_days_with_data": 0,
+      "baseline_days_with_data": 3,
       "spark": [
         null,
         null,
