@@ -88,3 +88,17 @@ func TestSleepAwakeOverlapIsNotAsleep(t *testing.T) {
 		t.Errorf("efficiency %.1f ok=%v, want 87.5 (7h of 8h)", pct, ok)
 	}
 }
+
+// A night with nothing but an awake row has no usable sleep: it is not a
+// night, and certainly not "in bed".
+func TestSleepAwakeOnlyNightIsNoNight(t *testing.T) {
+	conn := newDB(t)
+	addSleep(t, conn, "awake", "2024-12-02 03:00 +0100", "2024-12-02 03:05 +0100", watch)
+	r, err := BuildSleepReport(context.Background(), conn, time.Date(2024, 12, 2, 12, 0, 0, 0, time.UTC), SleepOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !r.Empty || r.Kind == "in_bed" {
+		t.Errorf("empty %v kind %q, want an empty report", r.Empty, r.Kind)
+	}
+}

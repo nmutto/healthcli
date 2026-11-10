@@ -284,6 +284,10 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 				n.TZ, n.StartTZ, n.EndTZ = t.tz, t.tz, t.tz
 			}
 		}
+		// Awake rows alone are no sleep and no time in bed: not a night.
+		if n.Asleep == 0 && n.InBed == 0 {
+			continue
+		}
 		// Falling-asleep time only makes sense when in bed began first, and
 		// only up to 90 minutes: longer means the two sources disagree.
 		if lat := time.Duration(n.Start-n.InBedStart) * time.Second; n.InBedStart > 0 && n.Start > 0 && lat > 0 && lat <= 90*time.Minute {
