@@ -474,7 +474,7 @@ func seedDB(t *testing.T) string {
 	return path
 }
 
-var workoutsNow = time.Date(2026, 11, 9, 20, 0, 0, 0, time.UTC)
+var workoutsNow = time.Date(2026, 11, 9, 20, 0, 0, 0, time.UTC) // a Monday
 
 // jsonNullsAndKeys walks decoded JSON and reports every null (except inside
 // the arrays named in skip) and every key that is not snake_case.

@@ -10,8 +10,6 @@ import (
 	"github.com/nmutto/healthcli/internal/stats"
 )
 
-// a Monday
-
 // seedWorkouts writes synthetic workouts for one scenario:
 //
 //	rich    10 weeks of running, cycling, walking and yoga, with kcal and km
