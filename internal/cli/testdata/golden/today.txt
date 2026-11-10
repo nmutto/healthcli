@@ -26,8 +26,8 @@
 
  STAT         LAST NIGHT          1 NIGHT             VS USUAL
  Asleep       7h 00m              7h 00m              need 7 nights (have 0)
- Efficiency   97%                 97%                 need 7 nights (have 0)
- Awake        15m / 0 awakenings  15m / 0 awakenings  need 7 nights (have 0)
+ Efficiency   100%                100%                need 7 nights (have 0)
+ Awake        0m / 0 awakenings   0m / 0 awakenings   need 7 nights (have 0)
  Deep         1h 30m 21%          1h 30m              need 7 nights (have 0)
  REM          1h 00m 14%          1h 00m              need 7 nights (have 0)
  Bedtime      23:00               23:00               need 7 nights (have 0)

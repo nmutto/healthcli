@@ -30,7 +30,7 @@
  Asleep       7h 00m              7h 00m              [2mneed 7 nights (have 1)[0m
  In bed       8h 30m              8h 30m              [2mneed 7 nights (have 1)[0m
  Efficiency   82%                 82%                 [2mneed 7 nights (have 1)[0m
- Awake        15m / 0 awakenings  15m / 0 awakenings  [2mneed 7 nights (have 1)[0m
+ Awake        0m / 0 awakenings   0m / 0 awakenings   [2mneed 7 nights (have 1)[0m
  Deep         1h 30m 21%          1h 30m              [2mneed 7 nights (have 1)[0m
  REM          40m 10%             40m                 [2mneed 7 nights (have 1)[0m
  Bedtime      23:00               23:00               [2mneed 7 nights (have 1)[0m

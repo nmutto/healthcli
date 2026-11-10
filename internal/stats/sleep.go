@@ -59,7 +59,7 @@ type SleepNight struct {
 	Deep        time.Duration
 	REM         time.Duration
 	Unspecified time.Duration // "asleep_unspecified": older iOS, other apps
-	Awake       time.Duration
+	Awake       time.Duration // awake time inside the main block only
 
 	// InBed is time in bed, often written by the iPhone while the Watch writes
 	// the stages. It is picked separately (same priority rule) so a Watch
@@ -67,6 +67,11 @@ type SleepNight struct {
 	// nobody recorded it.
 	InBed       time.Duration
 	InBedSource string
+
+	// hadAwakeRows is true when the source wrote any awake row that night,
+	// also outside the main block. Efficiency without in_bed rows needs it:
+	// no awake rows means "not measured", not "never awake".
+	hadAwakeRows bool
 }
 
 // nightShift moves a stage row's end time forward 6 hours before taking
@@ -132,21 +137,55 @@ type sleepTotals struct {
 	byStage map[string][]interval
 }
 
+// awake is the merged awake rows of the source. Awake wins over an asleep row
+// that overlaps it, so asleep stages are counted without these moments.
+func (t *sleepTotals) awake() []interval { return merge(t.byStage["awake"]) }
+
 // total is how long the stage lasted. Rows of the same stage that overlap
 // (a revised estimate written next to the old one) count once, and a row
-// that ends before it starts counts for nothing.
+// that ends before it starts counts for nothing. Asleep stages lose the
+// moments the source also calls awake.
 func (t *sleepTotals) total(stage string) time.Duration {
-	return length(merge(t.byStage[stage]))
+	merged := merge(t.byStage[stage])
+	if stage != "awake" && stage != "in_bed" {
+		merged = subtract(merged, t.awake())
+	}
+	return length(merged)
 }
 
-// asleepUnion joins the intervals of every asleep stage. Summing the stages
-// one by one would count twice a moment that two stages both claim.
+// asleepUnion joins the intervals of every asleep stage, minus the awake
+// moments. Summing the stages one by one would count twice a moment that two
+// stages both claim.
 func (t *sleepTotals) asleepUnion() []interval {
 	var all []interval
 	for _, stage := range asleepStages {
 		all = append(all, t.byStage[stage]...)
 	}
-	return merge(all)
+	return subtract(merge(all), t.awake())
+}
+
+// subtract removes the moments of cut from the merged intervals. Both lists
+// must be merged (sorted, no overlaps).
+func subtract(merged, cut []interval) []interval {
+	var out []interval
+	for _, iv := range merged {
+		start, startTZ := iv.start, iv.startTZ
+		for _, c := range cut {
+			if c.end <= start || c.start >= iv.end {
+				continue
+			}
+			if c.start > start {
+				out = append(out, interval{start, c.start, startTZ, c.startTZ})
+			}
+			if c.end > start {
+				start, startTZ = c.end, c.endTZ
+			}
+		}
+		if start < iv.end {
+			out = append(out, interval{start, iv.end, startTZ, iv.endTZ})
+		}
+	}
+	return out
 }
 
 var asleepStages = []string{"core", "deep", "rem", "asleep_unspecified"}
@@ -231,7 +270,6 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 			n.Deep = t.total("deep")
 			n.REM = t.total("rem")
 			n.Unspecified = t.total("asleep_unspecified")
-			n.Awake = t.total("awake")
 			fillAsleepTimes(&n, t)
 			addOtherSourceNaps(&n, t, stages[night])
 		}
@@ -246,6 +284,10 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 				n.TZ, n.StartTZ, n.EndTZ = t.tz, t.tz, t.tz
 			}
 		}
+		// Awake rows alone are no sleep and no time in bed: not a night.
+		if n.Asleep == 0 && n.InBed == 0 {
+			continue
+		}
 		// Falling-asleep time only makes sense when in bed began first, and
 		// only up to 90 minutes: longer means the two sources disagree.
 		if lat := time.Duration(n.Start-n.InBedStart) * time.Second; n.InBedStart > 0 && n.Start > 0 && lat > 0 && lat <= 90*time.Minute {
@@ -258,15 +300,70 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 
 // bestSleepSource picks the preferred source of one night. It returns a nil
 // totals when the map is empty (nil maps are fine to range over in Go).
+//
+// A source only counts when it has asleep time (a Watch that wrote one awake
+// row must not beat an iPhone that has the whole night) and when its main
+// sleep block is near the longest main block of all sources (a Watch that
+// only caught an afternoon nap did not see the night). Among those the
+// existing class priority decides, then more asleep time, then row count.
+// If no source has asleep time (in_bed rows, awake-only rows) the old rule
+// applies to all of them.
 func bestSleepSource(bySource map[string]*sleepTotals) (string, *sleepTotals) {
+	// The longest main block of any source is "the night".
+	var night block
+	for _, t := range bySource {
+		if m, ok := t.mainSleepBlock(); ok && m.asleep > night.asleep {
+			night = m
+		}
+	}
+
 	best := ""
 	var bt *sleepTotals
 	for source, t := range bySource {
-		if bt == nil || better(source, t.rows, best, bt.rows) {
+		if bt == nil || preferSleepSource(source, t, best, bt, night) {
 			best, bt = source, t
 		}
 	}
 	return best, bt
+}
+
+// preferSleepSource reports whether source a (totals ta) beats source b (tb)
+// for a night whose main block is night (zero when nobody has asleep time).
+func preferSleepSource(a string, ta *sleepTotals, b string, tb *sleepTotals, night block) bool {
+	seesA, seesB := ta.seesNight(night), tb.seesNight(night)
+	if seesA != seesB {
+		return seesA
+	}
+	if SourcePriority(a) == SourcePriority(b) {
+		if da, db := length(ta.asleepUnion()), length(tb.asleepUnion()); da != db {
+			return da > db
+		}
+	}
+	return better(a, ta.rows, b, tb.rows)
+}
+
+// mainSleepBlock is the main block of the source's own asleep time; ok is
+// false when the source has none.
+func (t *sleepTotals) mainSleepBlock() (block, bool) {
+	blocks := sleepBlocks(t.asleepUnion())
+	if len(blocks) == 0 {
+		return block{}, false
+	}
+	return mainBlock(blocks), true
+}
+
+// seesNight reports whether the source has asleep time whose main block is
+// within napGap of night. With no night (nobody has asleep time) every
+// source qualifies, so the usual priority picks one.
+func (t *sleepTotals) seesNight(night block) bool {
+	if night.asleep == 0 {
+		return true
+	}
+	m, ok := t.mainSleepBlock()
+	if !ok {
+		return false
+	}
+	return time.Duration(max(m.start-night.end, night.start-m.end))*time.Second <= napGap
 }
 
 // napGap is how far apart two pieces of sleep must be to be separate blocks.
@@ -310,7 +407,7 @@ func mainBlock(blocks []block) block {
 	return best
 }
 
-// fillAsleepTimes sets Asleep, Nap, Start, End, Awakenings and Segments of n
+// fillAsleepTimes sets Asleep, Nap, Start, End, Awake, Awakenings and Segments of n
 // from the stage rows of one source.
 func fillAsleepTimes(n *SleepNight, t *sleepTotals) {
 	asleep := t.asleepUnion()
@@ -320,12 +417,21 @@ func fillAsleepTimes(n *SleepNight, t *sleepTotals) {
 		n.Start, n.End, n.StartTZ, n.EndTZ = main.start, main.end, main.startTZ, main.endTZ
 		n.Nap = n.Asleep - main.asleep
 	}
-	// An awakening is an awake period inside the main block. Awake before
-	// falling asleep is latency and awake after the last wake is just being up.
-	for _, iv := range merge(t.byStage["awake"]) {
-		if iv.start >= n.Start && iv.end <= n.End && len(asleep) > 0 {
-			n.Awakenings++
+	// An awakening is an awake period inside the main block, and Awake is
+	// their total time. Awake before falling asleep is latency and awake
+	// after the last wake is just being up, so awake rows are clipped to
+	// Start..End.
+	n.hadAwakeRows = len(t.byStage["awake"]) > 0
+	if len(asleep) > 0 {
+		var inside []interval
+		for _, iv := range merge(t.byStage["awake"]) {
+			iv.start, iv.end = max(iv.start, n.Start), min(iv.end, n.End)
+			if iv.end > iv.start {
+				inside = append(inside, iv)
+			}
 		}
+		n.Awakenings = len(inside)
+		n.Awake = length(inside)
 	}
 	for stage, ivs := range t.byStage {
 		if stage == "in_bed" {
