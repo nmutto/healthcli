@@ -349,3 +349,21 @@ func TestSleepHelpNamesTheAwakeThreshold(t *testing.T) {
 		t.Errorf("help does not mention the 10%% threshold for awake and latency")
 	}
 }
+
+// The regularity row keeps a space before the verdict and never runs past the
+// width: at 60 the numbers (27 wide) are wider than their 24-wide column, so
+// the "(14 nights)" part is dropped to make room.
+func TestRegularityLineSpacingAndWidth(t *testing.T) {
+	r := &stats.SleepReport{Regularity: &stats.SleepRegularity{Nights: 14, BedtimeMin: 1, MidpointMin: 9, UsualBedtimeMin: 1}}
+	for _, c := range []struct{ width, nameW, cols int }{{50, 11, 24}, {60, 11, 24}, {70, 11, 24}, {80, 13, 40}} {
+		for _, g := range []glyphSet{glyphsFor(true), glyphsFor(false)} {
+			line := regularityLine(r, g, style{}, c.width, c.nameW, c.cols)[0]
+			if n := runeLen(line); n > c.width {
+				t.Errorf("width %d: line is %d wide: %q", c.width, n, line)
+			}
+			if strings.Contains(line, ")"+g.flat) || strings.Contains(line, "mid"+g.flat) {
+				t.Errorf("width %d: no space before the verdict: %q", c.width, line)
+			}
+		}
+	}
+}

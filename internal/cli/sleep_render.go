@@ -717,7 +717,7 @@ func regularityLine(r *stats.SleepReport, g glyphSet, st style, width, nameW, co
 	} {
 		cell := c.numbers
 		if c.vs != "" {
-			cell = padRight(c.numbers, cols)
+			cell = padRight(c.numbers+" ", cols) // at least one space before the verdict
 		}
 		if runeLen(cell)+runeLen(c.vs) <= room {
 			line := sleepIndent + padRight("Regularity", nameW) + cell
