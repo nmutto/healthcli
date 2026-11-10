@@ -175,7 +175,9 @@ var hypnogramRows = [4]struct{ label, stage string }{
 // hypnogram draws one night as four rows of `cells` columns plus a time
 // ruler. A column covers an equal slice of the night and shows the stage
 // that fills most of it, except that awake wins any column it touches:
-// otherwise a 6-minute wake-up would vanish at 8 minutes per column.
+// otherwise a 6-minute wake-up would vanish at 8 minutes per column. Two
+// separate awakenings keep a blank column between them when one of them is
+// wide enough to give one up, so they do not read as a single block.
 func hypnogram(n stats.SleepNight, cells int, g glyphSet, st style) []string {
 	from, to := n.Start, n.End
 	span := to - from
@@ -186,6 +188,7 @@ func hypnogram(n stats.SleepNight, cells int, g glyphSet, st style) []string {
 	for i := range grid {
 		grid[i] = []rune(strings.Repeat(" ", cells))
 	}
+	awakeCol := awakeColumns(n, cells)
 	for c := 0; c < cells; c++ {
 		lo := from + span*int64(c)/int64(cells)
 		hi := from + span*int64(c+1)/int64(cells)
@@ -208,7 +211,7 @@ func hypnogram(n stats.SleepNight, cells int, g glyphSet, st style) []string {
 		}
 		row := -1
 		switch {
-		case cover[0] > 0:
+		case awakeCol[c]:
 			row = 0
 		default:
 			var best int64
@@ -233,6 +236,53 @@ func hypnogram(n stats.SleepNight, cells int, g glyphSet, st style) []string {
 	}
 	lines = append(lines, st.dim(sleepIndent+strings.Repeat(" ", 6)+hourTicks(from, to, n.StartTZ, cells)))
 	return lines
+}
+
+// awakeColumns marks the columns that show awake. Each awake period (rows
+// that touch count as one) gets the columns it touches; when one starts in
+// the column right after the previous one ends, the wider of the two gives up
+// an edge column so a blank column separates them. Two single-column
+// awakenings next to each other cannot be told apart and stay joined.
+func awakeColumns(n stats.SleepNight, cells int) []bool {
+	span := n.End - n.Start
+	col := func(ts int64) int { return int(min(max((ts-n.Start)*int64(cells)/span, 0), int64(cells-1))) }
+	var spans [][2]int // first and last column of each awake period
+	var lastEnd int64
+	for _, s := range n.Segments {
+		if s.Stage != "awake" || s.End <= n.Start || s.Start >= n.End {
+			continue
+		}
+		c0, c1 := col(s.Start), col(s.End-1)
+		if k := len(spans); k > 0 && s.Start <= lastEnd {
+			spans[k-1][1] = max(spans[k-1][1], c1)
+		} else {
+			spans = append(spans, [2]int{c0, c1})
+		}
+		lastEnd = max(lastEnd, s.End)
+	}
+	for i := 1; i < len(spans); i++ {
+		prev, cur := &spans[i-1], &spans[i]
+		for cur[0] <= prev[1]+1 {
+			switch {
+			case prev[1] > prev[0]:
+				prev[1]--
+			case cur[1] > cur[0]:
+				cur[0]++
+			default:
+				break
+			}
+			if prev[1] == prev[0] && cur[1] == cur[0] {
+				break
+			}
+		}
+	}
+	marked := make([]bool, cells)
+	for _, sp := range spans {
+		for c := sp[0]; c <= sp[1]; c++ {
+			marked[c] = true
+		}
+	}
+	return marked
 }
 
 // hourTicks writes the clock hour (00 01 02 ...) under the column where each full hour

@@ -226,6 +226,28 @@ func TestHypnogramAwakeWins(t *testing.T) {
 	}
 }
 
+// Two awakenings five minutes apart must not run into one block.
+func TestHypnogramKeepsAwakeningsApart(t *testing.T) {
+	const h, m = int64(3600), int64(60)
+	n := stats.SleepNight{Start: 0, End: 8 * h, Segments: []stats.Seg{
+		{Stage: "core", Start: 0, End: 4 * h},
+		{Stage: "awake", Start: 4 * h, End: 4*h + 20*m},
+		{Stage: "core", Start: 4*h + 20*m, End: 4*h + 25*m},
+		{Stage: "awake", Start: 4*h + 25*m, End: 4*h + 45*m},
+		{Stage: "core", Start: 4*h + 45*m, End: 8 * h},
+	}}
+	lines := hypnogram(n, 40, unicodeGlyphs, style{})
+	runs := 0
+	for i, r := range []rune(strings.TrimPrefix(lines[1], sleepIndent+"awake ")) {
+		if r == '░' && (i == 0 || []rune(strings.TrimPrefix(lines[1], sleepIndent+"awake "))[i-1] != '░') {
+			runs++
+		}
+	}
+	if runs != 2 {
+		t.Errorf("awake row has %d blocks, want 2:\n%s", runs, strings.Join(lines, "\n"))
+	}
+}
+
 // The unspecified bar must be visible in ASCII and must not look like the
 // rule under the header (it used to be the same dash, a "duplicate rule").
 func TestSleepUnspecifiedBarIsNotARule(t *testing.T) {
