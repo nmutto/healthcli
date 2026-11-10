@@ -7,7 +7,7 @@ Short, living notes on how `health` is put together. Update when a decision chan
 | Path | Owns |
 |---|---|
 | `cmd/healthcli` | `main`: only wires things up and calls into `internal/cli`. |
-| `internal/cli` | Commands, flags, output. Calls `internal/db`; never writes SQL schema. |
+| `internal/cli` | Commands, flags, output. Opens the database through `internal/db` and gets every report from `internal/stats`. The only SQL left in it is `query` (the user's own read-only statement) and the single insert and duplicate check of `log`. It never writes schema. Files are grouped by command (`x.go` for the command, `x_render.go` for the pure renderer) and by role (`clock.go`, `text.go`, `jsonutil.go`, `format.go`, `glyphs.go`, `terminal.go`). |
 | `internal/db` | Database location, opening, migrations. The only package that knows the schema exists as files. |
 | `internal/db/migrations` | Numbered SQL files (`0001_init.sql`, ...), embedded into the binary. |
 | `internal/importer` | Streaming Apple Health XML importer (see `docs/importer.md`). |
