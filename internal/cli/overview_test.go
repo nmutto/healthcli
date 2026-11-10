@@ -253,9 +253,7 @@ func TestOverviewPlainOutputHasNoEscapes(t *testing.T) {
 }
 
 func TestOverviewJSONMatchesReport(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return overviewNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, overviewNow)
 
 	path := seedOverview(t, "full")
 	out, _, err := run(t, "--db", path, "overview", "--json")
@@ -281,9 +279,7 @@ func TestOverviewJSONMatchesReport(t *testing.T) {
 }
 
 func TestOverviewCommandOnPipeIsASCIIAndPlain(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return overviewNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, overviewNow)
 
 	out, _, err := run(t, "--db", seedOverview(t, "full"), "overview")
 	if err != nil {
@@ -410,9 +406,7 @@ func TestOverviewColourIsLocal(t *testing.T) {
 }
 
 func TestOverviewHeatmapFlags(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return overviewNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, overviewNow)
 	path := seedOverview(t, "full")
 
 	out, _, err := run(t, "--db", path, "overview", "--weeks", "0")
@@ -554,9 +548,7 @@ func TestParseCategories(t *testing.T) {
 }
 
 func TestOverviewCategoryAndCompactFlags(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return overviewNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, overviewNow)
 	path := seedOverview(t, "full")
 
 	out, _, err := run(t, "--db", path, "overview", "--category", "vitals", "--heatmap", "sleep,workouts,steps")
@@ -605,9 +597,7 @@ func TestOverviewTableFits50(t *testing.T) {
 // --heatmap draws exactly the named calendars in the order given; --full adds
 // the sleep and workouts versions; a database without them shows neither.
 func TestOverviewHeatmapListAndFull(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return overviewNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, overviewNow)
 	path := seedOverview(t, "import:small")
 
 	out, _, err := run(t, "--db", path, "overview", "--heatmap", "workouts,steps,active_energy", "--weeks", "8")
@@ -646,9 +636,7 @@ func TestOverviewHeatmapListAndFull(t *testing.T) {
 }
 
 func TestOverviewJSONRichSections(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return overviewNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, overviewNow)
 
 	out, _, _ := run(t, "--db", seedOverview(t, "full"), "overview", "--json")
 	for _, key := range []string{`"sleep_summary"`, `"workouts_report"`} {
@@ -695,9 +683,7 @@ func TestOverviewFitsEveryWidthAndMode(t *testing.T) {
 // Absent values are left out of the JSON, never null (the spark arrays are the
 // one place where a missing day is a null inside a list).
 func TestJSONHasNoNulls(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return overviewNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, overviewNow)
 	for _, args := range [][]string{{"overview", "--heatmap", "steps"}, {"heatmap"}, {"heatmap", "workouts"}, {"sleep"}} {
 		out, _, err := run(t, append([]string{"--db", seedOverview(t, "full"), "--json"}, args...)...)
 		if err != nil {
@@ -834,9 +820,7 @@ func TestRangeNoteUsesTheBasis(t *testing.T) {
 // Every workouts figure in the overview uses the same 28-day window: the
 // headline count, the table's "active N of 28 d" and workouts_report.
 func TestOverviewWorkoutsUseOneWindow(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return overviewNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, overviewNow)
 
 	path := seedOverview(t, "full")
 	conn, err := db.Open(path)
@@ -877,9 +861,7 @@ func TestOverviewWorkoutsUseOneWindow(t *testing.T) {
 // --json": only the chosen categories' metrics, and sleep and workouts only
 // when asked for.
 func TestOverviewJSONHonoursCategory(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return overviewNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, overviewNow)
 
 	path := seedOverview(t, "full")
 	decode := func(cat string) map[string]json.RawMessage {

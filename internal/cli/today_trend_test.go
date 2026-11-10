@@ -152,9 +152,7 @@ func TestTodayEmptyDatabaseHint(t *testing.T) {
 }
 
 func TestTodayDefaultsToTodayAndRejectsBadDate(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return time.Date(2026, 11, 8, 15, 0, 0, 0, time.UTC) }
-	defer func() { nowFunc = old }()
+	fixClock(t, time.Date(2026, 11, 8, 15, 0, 0, 0, time.UTC))
 
 	out, _, err := run(t, "--db", seedDB(t), "today")
 	if err != nil || !strings.HasPrefix(out, " Sunday 2026-11-08\n") {

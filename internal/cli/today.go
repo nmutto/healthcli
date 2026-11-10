@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"math"
 	"os"
 	"time"
 
@@ -18,13 +17,6 @@ import (
 // This file FETCHES the data for "healthcli today" and shapes it into a
 // todayReport. Turning the report into text lives in today_render.go, so the
 // text can be tested without a database.
-
-// Values of todayReport.Status.
-const (
-	statusOK       = "ok"       // the requested date has data
-	statusFallback = "fallback" // it had none; Date is the latest day that does
-	statusNoData   = "no_data"  // the database has nothing at all
-)
 
 // Field names below are the documented --json contract of "healthcli today".
 // The first fields are the original contract; the ones marked "added" came
@@ -100,9 +92,6 @@ type todayWorkout struct {
 	DistanceM       *float64 `json:"distance_m"`
 	Source          string   `json:"source"`
 }
-
-// nowFunc is the clock. Tests replace it so "today" is a fixed date.
-var nowFunc = time.Now
 
 func newTodayCmd(opts *options) *cobra.Command {
 	var date string
@@ -246,15 +235,6 @@ func checkNotFuture(date string, now time.Time) error {
 	return nil
 }
 
-// cmdContext returns the command's context, or a background one if cobra
-// was started without any (older cobra versions leave it nil).
-func cmdContext(cmd *cobra.Command) context.Context {
-	if ctx := cmd.Context(); ctx != nil {
-		return ctx
-	}
-	return context.Background()
-}
-
 // buildToday gathers everything for date. When date has nothing at all it
 // falls back to the latest day with data, so the command is never just empty.
 func buildToday(ctx context.Context, conn *sql.DB, date string) (*todayReport, error) {
@@ -364,28 +344,6 @@ func (r *todayReport) restrict(v overviewView) (*todayReport, error) {
 	}
 	out.Status, out.RequestedDate = r.Status, r.RequestedDate
 	return out, nil
-}
-
-func seconds(d time.Duration) int64 { return int64(d / time.Second) }
-
-// jsonSafe makes an overflowed daily value encodable: JSON has no Infinity, so
-// it becomes the largest float (the text shows it in the huge-number format).
-// NaN has no sensible number and becomes null.
-func jsonSafe(v *float64) *float64 {
-	if v == nil {
-		return nil
-	}
-	switch {
-	case math.IsNaN(*v):
-		return nil
-	case math.IsInf(*v, 1):
-		m := math.MaxFloat64
-		return &m
-	case math.IsInf(*v, -1):
-		m := -math.MaxFloat64
-		return &m
-	}
-	return v
 }
 
 // metricJSON turns a day's metric row into the --json shape. "Not enough

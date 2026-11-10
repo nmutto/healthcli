@@ -136,11 +136,6 @@ func changeLines(last, prev, change string, width int) []string {
 	return []string{"Last 7 days: " + last, "Previous 7: " + prev, "Change: " + strings.Trim(change, "()")}
 }
 
-// wordWrap breaks text at spaces into lines of at most width characters.
-func wordWrap(text string, width int) []string {
-	return wrapParts(strings.Fields(text), " ", width)
-}
-
 // trendTable lists every day of the window, oldest first.
 func trendTable(r *trendReport, st style, ti termInfo) string {
 	g := glyphsFor(ti.unicode)
@@ -170,21 +165,6 @@ func trendTable(r *trendReport, st style, ti termInfo) string {
 		b.WriteString(strings.TrimRight(line, " ") + "\n")
 	}
 	return b.String()
-}
-
-func padLeft(s string, n int) string {
-	if w := len([]rune(s)); w < n {
-		return strings.Repeat(" ", n-w) + s
-	}
-	return s
-}
-
-// titleCase upper-cases the first letter: "running" -> "Running".
-func titleCase(s string) string {
-	if s == "" {
-		return s
-	}
-	return strings.ToUpper(s[:1]) + s[1:]
 }
 
 // trendTitle is the heading word for a metric: "step_count" -> "Steps".

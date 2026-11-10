@@ -155,9 +155,7 @@ func TestSleepNarrowFallback(t *testing.T) {
 }
 
 func TestSleepCommand(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return heatNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, heatNow)
 
 	out, _, err := run(t, "--db", seedSleep(t, "empty"), "sleep")
 	if err != nil || !strings.HasPrefix(out, "No sleep data") {
@@ -313,9 +311,7 @@ func TestRegularityWording(t *testing.T) {
 
 // The standalone commands also fit 50 columns, heatmap --weeks 26 included.
 func TestStandaloneCommandsFit50(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return heatNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, heatNow)
 	t.Setenv("COLUMNS", "50")
 	t.Setenv("FORCE_COLOR", "")
 	path := seedSleep(t, "rich")

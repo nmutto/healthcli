@@ -136,9 +136,7 @@ func TestWorkoutsReportNumbers(t *testing.T) {
 }
 
 func TestWorkoutsCommand(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return workoutsNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, workoutsNow)
 	path := tempDB(t)
 	conn, err := db.Open(path)
 	if err != nil {
@@ -196,9 +194,7 @@ func jsonNullsAndKeys(v any, path string, skip map[string]bool, bad *[]string) {
 // --json: snake_case keys only, durations in seconds (not nanoseconds), no
 // null anywhere, and a zero-duration session does not exist.
 func TestWorkoutsJSONShape(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return workoutsNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, workoutsNow)
 	path := tempDB(t)
 	conn, err := db.Open(path)
 	if err != nil {
@@ -258,9 +254,7 @@ func TestWorkoutsSectionHeatmapIsGreen(t *testing.T) {
 // Recent is every session of the last 7 days, but never further back than the
 // --days window: --days 2 shows the last 2 days.
 func TestWorkoutsRecentFollowsDays(t *testing.T) {
-	old := nowFunc
-	nowFunc = func() time.Time { return workoutsNow }
-	defer func() { nowFunc = old }()
+	fixClock(t, workoutsNow)
 	path := tempDB(t)
 	conn, err := db.Open(path)
 	if err != nil {
