@@ -1,61 +1,10 @@
 package importer
 
-import (
-	"math"
-	"testing"
-)
+import "testing"
 
 // iOS 16+ and Apple Watch exports often leave totalEnergyBurned/totalDistance
 // off the <Workout> tag and put the totals in <WorkoutStatistics> children.
 // These tests pin down how the importer reads them.
-
-const wkStart = `workoutActivityType="HKWorkoutActivityTypeRunning" duration="30" durationUnit="min" sourceName="W" ` + qaWhen
-
-// stat builds one <WorkoutStatistics> child.
-func stat(typ, sum, unit string) string {
-	return `<WorkoutStatistics type="HKQuantityTypeIdentifier` + typ + `" ` + qaWhen + ` sum="` + sum + `" unit="` + unit + `"/>`
-}
-
-type wkRow struct {
-	dur      float64
-	energy   sqlFloat
-	distance sqlFloat
-}
-
-type sqlFloat struct {
-	v     float64
-	valid bool
-}
-
-func importOneWorkout(t *testing.T, workout string) (wkRow, *Summary) {
-	t.Helper()
-	conn := newDB(t)
-	sum, err := Import(conn, writeFile(t, "x.xml", wrap(workout)), Options{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	var r wkRow
-	var e, d *float64
-	rows, err := conn.Query("SELECT duration_s, energy_kcal, distance_m FROM workouts")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer rows.Close()
-	if rows.Next() {
-		if err := rows.Scan(&r.dur, &e, &d); err != nil {
-			t.Fatal(err)
-		}
-	}
-	if e != nil {
-		r.energy = sqlFloat{*e, true}
-	}
-	if d != nil {
-		r.distance = sqlFloat{*d, true}
-	}
-	return r, sum
-}
-
-func near(a sqlFloat, want float64) bool { return a.valid && math.Abs(a.v-want) < 1e-3 }
 
 func TestWorkoutTotalsFromStatistics(t *testing.T) {
 	r, sum := importOneWorkout(t, `<Workout `+wkStart+`>
