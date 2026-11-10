@@ -74,6 +74,24 @@ func round4(v float64) float64 { return math.Round(v*10000) / 10000 }
 // cannot be read back as JSON when it holds Inf.
 func finite(v float64) bool { return !math.IsNaN(v) && !math.IsInf(v, 0) }
 
+// positiveOnly lists the heart-rate metrics where 0 or less is not a reading.
+var positiveOnly = map[string]bool{
+	"heart_rate": true, "resting_heart_rate": true, "walking_heart_rate_average": true,
+}
+
+// sensible reports whether value can be a real reading of m. Amounts that add
+// up over a day cannot be negative and a heart rate cannot be 0. Other
+// metrics are left alone: wrist temperature, for one, is a delta below zero.
+func sensible(m metrics.Metric, value float64) bool {
+	if positiveOnly[m.Name] {
+		return value > 0
+	}
+	if m.Daily == metrics.Sum {
+		return value >= 0
+	}
+	return true
+}
+
 // sampleRow converts a numeric <Record>. A non-empty reason means "skip it".
 func sampleRow(a map[string]string) (sampleData, string) {
 	m, known := metrics.FromApple(a["type"])
@@ -92,7 +110,7 @@ func sampleRow(a map[string]string) (sampleData, string) {
 		return sampleData{}, reasonBadUnit
 	}
 	// Conversion and rounding can overflow a huge but finite number to Inf.
-	if value = round4(value); !finite(value) {
+	if value = round4(value); !finite(value) || !sensible(m, value) {
 		return sampleData{}, reasonBadValue
 	}
 	start, end, tz, ok := interval(a)
