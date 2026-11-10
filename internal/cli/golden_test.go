@@ -3,8 +3,6 @@ package cli
 import (
 	"encoding/json"
 	"flag"
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 )
@@ -12,27 +10,6 @@ import (
 // Run `go test ./internal/cli -update` to rewrite the golden files after an
 // intentional change, then read the diff in git before committing it.
 var update = flag.Bool("update", false, "rewrite golden files in testdata/golden")
-
-// checkGolden compares got with testdata/golden/<name>. A golden file is just
-// the expected output saved as text: any change in behaviour shows up as a
-// readable diff instead of a pile of hand-written assertions.
-func checkGolden(t *testing.T, name, got string) {
-	t.Helper()
-	path := filepath.Join("..", "..", "testdata", "golden", name)
-	if *update {
-		if err := os.WriteFile(path, []byte(got), 0o644); err != nil {
-			t.Fatal(err)
-		}
-		return
-	}
-	want, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("%v (run with -update to create it)", err)
-	}
-	if got != string(want) {
-		t.Errorf("output differs from %s (run with -update if the change is intended)\n--- got ---\n%s\n--- want ---\n%s", path, got, want)
-	}
-}
 
 // import small fixture -> query a summary. The fixture is generated with a
 // fixed seed, so the numbers are stable. Pinned here: row counts and totals
@@ -72,5 +49,5 @@ func TestGoldenImportSmallThenQuerySummary(t *testing.T) {
 		}
 		out.WriteString("\n# " + q.title + "\n" + table)
 	}
-	checkGolden(t, "import_small_summary.txt", out.String())
+	checkViewGolden(t, "import_small_summary.txt", out.String())
 }
