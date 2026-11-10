@@ -111,6 +111,11 @@ func Import(conn *sql.DB, path string, opts Options) (*Summary, error) {
 	defer w.rollback()
 
 	if err := parse(src, sum, w, opts); err != nil {
+		// Earlier batches are already committed. Say so, because the
+		// database is not as it was before the import.
+		if w.committed > 0 {
+			err = fmt.Errorf("%w; %d rows were saved before the error; run the import again to complete it (re-importing is safe)", err, w.committed)
+		}
 		return nil, err
 	}
 	if err := w.finish(start); err != nil {
