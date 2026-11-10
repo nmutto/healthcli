@@ -68,3 +68,41 @@ func TestTodayZeroBaseline(t *testing.T) {
 		t.Errorf("text should say n/a:\n%s", text)
 	}
 }
+
+// One future-dated sample, workout or sleep row must not pull the fallback
+// day into the future; the overview ignores them the same way.
+func TestTodayFallbackIgnoresFuture(t *testing.T) {
+	fixClock(t, time.Date(2026, 11, 8, 15, 0, 0, 0, time.UTC))
+	path := tempDB(t)
+	seedDays(t, path, "step_count", "2026-10-01", 5000)
+	future := time.Date(2030, 1, 1, 12, 0, 0, 0, time.UTC).Unix()
+	conn, err := db.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, q := range []string{
+		`INSERT INTO samples (metric, start_ts, end_ts, value, unit, tz_offset, source) VALUES ('heart_rate', ?1, ?1, 60, '', 0, 'Test Band')`,
+		`INSERT INTO workouts (activity, start_ts, end_ts, duration_s, tz_offset, source) VALUES ('Running', ?1, ?1 + 60, 60, 0, 'Test Band')`,
+		`INSERT INTO sleep_stages (stage, start_ts, end_ts, tz_offset, source) VALUES ('core', ?1, ?1 + 3600, 0, 'Test Band')`,
+	} {
+		if _, err := conn.Exec(q, future); err != nil {
+			t.Fatal(err)
+		}
+	}
+	conn.Close()
+
+	out, _, err := run(t, "--db", path, "today", "--date", "2026-11-08", "--json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var rep struct {
+		Status string `json:"status"`
+		Date   string `json:"date"`
+	}
+	if err := json.Unmarshal([]byte(out), &rep); err != nil {
+		t.Fatal(err)
+	}
+	if rep.Status != statusFallback || rep.Date != "2026-10-01" {
+		t.Errorf("status %q date %q, want fallback to 2026-10-01", rep.Status, rep.Date)
+	}
+}

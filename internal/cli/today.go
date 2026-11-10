@@ -408,9 +408,11 @@ func metricJSON(row stats.MetricRow, day string) (todayMetric, error) {
 }
 
 // latestDataDay finds the newest local day with any data: the newest
-// sample of any metric, workout or night of sleep. found is false for an
+// sample of any metric, workout or night of sleep. Like the overview, it
+// ignores anything starting more than a day after now. found is false for an
 // empty database.
 func latestDataDay(ctx context.Context, conn *sql.DB) (day string, found bool, err error) {
+	maxStart := nowFunc().Add(24 * time.Hour).Unix() // stats.futureSlack
 	consider := func(d string) {
 		// "YYYY-MM-DD" strings sort in date order, so > compares dates.
 		if d > day {
@@ -418,7 +420,7 @@ func latestDataDay(ctx context.Context, conn *sql.DB) (day string, found bool, e
 		}
 	}
 	for _, name := range metrics.Names() {
-		s, err := stats.LatestSample(ctx, conn, name)
+		s, err := stats.LatestSampleUpTo(ctx, conn, name, maxStart)
 		if errors.Is(err, stats.ErrNoData) {
 			continue
 		}
@@ -432,11 +434,11 @@ func latestDataDay(ctx context.Context, conn *sql.DB) (day string, found bool, e
 	// Local day = UTC time + tz_offset; a night belongs to the date it ends on,
 	// with the 6-hour shift stats uses (see stats.SleepNight).
 	for _, q := range []string{
-		`SELECT max(date(start_ts + tz_offset, 'unixepoch')) FROM workouts`,
-		`SELECT max(date(end_ts + tz_offset + 21600, 'unixepoch')) FROM sleep_stages`,
+		`SELECT max(date(start_ts + tz_offset, 'unixepoch')) FROM workouts WHERE start_ts <= ?`,
+		`SELECT max(date(end_ts + tz_offset + 21600, 'unixepoch')) FROM sleep_stages WHERE start_ts <= ?`,
 	} {
 		var d sql.NullString // NULL when the table is empty
-		if err := conn.QueryRowContext(ctx, q).Scan(&d); err != nil {
+		if err := conn.QueryRowContext(ctx, q, maxStart).Scan(&d); err != nil {
 			return "", false, fmt.Errorf("find latest day: %w", err)
 		}
 		if d.Valid {
