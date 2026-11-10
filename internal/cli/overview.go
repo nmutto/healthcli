@@ -41,10 +41,10 @@ minimum such as 0.2 degC for wrist temperature); anything smaller is typical.
 
 Beyond-usual values are coloured by which direction is generally healthy for
 that metric: green with the word "better", red with "worse". Metrics with no
-good direction (weight, respiratory rate, ...) are cyan with the word
-"changed". That direction is a general guide, not medical advice. Stale data
-is yellow. Colour is never the only signal: every row has an arrow, and
-beyond-usual rows also carry the word.
+good direction (weight, respiratory rate, ...) get no colour, only the word
+"higher" or "lower". That direction is a general guide, not medical advice.
+Stale data is yellow. Colour is never the only signal: every row has an
+arrow, and beyond-usual rows also carry the word.
 
 Metrics are grouped in category bands (vitals, activity, body, mobility) with a
 one-line summary each. A marker in the left gutter flags rows that need a look:

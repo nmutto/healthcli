@@ -1,6 +1,6 @@
  Sunday 2026-11-08 (yesterday)
  ────────────────────────────────────────────────
- 3 better, 3 worse, 1 changed, 12 typical vs usu…
+ 3 better, 3 worse, 1 changed, 12 typical
  VITALS 7 !1 · ACTIVITY 8 · MOBILITY 4 !2
  SLEEP
 
@@ -10,7 +10,7 @@
    Avg heart rate    76 bpm  75      ▲ +2%
  ! Resting HR        60 bpm  57      ▲ +6% worse
    HRV               46 ms   48      ▼ -4%
- ~ Respiratory rate  15.6/…  14.3    ▲ +9% changed
+ ~ Respiratory rate  15.6/…  14.3    ▲ +9% higher
    Wrist temperatu…  36.0 …  35.9    – 0%
    Blood oxygen      97%     97      – 0%
  + Walking heart r…  90 bpm  94      ▼ -4% better
@@ -30,7 +30,7 @@
    Step length       73 cm   72      ▲ +2%
  ! Walking asymmet…  4.9%    3.5     ▲ +38% worse
  ! Double support …  30.7%   28.6    ▲ +7% worse
- green better red worse cyan changed
+ + better  ! worse  ~ higher/lower
  7 tracked metrics have no reading on this day
 
  ━━ SLEEP ━━ Sun 8 Nov · Watch, iPhone ━━━━━━━━━━

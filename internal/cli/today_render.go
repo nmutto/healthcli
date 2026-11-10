@@ -222,7 +222,7 @@ func deltaPlain(r stats.MetricRow, g glyphSet) string {
 		return fmt.Sprintf("need %dd (have %d)", stats.MinBaselineDays, r.BaselineDays)
 	}
 	text := deltaText(r, g)
-	if w := verdictWord(r.Verdict); w != "" {
+	if w := verdictWord(r); w != "" {
 		text += " " + w
 	}
 	return text
@@ -267,7 +267,7 @@ func dayTable(d *stats.DayReport, ti termInfo, g glyphSet, st style, v overviewV
 // dayFooter is the colour legend and the dim count of tracked metrics that
 // have no reading on the day.
 func dayFooter(d *stats.DayReport, ti termInfo, g glyphSet, st style) string {
-	out := indent + colorLegend(st, ti.width-2) + "\n"
+	out := indent + markerLegend(st, ti.width-2) + "\n"
 	if n := len(d.NoReading); n > 0 {
 		text := fmt.Sprintf("%d tracked metrics have no reading on this day", n)
 		if n == 1 {

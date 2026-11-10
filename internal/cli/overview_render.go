@@ -253,6 +253,9 @@ func headline(o *stats.Overview, v overviewView, g glyphSet, width int) string {
 		if runeLen(text) > width { // narrow terminal: say it shorter instead of cutting it
 			text = strings.Join(counted, ", ") + " vs usual"
 		}
+		if runeLen(text) > width { // still too wide: drop "vs usual" rather than cut a word
+			text = strings.Join(counted, ", ")
+		}
 		parts = append(parts, text)
 	case waiting:
 		parts = append(parts, fmt.Sprintf("Not enough history to compare yet (a baseline needs %d days)", stats.MinBaselineDays))
@@ -344,27 +347,37 @@ func colorIf(cond bool, paint func(string) string, s string) string {
 
 // verdictPaint is the colour decision: what colour a verdict gets.
 //
-//	better  -> green    worse -> red    changed -> cyan    typical -> none
+//	better  -> green    worse -> bold red    changed, typical -> none
 //
 // "changed" is a metric beyond its usual that has no good direction
-// (neutral polarity). Polarity is a general guide, not medical advice.
+// (neutral polarity): it says higher or lower in plain text, no colour.
+// Colour is a judgment, and only a known direction can judge. Polarity is a
+// general guide, not medical advice.
 func verdictPaint(st style, verdict string) func(string) string {
 	switch verdict {
 	case stats.VerdictBetter:
 		return st.green
 	case stats.VerdictWorse:
 		return st.red
-	case stats.VerdictChanged:
-		return st.cyan
 	}
 	return func(s string) string { return s }
 }
 
-// verdictWord is the text that backs the colour up: better, worse or changed
-// (typical rows are plain). Colour is never the only signal.
-func verdictWord(verdict string) string {
-	if verdict == stats.VerdictBetter || verdict == stats.VerdictWorse || verdict == stats.VerdictChanged {
-		return verdict
+// verdictWord is the text that backs the colour up: better or worse, and
+// higher or lower for a move with no good direction (typical rows have no
+// word). Colour is never the only signal.
+func verdictWord(r stats.MetricRow) string {
+	switch r.Verdict {
+	case stats.VerdictBetter, stats.VerdictWorse:
+		return r.Verdict
+	case stats.VerdictChanged:
+		switch {
+		case r.Comparison != nil && *r.Comparison == stats.Above:
+			return "higher"
+		case r.Comparison != nil && *r.Comparison == stats.Below:
+			return "lower"
+		}
+		return stats.VerdictChanged
 	}
 	return ""
 }
@@ -384,7 +397,7 @@ func deltaAreaIn(r stats.MetricRow, g glyphSet, st style, showBand bool, areaW i
 	case stats.StateOK:
 		paint := verdictPaint(st, r.Verdict)
 		text := deltaText(r, g)
-		if w := verdictWord(r.Verdict); w != "" {
+		if w := verdictWord(r); w != "" {
 			text += " " + w
 		}
 		out := paint(text)

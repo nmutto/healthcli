@@ -346,7 +346,7 @@ func wkWeekly(r *stats.WorkoutsReport, g glyphSet, st style, width int) []string
 				delta = g.flat + " so far"
 			case w.DeltaPct != nil:
 				arrow := g.deltaArrow(*w.DeltaPct)
-				delta = st.cyan(arrow + " " + fmt.Sprintf("%+.0f%%", *w.DeltaPct))
+				delta = arrow + " " + fmt.Sprintf("%+.0f%%", *w.DeltaPct)
 			}
 			line += " " + fmt.Sprintf("%*d", countW, w.Count) + " " + delta
 		}

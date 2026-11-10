@@ -367,8 +367,8 @@ func TestVerdictColourTable(t *testing.T) {
 		{metrics.LowerBetter, stats.Below, ansiGreen, "better"},
 		{metrics.LowerBetter, stats.Above, ansiRed, "worse"},
 		{metrics.LowerBetter, stats.Typical, "", ""},
-		{metrics.Neutral, stats.Above, ansiCyan, "changed"},
-		{metrics.Neutral, stats.Below, ansiCyan, "changed"},
+		{metrics.Neutral, stats.Above, "", "higher"}, // a move with no good direction: plain text, no colour
+		{metrics.Neutral, stats.Below, "", "lower"},
 		{metrics.Neutral, stats.Typical, "", ""},
 	}
 	for _, c := range cases {
@@ -381,7 +381,8 @@ func TestVerdictColourTable(t *testing.T) {
 		if got != want {
 			t.Errorf("%s/%s: painted %q, want %q", c.polarity, c.comparison, got, want)
 		}
-		if w := verdictWord(v); w != c.word {
+		row := stats.MetricRow{Verdict: v, Comparison: &c.comparison}
+		if w := verdictWord(row); w != c.word {
 			t.Errorf("%s/%s: word %q, want %q", c.polarity, c.comparison, w, c.word)
 		}
 	}
@@ -396,11 +397,11 @@ func TestOverviewColourIsLocal(t *testing.T) {
 			worse = l
 		}
 	}
-	if !strings.Contains(worse, "\x1b[31m▲ +9% worse\x1b[0m") || !strings.Contains(worse, "\x1b[31m●\x1b[0m") {
+	if !strings.Contains(worse, "\x1b[1;31m▲ +9% worse\x1b[0m") || !strings.Contains(worse, "\x1b[1;31m●\x1b[0m") {
 		t.Errorf("worse row should be red on delta and marker: %q", worse)
 	}
 	// The gutter marker is coloured, the label after it is not.
-	if !strings.HasPrefix(worse, " \x1b[31m!\x1b[0m Resting HR") {
+	if !strings.HasPrefix(worse, " \x1b[1;31m!\x1b[0m Resting HR") {
 		t.Errorf("red gutter marker, then a plain label: %q", worse)
 	}
 	if !strings.Contains(got, "\x1b[32m▲ +52% better\x1b[0m") {
@@ -710,6 +711,21 @@ func TestJSONHasNoNulls(t *testing.T) {
 		jsonNullsAndKeys(doc, "$", map[string]bool{"spark": true}, &bad)
 		if len(bad) > 0 {
 			t.Errorf("%v: %v", args, bad)
+		}
+	}
+}
+
+// Colour never carries meaning alone: the metric table with its colours
+// stripped is the same text as the table without colour. (Heatmaps are left
+// out: with colour on, intensity is colour only, by design.)
+func TestOverviewColourAddsNoWords(t *testing.T) {
+	view := testView
+	view.noHeat = true
+	for _, scenario := range []string{"full", "stale"} {
+		coloured := renderOverview(overviewReport(t, scenario), termInfo{width: 80, unicode: true, color: true}, view)
+		plain := renderOverview(overviewReport(t, scenario), termInfo{width: 80, unicode: true}, view)
+		if got := stripANSI(coloured); got != plain {
+			t.Errorf("%s: stripped colour output differs from the plain output\n--- stripped ---\n%s\n--- plain ---\n%s", scenario, got, plain)
 		}
 	}
 }

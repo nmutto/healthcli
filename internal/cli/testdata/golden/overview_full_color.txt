@@ -7,7 +7,7 @@
 
  [2m━━[0m [1mVITALS[0m [2m━━[0m 3 metrics · 1 worse [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
    Avg heart rate  67[2m bpm[0m        ▼ -3%             ···●░░░···
- [31m![0m Resting HR      66[2m bpm[0m        [31m▲ +9% worse[0m       ···░░░░··[31m●[0m
+ [1;31m![0m Resting HR      66[2m bpm[0m        [1;31m▲ +9% worse[0m       ···░░░░··[1;31m●[0m
    HRV             55[2m ms[0m         ▼ -4%             ···░●░░···  2 d
 
  [2m━━[0m [1mACTIVITY[0m [2m━━[0m 2 metrics · 1 better [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
@@ -16,7 +16,7 @@
 
  [2m━━[0m [1mBODY[0m [2m━━[0m 1 metric · 1 stale [2m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
    Weight          72.4[2m kg[0m       [33mstale                       [0m  [33m9 d[0m
- [32mgreen[0m[2m better[0m[2m / [0m[31mred[0m[2m worse[0m[2m / [0m[36mcyan[0m[2m changed (no good direction)[0m
+ [32m+[0m[2m better[0m  [1;31m![0m[2m worse[0m  [2m~ higher/lower, no good direction[0m
 
  [2m━━[0m [1mSLEEP[0m [2m━━[0m Sun 8 Nov · Watch stages, iPhone in bed [2m━━━━━━━━━━━━━━━━━━━━━━━━━━[0m
 [2m       23:00                                                              06:00[0m

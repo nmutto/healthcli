@@ -7,20 +7,20 @@
 [2m                  01          02          03          04          05[0m
 
 [2m STAT         LAST NIGHT          7 NIGHTS            VS 28-NIGHT USUAL[0m
- Asleep       5h 50m              6h 08m              [31m▼ -11% worse[0m
- In bed       6h 03m              6h 29m              [36m▼ -12% changed[0m
+ Asleep       5h 50m              6h 08m              [1;31m▼ -11% worse[0m
+ In bed       6h 03m              6h 29m              ▼ -12% shorter
  Efficiency   96%                 94%                 [2m– typical[0m
  Awake        5m / 2 awakenings   9m / 2 awakenings   [2m– typical[0m
  Latency      ~8m                 11m                 [2m– typical[0m
  Deep         45m 13%             45m                 [2m– typical[0m
  REM          1h 15m 21%          1h 14m              [2m– typical[0m
- Core         3h 50m 66%          4h 08m              [36m▼ -15% changed[0m
- Bedtime      00:05               23:58               [36m▲ +49m later[0m
+ Core         3h 50m 66%          4h 08m              ▼ -15% shorter
+ Bedtime      00:05               23:58               ▲ +49m later
  Wake         06:00               06:15               [2m– typical[0m
- Midpoint     03:03               03:07               [36m▲ +26m later[0m
- Regularity   ±51m bed ±34m mid (14 nights)           [31m▲ worse than usual (±39m)[0m
+ Midpoint     03:03               03:07               ▲ +26m later
+ Regularity   ±51m bed ±34m mid (14 nights)           [1;31m▲ worse than usual (±39m)[0m
  Sleep debt   2h 10m short last night, 7 nights: 13h 07m short vs 8h target
- [32mgreen[0m[2m better[0m[2m / [0m[31mred[0m[2m worse[0m[2m / [0m[36mcyan[0m[2m changed (no good direction)[0m
+ [32m+[0m[2m better[0m  [1;31m![0m[2m worse[0m  [2m~ higher/lower, no good direction[0m
 
  [2m━━[0m [1mCALENDAR[0m [2m━━[0m time asleep per day, 12 weeks to 2026-11-04 [2m━━━━━━━━━━━━━━━━━━━[0m
      Aug Sep     Oct     Nov

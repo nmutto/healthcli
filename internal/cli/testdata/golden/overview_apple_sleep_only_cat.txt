@@ -25,7 +25,7 @@
  Midpoint     02:51               02:54               – typical
  Regularity   ±1m bed ±8m mid (13 nights)
  Sleep debt   59m short last night, 7 nights: 6h 05m short vs 8h target
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
 
  ━━ CALENDAR ━━ time asleep per day, last 13 nights ━━━━━━━━━━━━━━━━━━━━━━━━━━━
  Tue Wed Thu Fri Sat Sun Mon Tue Wed Thu Fri Sat Sun

@@ -46,10 +46,10 @@ func (st style) wrap(code, s string) string {
 const (
 	ansiBold   = "1"
 	ansiDim    = "2"
-	ansiRed    = "31" // worse than usual
-	ansiGreen  = "32" // better than usual
-	ansiYellow = "33" // stale data
-	ansiCyan   = "36" // changed, and no good direction
+	ansiRed    = "1;31" // worse than usual (bold, so it also differs from green in brightness)
+	ansiGreen  = "32"   // better than usual
+	ansiYellow = "33"   // stale data
+	ansiCyan   = "36"   // decoration only (sparkline); never a verdict
 )
 
 // Sleep stage colours follow the iOS Health app: orange for awake, light blue

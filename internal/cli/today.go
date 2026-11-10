@@ -117,9 +117,9 @@ that ended on that day; and the day's workouts.
 There is no trend line and no calendar. Each row reads LATEST, USUAL and VS
 USUAL, followed by a small range gauge (where the value sits in your usual
 range) when the terminal is wide enough. Beyond-usual values are coloured by which direction is generally
-healthy: green "better", red "worse"; metrics with no good direction are cyan
-"changed". A marker in the left gutter flags rows: "!" worse, "+" better,
-"~" changed. A metric needs 7 days of history in the 28 before the day for a
+healthy: green "better", red "worse"; metrics with no good direction say
+"higher" or "lower" in plain text. A marker in the left gutter flags rows:
+"!" worse, "+" better, "~" higher or lower with no good direction. A metric needs 7 days of history in the 28 before the day for a
 comparison ("need 7d (have 3)" until then). That direction is a general guide,
 not medical advice.
 

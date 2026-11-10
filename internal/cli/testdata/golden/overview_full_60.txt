@@ -17,7 +17,7 @@
 
  ━━ BODY ━━ 1 · 1 stale ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Weight          72.4 kg       stale 9 d
- green better red worse cyan changed
+ + better  ! worse  ~ higher/lower
 
  ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━
        23:00                                          06:00

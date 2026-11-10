@@ -11,7 +11,7 @@
  ━━ ACTIVITY ━━ 2 metrics · 1 better ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  + Steps           11,800 steps  7,784  ▲ +52% better  ···░░░░··●
    Active energy   640 kcal      560    ▲ +14%         ···░░░●···
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
  3 tracked metrics have no reading on this day
 
  ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━

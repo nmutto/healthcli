@@ -6,7 +6,7 @@
    METRIC          LATEST        USUAL  VS USUAL
 
  == VITALS == 2 metrics | 1 changed ===========================================
- ~ Avg heart rate  64 bpm        62     ^ +3% changed     ...====*..
+ ~ Avg heart rate  64 bpm        62     ^ +3% higher      ...====*..
    Resting HR      58 bpm        -      need 7d (have 2)
 
  == ACTIVITY == 1 metric | 1 better ===========================================
@@ -14,7 +14,7 @@
 
  == BODY == 1 metric | not enough data ========================================
    Weight          72.5 kg       -      need 7d (have 0)
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
 
  == SLEEP == Sun 8 Nov | Watch stages =========================================
        23:00                                                              06:00

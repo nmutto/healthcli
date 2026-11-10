@@ -131,10 +131,10 @@ func TestOneBandStyle(t *testing.T) {
 				t.Errorf("%s section should be a band (%q%s):\n%s", title, c.band, title, got)
 			}
 		}
-		if strings.Count(got, "cyan changed (no good direction)") != 2 {
-			t.Errorf("both legends should say 'cyan changed (no good direction)':\n%s", got)
+		if strings.Count(got, "~ higher/lower, no good direction") != 2 {
+			t.Errorf("both legends should say '~ higher/lower, no good direction':\n%s", got)
 		}
-		if strings.Contains(got, "cyan neutral") || strings.Contains(got, "per night") {
+		if strings.Contains(got, "cyan") || strings.Contains(got, "cyan neutral") || strings.Contains(got, "per night") {
 			t.Errorf("old wording left in:\n%s", got)
 		}
 	}

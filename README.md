@@ -94,7 +94,7 @@ $ healthcli --db demo.db overview
    Avg heart rate              76 bpm          ▲ +2%             ···░░░●···
  ! Resting HR                  60 bpm          ▲ +6% worse       ···░░░░●··
    HRV                         46 ms           ▼ -4%             ···░●░░···
- ~ Respiratory rate            15.6/min        ▲ +9% changed     ···░░░░●··
+ ~ Respiratory rate            15.6/min        ▲ +9% higher      ···░░░░●··
    Wrist temperature           36.0 °C         – 0%              ···░░●░···
    Blood oxygen                97%             – 0%              ···░░●░···
    VO2 max                     41.9 mL/kg/min  stale                         6 d
@@ -123,7 +123,7 @@ $ healthcli --db demo.db overview
  ! Walking asymmetry           4.9%            ▲ +38% worse      ···░░░░●··
  ! Double support time         30.7%           ▲ +7% worse       ···░░░░●··
    Walking steadiness          94%             stale                         6 d
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
 
  ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
        23:12                                                              06:30
@@ -178,7 +178,7 @@ $ healthcli --db demo.db overview
  not tracked in your data: 4 metrics
 ```
 
-This example is **synthetic**: it is the real output for the generated "small" fixture (a Watch and an iPhone), with dates shifted to look current. A device that records less gets fewer rows: metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`), and a database with no sleep or no workouts has no SLEEP or WORKOUTS section at all. Metrics are grouped in VITALS / ACTIVITY / BODY / MOBILITY bands; a `!` / `+` / `~` in the left gutter marks worse / better / changed rows, and the index line under the headline counts the worse ones. `--category vitals,sleep` shows only some sections, `--compact` drops the blank lines and keeps a one-character `!` / `+` / `~` flag in the margin. Every page fits from 50 to 100 columns.
+This example is **synthetic**: it is the real output for the generated "small" fixture (a Watch and an iPhone), with dates shifted to look current. A device that records less gets fewer rows: metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`), and a database with no sleep or no workouts has no SLEEP or WORKOUTS section at all. Metrics are grouped in VITALS / ACTIVITY / BODY / MOBILITY bands; a `!` / `+` / `~` in the left gutter marks worse / better / higher-or-lower rows, and the index line under the headline counts the worse ones. `--category vitals,sleep` shows only some sections, `--compact` drops the blank lines and keeps a one-character `!` / `+` / `~` flag in the margin. Every page fits from 50 to 100 columns.
 
 `overview --full` shows everything: the sleep table with every row, the weekly workout bars and personal bests, and a heatmap for sleep, workouts and activity. An excerpt (the middle of the page):
 
@@ -206,7 +206,7 @@ $ healthcli --db demo.db overview --full
  Midpoint     02:51               02:54               – typical
  Regularity   ±1m bed ±8m mid (13 nights)
  Sleep debt   59m short last night, 7 nights: 6h 05m short vs 8h target
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
 
  ━━ CALENDAR ━━ time asleep per day, last 13 nights ━━━━━━━━━━━━━━━━━━━━━━━━━━━
  Tue Wed Thu Fri Sat Sun Mon Tue Wed Thu Fri Sat Sun
@@ -250,7 +250,7 @@ $ healthcli --db demo.db overview --full
 
 The same full sections are available on their own as `healthcli sleep` and `healthcli workouts`.
 
-Each metric is compared with its own 28-day usual and shows its own newest day and age. When a value is beyond your usual (1+ standard deviation, and a change of at least 2% or a small per-metric minimum) it is coloured by which direction is generally healthy for that metric: **green** and the word "better", **red** and "worse". Metrics with no good direction (weight, respiratory rate, wrist temperature) are **cyan** and carry the word "changed". Every beyond-usual row has its word, so nothing depends on colour; typical rows are plain. Stale readings are yellow. The legend is the line under the table.
+Each metric is compared with its own 28-day usual and shows its own newest day and age. When a value is beyond your usual (1+ standard deviation, and a change of at least 2% or a small per-metric minimum) it is coloured by which direction is generally healthy for that metric: **green** and the word "better", **red** and "worse". Metrics with no good direction (weight, respiratory rate, wrist temperature) have no colour and say "higher" or "lower" in plain text. Every beyond-usual row has its word, so nothing depends on colour; typical rows are plain. The legend names the margin markers, so it reads the same without colour. Stale readings are yellow. The legend is the line under the table.
 
 > The better/worse direction is a general guide, not medical advice. What is healthy for one person (an athlete's low resting heart rate, deliberate weight change) can differ.
 
@@ -271,7 +271,7 @@ $ healthcli --db demo.db today --date 2026-11-08
    Avg heart rate              76 bpm        75      ▲ +2%          ···░░░●···
  ! Resting HR                  60 bpm        57      ▲ +6% worse    ···░░░░●··
    HRV                         46 ms         48      ▼ -4%          ···░●░░···
- ~ Respiratory rate            15.6/min      14.3    ▲ +9% changed  ···░░░░●··
+ ~ Respiratory rate            15.6/min      14.3    ▲ +9% higher   ···░░░░●··
    Wrist temperature           36.0 °C       35.9    – 0%           ···░░●░···
    Blood oxygen                97%           97      – 0%           ···░░●░···
  + Walking heart rate          90 bpm        94      ▼ -4% better   ···●░░░···
@@ -291,7 +291,7 @@ $ healthcli --db demo.db today --date 2026-11-08
    Step length                 73 cm         72      ▲ +2%          ···░░░●···
  ! Walking asymmetry           4.9%          3.5     ▲ +38% worse   ···░░░░●··
  ! Double support time         30.7%         28.6    ▲ +7% worse    ···░░░░●··
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
  7 tracked metrics have no reading on this day
 
  ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -462,7 +462,7 @@ Delete that file to start over.
 
 ### Sleep
 
-`healthcli sleep` shows last night as a hypnogram (awake, REM, core and deep over the night; a short awakening still shows), then last night, your last 7 nights and the change against your usual over `--nights` nights (default 28), with bedtime regularity and sleep debt against `--sleep-target` (default `8h`). A calendar of the nights follows (`--weeks`, `0` hides it; `--by asleep|bedtime|efficiency`); with fewer than 14 nights you get a small bar per night instead. Only what your data holds is shown: a device that records just "asleep" gets a single bar, in-bed time alone shows no sleep numbers, and rows without data are left out (one dim `not available:` line names them). Green is better, red worse, cyan has no good direction, always with a word. A night is the sleep that ends on a date (18:00 to 18:00). Output below is synthetic.
+`healthcli sleep` shows last night as a hypnogram (awake, REM, core and deep over the night; a short awakening still shows), then last night, your last 7 nights and the change against your usual over `--nights` nights (default 28), with bedtime regularity and sleep debt against `--sleep-target` (default `8h`). A calendar of the nights follows (`--weeks`, `0` hides it; `--by asleep|bedtime|efficiency`); with fewer than 14 nights you get a small bar per night instead. Only what your data holds is shown: a device that records just "asleep" gets a single bar, in-bed time alone shows no sleep numbers, and rows without data are left out (one dim `not available:` line names them). Green is better, red worse, always with a word; rows with no good direction (bedtime, in bed) have no colour and say later/earlier, longer/shorter or higher/lower. A night is the sleep that ends on a date (18:00 to 18:00). Output below is synthetic.
 
 ```
 $ healthcli sleep
@@ -476,19 +476,19 @@ $ healthcli sleep
 
  STAT         LAST NIGHT          7 NIGHTS            VS 28-NIGHT USUAL
  Asleep       5h 50m              6h 08m              ▼ -11% worse
- In bed       6h 03m              6h 29m              ▼ -12% changed
+ In bed       6h 03m              6h 29m              ▼ -12% shorter
  Efficiency   96%                 94%                 – typical
  Awake        5m / 2 awakenings   9m / 2 awakenings   – typical
  Latency      ~8m                 11m                 – typical
  Deep         45m 13%             45m                 – typical
  REM          1h 15m 21%          1h 14m              – typical
- Core         3h 50m 66%          4h 08m              ▼ -15% changed
+ Core         3h 50m 66%          4h 08m              ▼ -15% shorter
  Bedtime      00:05               23:58               ▲ +49m later
  Wake         06:00               06:15               – typical
  Midpoint     03:03               03:07               ▲ +26m later
  Regularity   ±51m bed ±34m mid (14 nights)           ▲ worse than usual (±39m)
  Sleep debt   2h 10m short last night, 7 nights: 13h 07m short vs 8h target
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
 
  ━━ CALENDAR ━━ time asleep per day, 12 weeks to 2026-11-04 ━━━━━━━━━━━━━━━━━━━
      Aug Sep     Oct     Nov

@@ -10,7 +10,7 @@
    Avg heart rate       76 bpm          ▲ +2%
  ! Resting HR           60 bpm          ▲ +6% worse
    HRV                  46 ms           ▼ -4%
- ~ Respiratory rate     15.6/min        ▲ +9% changed
+ ~ Respiratory rate     15.6/min        ▲ +9% higher
    Wrist temperature    36.0 °C         – 0%
    Blood oxygen         97%             – 0%
    VO2 max              41.9 mL/kg/min  stale 6 d
@@ -39,7 +39,7 @@
  ! Walking asymmetry    4.9%            ▲ +38% worse
  ! Double support time  30.7%           ▲ +7% worse
    Walking steadiness   94%             stale 6 d
- green better red worse cyan changed
+ + better  ! worse  ~ higher/lower
 
  ━━ SLEEP ━━ Sun 8 Nov · Watch stages, iPhone in bed ━━━━━━
        23:12                                          06:30
@@ -63,7 +63,7 @@
  Midpoint   02:51       02:54       – typical
  Regularity ±1m bed ±8m mid (13 nights)
  Sleep debt 59m short, 7 nights: 6h 05m short (8h target)
- green better red worse cyan changed
+ + better  ! worse  ~ higher/lower
 
  ━━ CALENDAR ━━ time asleep per day, last 13 nights ━━━━━━━
  Tue Wed Thu Fri Sat Sun Mon Tue Wed Thu Fri Sat Sun

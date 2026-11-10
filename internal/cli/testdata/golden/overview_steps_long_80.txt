@@ -7,7 +7,7 @@
 
  ━━ ACTIVITY ━━ 1 metric · all typical ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Steps   4,000 steps  ▼ -41%            ···●░░░···  ▄▇▅▄▇▅█▁▄█▆▄▇▅▄▇▅█▆▄▁▆▄▇▅▄
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
 
  ━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━━━━━━
      Aug Sep     Oct     Nov

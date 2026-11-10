@@ -7,7 +7,7 @@
 
  ━━ ACTIVITY ━━ 1 metric · 1 worse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  ! Steps   5,000 steps  ▼ -33% worse      ··●░░░░···  ······▇▁▃▅▆█▂▄▅▇▁▃▅▆█▂▄▅▇▁
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
 
  ━━ CALENDAR ━━ step count per day, 12 weeks to 2026-11-08 ━━━━━━━━━━━━━━━━━━━━
      Aug Sep     Oct     Nov

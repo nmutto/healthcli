@@ -16,7 +16,7 @@
 
  ━━ BODY ━━ 1 metric · 1 stale ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    Weight          72.4 kg       stale                         21 d
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
 
  ━━ SLEEP ━━ Tue 27 Oct (12 days ago) · Watch stages, iPhone in bed ━━━━━━━━━━━
        23:00                                                              06:00

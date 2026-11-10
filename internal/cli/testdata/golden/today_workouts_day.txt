@@ -6,13 +6,13 @@
    METRIC          LATEST       USUAL  VS USUAL
 
  ━━ VITALS ━━ 2 metrics · 1 worse · 1 changed ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- ~ Avg heart rate  72 bpm       69     ▲ +4% changed  ···░░░░●··
+ ~ Avg heart rate  72 bpm       69     ▲ +4% higher   ···░░░░●··
  ! Resting HR      62 bpm       60     ▲ +3% worse    ···░░░░●··
 
  ━━ ACTIVITY ━━ 2 metrics · 1 better · 1 worse ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  + Steps           9,150 steps  7,736  ▲ +18% better  ···░░░●···
  ! Active energy   460 kcal     566    ▼ -19% worse   ···●░░░···
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
  2 tracked metrics have no reading on this day
 
  ━━ WORKOUTS ━━ 1 session  31m  410 kcal  5.2 km ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

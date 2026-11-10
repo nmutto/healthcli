@@ -35,8 +35,9 @@ Only what your data holds is shown. A device that records only "asleep" gets
 a single bar and no stage rows; in-bed time alone shows no sleep numbers.
 Rows with nothing to show are left out, and one dim line names them.
 
-Colour: green better, red worse, cyan no good direction (bedtime, in bed),
-always with a word. "vs usual" compares your last 7 nights with the usual; a
+Colour: green better, red worse, always with a word. Rows with no good
+direction (bedtime, in bed) have no colour and say later/earlier,
+longer/shorter or higher/lower. "vs usual" compares your last 7 nights with the usual; a
 change under 5% (10% for awake time and falling-asleep time, 2 points of
 efficiency, 15 minutes of clock time) is typical.
 

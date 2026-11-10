@@ -268,7 +268,8 @@ func latestCell(r stats.MetricRow, width int, ti termInfo, g glyphSet, st style)
 }
 
 // gutterMark is the attention marker of a row: "! " worse, "+ " better,
-// "~ " changed, blank otherwise. ASCII on purpose, so it needs no fallback.
+// "~ " changed (plain, it judges nothing), blank otherwise. ASCII on purpose,
+// so it needs no fallback.
 func gutterMark(r stats.MetricRow, st style) string {
 	if r.State != stats.StateOK {
 		return "  "
@@ -279,7 +280,7 @@ func gutterMark(r stats.MetricRow, st style) string {
 	case stats.VerdictBetter:
 		return st.green("+") + " "
 	case stats.VerdictChanged:
-		return st.cyan("~") + " "
+		return "~ "
 	}
 	return "  "
 }
@@ -391,19 +392,19 @@ func categoryBand(name string, c *stats.CategorySummary, ti termInfo, g glyphSet
 	return indent + bandLine(strings.ToUpper(name), bandSummary(c, g, ti.width < shortBand), total, g, st) + "\n"
 }
 
-// colorLegend explains the colours; the words in the rows say the same, so it
-// also helps with colour off. It is the one legend of the page (metric table
-// and sleep table), shorter on a narrow pane.
-func colorLegend(st style, width int) string {
+// markerLegend explains the margin markers, which are the same with colour
+// off (pipes, NO_COLOR, --ascii), so it names markers and not colours. It is
+// the one legend of the page (metric table and sleep table), shorter on a
+// narrow pane.
+func markerLegend(st style, width int) string {
+	better, worse := st.green("+")+st.dim(" better"), st.red("!")+st.dim(" worse")
 	if width < 60 {
-		return st.green("green") + st.dim(" better ") + st.red("red") + st.dim(" worse ") + st.cyan("cyan") + st.dim(" changed")
+		return better + "  " + worse + "  " + st.dim("~ higher/lower")
 	}
-	sep := st.dim(" / ")
-	return st.green("green") + st.dim(" better") + sep + st.red("red") + st.dim(" worse") + sep +
-		st.cyan("cyan") + st.dim(" changed (no good direction)")
+	return better + "  " + worse + "  " + st.dim("~ higher/lower, no good direction")
 }
 
 // tableFooter is the legend under the metric table.
 func tableFooter(o *stats.Overview, st style, ti termInfo, g glyphSet) string {
-	return indent + colorLegend(st, ti.width-2) + "\n"
+	return indent + markerLegend(st, ti.width-2) + "\n"
 }

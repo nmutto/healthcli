@@ -8,7 +8,7 @@
 
  STAT         LAST NIGHT          7 NIGHTS            VS 28-NIGHT USUAL
  Asleep       5h 50m              6h 08m              ▼ -11% worse
- In bed       6h 03m              6h 29m              ▼ -12% changed
+ In bed       6h 03m              6h 29m              ▼ -12% shorter
  Efficiency   96%                 94%                 – typical
  Awake        5m / 2 awakenings   9m / 2 awakenings   – typical
  Deep         45m 13%             45m                 – typical

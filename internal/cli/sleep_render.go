@@ -521,7 +521,9 @@ func compareSleep(s sleepStat, week, usual *float64, g glyphSet) (sleepVerdict, 
 	if delta < 0 {
 		arrow = g.down
 	}
-	// Direction words. Clock rows have no good direction: later / earlier.
+	// Direction words. Rows with no good direction say what happened, in plain
+	// text: later / earlier for clock times, longer / shorter for durations,
+	// higher / lower for the rest.
 	// Too long (over 9.5 h) or too quick falling asleep (under 5 min) is not "good".
 	polarity := s.polarity
 	switch {
@@ -530,7 +532,7 @@ func compareSleep(s sleepStat, week, usual *float64, g glyphSet) (sleepVerdict, 
 	case s.name == "Latency" && *week < 5*60:
 		polarity = 0
 	}
-	word, verdict := "changed", "changed"
+	word, verdict := map[bool]string{true: "higher", false: "lower"}[delta > 0], "changed"
 	switch {
 	case s.kind == kindClock:
 		word = map[bool]string{true: "later", false: "earlier"}[delta > 0]
@@ -538,12 +540,14 @@ func compareSleep(s sleepStat, week, usual *float64, g glyphSet) (sleepVerdict, 
 		word, verdict = "better", "better"
 	case polarity != 0:
 		word, verdict = "worse", "worse"
+	case s.kind == kindDuration:
+		word = map[bool]string{true: "longer", false: "shorter"}[delta > 0]
 	}
 	return sleepVerdict{text: fmt.Sprintf("%s %+.0f%s %s", arrow, shown, unit, word), verdict: verdict}, true
 }
 
-// colourVerdict colours a verdict: green better, red worse, cyan changed or
-// neutral, plain when typical. The words carry the meaning without colour.
+// verdict colours a verdict: green better, red worse, plain when changed (no
+// good direction), dim when typical. The words carry the meaning without colour.
 func (st style) verdict(v, s string) string {
 	switch v {
 	case "better":
@@ -551,7 +555,7 @@ func (st style) verdict(v, s string) string {
 	case "worse":
 		return st.red(s)
 	case "changed", "later", "earlier":
-		return st.cyan(s)
+		return s
 	}
 	return st.dim(s)
 }
@@ -639,7 +643,7 @@ func sleepStatTable(r *stats.SleepReport, ti termInfo, width int, opts sleepOpts
 		lines = append(lines, wrapDim("efficiency capped at 100%: sleep and in-bed sources differ", width, st)...)
 	}
 	if opts.Full && haveUsual {
-		lines = append(lines, sleepIndent+colorLegend(st, width-2))
+		lines = append(lines, sleepIndent+markerLegend(st, width-2))
 	}
 	return lines
 }

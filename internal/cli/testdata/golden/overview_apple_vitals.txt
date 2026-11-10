@@ -9,10 +9,10 @@
    Avg heart rate       76 bpm          ▲ +2%             ···░░░●···
  ! Resting HR           60 bpm          ▲ +6% worse       ···░░░░●··
    HRV                  46 ms           ▼ -4%             ···░●░░···
- ~ Respiratory rate     15.6/min        ▲ +9% changed     ···░░░░●··
+ ~ Respiratory rate     15.6/min        ▲ +9% higher      ···░░░░●··
    Wrist temperature    36.0 °C         – 0%              ···░░●░···
    Blood oxygen         97%             – 0%              ···░░●░···
    VO2 max              41.9 mL/kg/min  stale                         6 d
  + Walking heart rate   90 bpm          ▼ -4% better      ···●░░░···
    Heart rate recovery  26 bpm          need 7d (have 6)
- green better / red worse / cyan changed (no good direction)
+ + better  ! worse  ~ higher/lower, no good direction
