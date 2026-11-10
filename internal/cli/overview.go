@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/nmutto/healthcli/internal/db"
+	"github.com/nmutto/healthcli/internal/metrics"
 	"github.com/nmutto/healthcli/internal/stats"
 )
 
@@ -29,6 +30,9 @@ func newOverviewCmd(opts *options) *cobra.Command {
 		Long: `Show the latest value of each metric next to your 28-day usual, a band that
 shows where it sits, a 28-day trend line and how old the reading is; then last
 night's sleep, recent workouts, a calendar heatmap and a data-health summary.
+--category narrows the text and the --json alike, the same way as in "healthcli
+today": only the chosen categories' metrics, and the sleep and workouts parts
+only when named.
 
 Each metric is anchored on its own newest day, so a metric that was not
 recorded today still shows its last reading, with its age. A metric is "stale"
@@ -182,7 +186,7 @@ func runOverview(cmd *cobra.Command, opts *options, noColor, ascii bool, view ov
 	if opts.jsonOutput {
 		enc := json.NewEncoder(out)
 		enc.SetIndent("", "  ")
-		return enc.Encode(report)
+		return enc.Encode(restrictOverviewJSON(report, view))
 	}
 	name, err := dbDisplayName(opts)
 	if err != nil {
@@ -190,6 +194,50 @@ func runOverview(cmd *cobra.Command, opts *options, noColor, ascii bool, view ov
 	}
 	_, err = fmt.Fprint(out, renderOverview(report, ti, withDB(view, name, now)))
 	return err
+}
+
+// overviewJSON is the report as --json prints it. Sleep and workouts are
+// pointers here so that --category can leave them out (the fields of the
+// embedded report with the same JSON names are hidden by these).
+type overviewJSON struct {
+	*stats.Overview
+	Sleep    *stats.OverviewSleep   `json:"sleep,omitempty"`
+	Workouts *stats.WorkoutsSummary `json:"workouts,omitempty"`
+}
+
+// restrictOverviewJSON keeps only what --category names, like "today --json":
+// the metric rows, the band counts and the not-tracked list of those
+// categories, and the sleep and workouts sections only when asked for. The
+// activity heatmap stays only when --heatmap asked for heatmaps.
+func restrictOverviewJSON(o *stats.Overview, v overviewView) any {
+	if len(v.categories) == 0 {
+		return o // without --category the report is printed as it is
+	}
+	out := overviewJSON{Sleep: &o.Sleep, Workouts: &o.Workouts}
+	r := *o
+	r.Metrics, r.NotTracked = []stats.MetricRow{}, []string{}
+	for _, row := range o.Metrics {
+		if v.wants(row.Category) {
+			r.Metrics = append(r.Metrics, row)
+		}
+	}
+	r.Categories = stats.CategorySummaries(r.Metrics)
+	for _, name := range o.NotTracked {
+		if m, err := metrics.Lookup(name); err == nil && v.wants(string(m.Category)) {
+			r.NotTracked = append(r.NotTracked, name)
+		}
+	}
+	if len(v.heatmaps) == 0 {
+		r.Heatmap = nil
+	}
+	if !v.wants(sleepName) {
+		out.Sleep, r.SleepSummary = nil, nil
+	}
+	if !v.wants(workoutsName) {
+		out.Workouts, r.WorkoutsReport = nil, nil
+	}
+	out.Overview = &r
+	return out
 }
 
 // withDB adds the database name and the clock to the view the flags built.
