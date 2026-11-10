@@ -2,191 +2,66 @@ package cli
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/nmutto/healthcli/internal/db"
-	"github.com/nmutto/healthcli/internal/importer"
 	"github.com/nmutto/healthcli/internal/metrics"
 	"github.com/nmutto/healthcli/internal/stats"
 )
 
-// overviewNow is the fixed "now" of every overview test.
-var overviewNow = time.Date(2026, 11, 8, 17, 0, 0, 0, time.UTC)
-
-// seedOverview builds a synthetic database for one scenario:
-//
-//	full       every state at once: ok, stale (weight), gaps (HRV), sleep, workouts, an import
-//	stale      the same data, but nothing newer than 12 days ago
-//	sleep-only one night of sleep and nothing else
-//	empty      nothing
-//	steps-only one device that records only steps
-//	import:X   the synthetic export testdata/X, dates moved to be recent
-func seedOverview(t *testing.T, scenario string) string {
-	t.Helper()
+// A baseline that overflowed is "no usable baseline", not "need 7d (have 28)".
+func TestOverflowedBaselineIsNotNeedMoreDays(t *testing.T) {
+	fixClock(t, time.Date(2026, 11, 9, 9, 0, 0, 0, time.UTC))
 	path := tempDB(t)
 	conn, err := db.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer conn.Close()
-	if scenario == "empty" {
-		return path
-	}
-	if strings.HasPrefix(scenario, "import:") {
-		conn.Close()
-		return seedFromFixture(t, path, strings.TrimPrefix(scenario, "import:"))
-	}
-
-	exec := func(q string, args ...any) {
-		t.Helper()
-		if _, err := conn.Exec(q, args...); err != nil {
+	for i := 1; i <= 28; i++ { // 28 huge days: their sum overflows
+		ts := day(t, "2026-11-08") - int64(i)*86400 + 12*3600
+		if _, err := conn.Exec(`INSERT INTO samples (metric, start_ts, end_ts, value, unit, tz_offset, source)
+			VALUES ('step_count', ?, ?, 1.7e308, 'count', 0, 'Test Phone')`, ts, ts+60); err != nil {
 			t.Fatal(err)
 		}
 	}
-	sample := func(metric string, d time.Time, hour int, value float64, source string) {
-		ts := d.Add(time.Duration(hour) * time.Hour).Unix()
-		exec(`INSERT INTO samples (metric, start_ts, end_ts, value, unit, tz_offset, source)
-			VALUES (?, ?, ?, ?, '', 0, ?)`, metric, ts, ts+60, value, source)
-	}
-	stage := func(stage string, startTS, endTS int64) {
-		exec(`INSERT INTO sleep_stages (stage, start_ts, end_ts, tz_offset, source)
-			VALUES (?, ?, ?, 0, 'Test Apple Watch')`, stage, startTS, endTS)
-	}
-
-	// shift moves everything back, so "stale" is the same data, just older.
-	shift := 0
-	if scenario == "stale" {
-		shift = 12
-	}
-	midnight := time.Date(2026, 11, 8, 0, 0, 0, 0, time.UTC)
-	dayAt := func(back int) time.Time { return midnight.AddDate(0, 0, -(back + shift)) }
-
-	if scenario == "steps-long" { // 12 full weeks of steps, a few zero days
-		for back := 0; back < 90; back++ {
-			steps := 4000 + float64((back*37)%11)*700
-			if back%13 == 5 {
-				steps = 0
-			}
-			sample("step_count", dayAt(back), 12, steps, "Test Phone")
-		}
-		return path
-	}
-	if scenario == "steps-only" {
-		for back := 0; back < 20; back++ {
-			sample("step_count", dayAt(back), 12, 5000+float64((back*7)%9)*600, "Test Phone")
-		}
-		return path
-	}
-
-	if scenario != "sleep-only" {
-		for back := 0; back < 40; back++ {
-			d := dayAt(back)
-			i := 40 - back // grows with time so trends are visible
-			steps := 6000 + float64((i*7)%9)*450
-			energy := 420 + float64((i*5)%8)*40
-			if back == 0 {
-				steps, energy = 11800, 640 // today: well above usual
-			}
-			sample("step_count", d, 12, steps, "Test Apple Watch")
-			sample("step_count", d, 13, 99999, "Test iPhone") // loses to the Watch
-			sample("active_energy", d, 12, energy, "Test Apple Watch")
-			sample("heart_rate", d, 9, 66+float64((i*3)%7), "Test Apple Watch")
-			if back >= 1 { // resting HR is written a day late
-				sample("resting_heart_rate", d, 7, 58+float64((i*2)%5), "Test Apple Watch")
-			}
-			if back >= 2 && back%4 != 3 { // HRV: starts two days ago, with holes
-				sample("hrv_sdnn", d, 3, 52+float64((i*5)%11), "Test Apple Watch")
-			}
-		}
-		sample("resting_heart_rate", dayAt(1), 8, 70, "Test Apple Watch") // yesterday is a high one
-		// Weight: a few weigh-ins, the newest one nine days ago.
-		for _, back := range []int{9, 12, 16, 21} {
-			sample("body_mass", dayAt(back), 8, 72.4+float64(back%3)*0.1, "manual")
-		}
-	}
-
-	// One night ending today: core, REM, deep and awake, plus iPhone in-bed.
-	night := dayAt(1).Unix() // yesterday 00:00 UTC
-	stage("core", night+23*3600, night+27*3600+3000)
-	stage("rem", night+27*3600+3000, night+28*3600+1800)
-	stage("deep", night+28*3600+1800, night+30*3600)
-	stage("awake", night+30*3600, night+30*3600+900)
-	exec(`INSERT INTO sleep_stages (stage, start_ts, end_ts, tz_offset, source)
-		VALUES ('in_bed', ?, ?, 0, 'Test iPhone')`, night+22*3600+1800, night+31*3600)
-
-	if scenario != "sleep-only" {
-		for _, w := range []struct {
-			back     int
-			activity string
-			km       float64
-			mins     int
-			kcal     float64
-		}{{3, "running", 5200, 31, 410}, {6, "cycling", 18000, 55, 520}, {9, "running", 8000, 52, 630}} {
-			ts := dayAt(w.back).Unix() + 18*3600
-			exec(`INSERT INTO workouts (activity, start_ts, end_ts, duration_s, energy_kcal, distance_m, tz_offset, source)
-				VALUES (?, ?, ?, ?, ?, ?, 0, 'Test Apple Watch')`, w.activity, ts, ts+int64(w.mins*60), w.mins*60, w.kcal, w.km)
-		}
-		exec(`INSERT INTO meta (key, value) VALUES ('last_import_summary', ?)`,
-			fmt.Sprintf(`{"at": %d, "read": 1275, "inserted": 1230, "duplicates": 40, "skipped": {"unknown_type": 3, "bad_date": 1, "bad_value": 1}}`,
-				overviewNow.AddDate(0, 0, -3).Unix()))
-	}
-	return path
-}
-
-// seedFromFixture imports a synthetic export from testdata and moves every
-// timestamp forward by whole days so the newest data is on overviewNow's day
-// (the fixtures are dated 2024). Same trick as the importer's other tests.
-func seedFromFixture(t *testing.T, path, fixture string) string {
-	t.Helper()
-	conn, err := db.Open(path)
-	if err != nil {
+	ts := day(t, "2026-11-08") + 12*3600
+	if _, err := conn.Exec(`INSERT INTO samples (metric, start_ts, end_ts, value, unit, tz_offset, source)
+		VALUES ('step_count', ?, ?, 5000, 'count', 0, 'Test Phone')`, ts, ts+60); err != nil {
 		t.Fatal(err)
 	}
-	defer conn.Close()
-	if _, err := importer.Import(conn, "../../testdata/"+fixture+"/export.xml", importer.Options{}); err != nil {
-		t.Fatal(err)
-	}
-	var newest int64
-	if err := conn.QueryRow(`SELECT max(end_ts + tz_offset) FROM samples`).Scan(&newest); err != nil {
-		t.Fatal(err)
-	}
-	const day = 86400
-	shift := (overviewNow.Unix()/day - newest/day) * day
-	for _, q := range []string{
-		`UPDATE samples SET start_ts = start_ts + ?1, end_ts = end_ts + ?1`,
-		`UPDATE sleep_stages SET start_ts = start_ts + ?1, end_ts = end_ts + ?1`,
-		`UPDATE workouts SET start_ts = start_ts + ?1, end_ts = end_ts + ?1`,
-	} {
-		if _, err := conn.Exec(q, shift); err != nil {
+	conn.Close()
+
+	for _, cmd := range [][]string{{"overview"}, {"today", "--date", "2026-11-08"}} {
+		out, _, err := run(t, append([]string{"--db", path}, cmd...)...)
+		if err != nil {
 			t.Fatal(err)
 		}
+		if strings.Contains(out, "have 28") || !strings.Contains(out, "no usable baseline") {
+			t.Errorf("%v:\n%s", cmd, out)
+		}
 	}
-	// The import time is "now" for real; pin it to a day before overviewNow.
-	if _, err := conn.Exec(`UPDATE meta SET value = json_set(value, '$.at', ?) WHERE key = 'last_import_summary'`,
-		overviewNow.AddDate(0, 0, -1).Unix()); err != nil {
-		t.Fatal(err)
-	}
-	return path
 }
 
-func overviewReport(t *testing.T, scenario string) *stats.Overview {
-	t.Helper()
-	conn, err := db.Open(seedOverview(t, scenario))
-	if err != nil {
-		t.Fatal(err)
+// With a flat baseline every z is 0; the headline then names the metric that
+// moved the most, not the first one that differs.
+func TestHeadlineMoverTieGoesToTheBiggerChange(t *testing.T) {
+	above, zero := stats.Above, 0.0
+	row := func(label, unit string, value, mean, pct float64) stats.MetricRow {
+		return stats.MetricRow{Label: label, Unit: unit, State: stats.StateOK, Verdict: stats.VerdictChanged,
+			Comparison: &above, Z: &zero, Value: &value, Mean: &mean, DeltaPct: &pct}
 	}
-	defer conn.Close()
-	o, err := stats.BuildOverview(t.Context(), conn, overviewNow, stats.DefaultOverviewOptions())
-	if err != nil {
-		t.Fatal(err)
+	o := &stats.Overview{Metrics: []stats.MetricRow{
+		row("Small mover", "kg", 70.2, 70, 0.3),
+		row("Big mover", "kg", 90, 70, 28.6),
+		row("Percent mover", "percent", 98, 97, 1), // 1 point
+	}}
+	got := headline(o, overviewView{}, asciiGlyphs, 100)
+	if !strings.Contains(got, "Big mover") {
+		t.Errorf("headline = %q, want Big mover", got)
 	}
-	return o
 }
-
-var testView = overviewView{dbName: "demo.db", now: overviewNow}
 
 func TestOverviewGoldens(t *testing.T) {
 	cases := []struct {
@@ -450,30 +325,6 @@ func TestOverviewStepsOnlyHasNoEmptyRows(t *testing.T) {
 	}
 }
 
-// Display units and per-metric decimals (stored units are untouched).
-func TestWithUnit(t *testing.T) {
-	cases := []struct {
-		v            float64
-		metric, unit string
-		unicode      bool
-		want         string
-	}{
-		{36.44, "apple_sleeping_wrist_temperature", "degC", true, "36.4 °C"},
-		{36.44, "apple_sleeping_wrist_temperature", "degC", false, "36.4 C"},
-		{97, "oxygen_saturation", "percent", true, "97%"},
-		{16.24, "respiratory_rate", "breaths/min", true, "16.2/min"},
-		{24.06, "body_mass_index", "kg/m2", true, "24.1"},
-		{79.94, "body_mass", "kg", true, "79.9 kg"},
-		{9412, "step_count", "count", true, "9,412 steps"},
-		{42, "vo2_max", "mL/kg/min", true, "42.0 mL/kg/min"},
-	}
-	for _, c := range cases {
-		if got := withUnit(c.v, c.metric, c.unit, c.unicode); got != c.want {
-			t.Errorf("withUnit(%v, %s) = %q, want %q", c.v, c.metric, got, c.want)
-		}
-	}
-}
-
 // Whatever the data, no row may be wider than the terminal: long labels,
 // freak numbers and a 1500-day-old reading are all cut or capped.
 func TestOverviewRowsNeverOverflow(t *testing.T) {
@@ -506,33 +357,6 @@ func TestOverviewRowsNeverOverflow(t *testing.T) {
 	}
 	if got := renderOverview(o, termInfo{width: 80}, testView); strings.Contains(got, "Inf") || strings.Contains(got, "NaN") {
 		t.Errorf("non-finite text leaked:\n%s", got)
-	}
-}
-
-// Month names above the grid: a later month must not vanish when it sits one
-// column after the first (partial) week's label.
-func TestHeatMonthLineKeepsSeptember(t *testing.T) {
-	var weeks [][]stats.HeatDay
-	start, _ := time.Parse(stats.DayLayout, "2026-08-25") // a Monday
-	for w := 0; w < 6; w++ {
-		var week []stats.HeatDay
-		for d := 0; d < 7; d++ {
-			week = append(week, stats.HeatDay{Day: start.AddDate(0, 0, w*7+d).Format(stats.DayLayout)})
-		}
-		weeks = append(weeks, week)
-	}
-	line := heatMonthLine(weeks)
-	if !strings.Contains(line, "Sep") || !strings.Contains(line, "Oct") {
-		t.Errorf("month line %q must show Sep and Oct", line)
-	}
-}
-
-// All-zero data: the lowest shade and a one-sentence legend, no "<=0 <=0 <=0".
-func TestHeatmapFlatLegend(t *testing.T) {
-	h := &stats.Heatmap{Metric: "step_count", Unit: "count", Today: "2026-11-08", Thresholds: []float64{0, 0, 0, 0}, Flat: true, DaysWithData: 3}
-	got := strings.Join(heatLegend(h, termInfo{width: 80}, style{}), "\n")
-	if !strings.Contains(got, "every day: 0") || strings.Contains(got, "<=0") {
-		t.Errorf("flat legend:\n%s", got)
 	}
 }
 
@@ -919,6 +743,145 @@ func TestOverviewAndTodayHelpNameTheNewFields(t *testing.T) {
 			if !strings.Contains(flat, want) {
 				t.Errorf("%s --help is missing %q", cmd, want)
 			}
+		}
+	}
+}
+
+func TestNetOverviewCommand(t *testing.T) {
+	ov := func(extra ...string) []string { return append([]string{"overview"}, extra...) }
+	apple := seedScenario(seedOverview, "import:small")
+	n := overviewNow
+	cases := []netCase{
+		{name: "overview_apple_w80", seed: apple, now: n, cols: "80", args: ov()},
+		{name: "overview_apple_w50", seed: apple, now: n, cols: "50", args: ov()},
+		{name: "overview_apple_w60", seed: apple, now: n, cols: "60", args: ov()},
+		{name: "overview_apple_w100", seed: apple, now: n, cols: "100", args: ov()},
+		{name: "overview_apple_colour", seed: apple, now: n, cols: "80", force: true, args: ov()},
+		{name: "overview_apple_nocolor_flag", seed: apple, now: n, cols: "80", force: true, args: ov("--no-color")},
+		{name: "overview_apple_NO_COLOR", seed: apple, now: n, cols: "80", force: true, env: map[string]string{"NO_COLOR": "1"}, args: ov()},
+		{name: "overview_apple_ascii_flag", seed: apple, now: n, cols: "80", args: ov("--ascii")},
+		{name: "overview_apple_compact", seed: apple, now: n, cols: "80", args: ov("--compact")},
+		{name: "overview_apple_full_w50", seed: apple, now: n, cols: "50", args: ov("--full")},
+		{name: "overview_apple_full_w100", seed: apple, now: n, cols: "100", args: ov("--full")},
+		{name: "overview_apple_no_heatmaps", seed: apple, now: n, cols: "80", args: ov("--weeks", "0")},
+		{name: "overview_apple_weeks4", seed: apple, now: n, cols: "60", args: ov("--weeks", "4")},
+		{name: "overview_apple_heatmap_sleep", seed: apple, now: n, cols: "80", args: ov("--heatmap", "sleep")},
+		{name: "overview_apple_heatmaps_three", seed: apple, now: n, cols: "80", args: ov("--heatmap", "workouts,sleep,step_count", "--category", "vitals")},
+		{name: "overview_apple_category_sleep", seed: apple, now: n, cols: "80", args: ov("--category", "sleep")},
+		{name: "overview_apple_category_workouts", seed: apple, now: n, cols: "80", args: ov("--category", "workouts")},
+		{name: "overview_apple_category_body_mobility", seed: apple, now: n, cols: "80", args: ov("--category", "body,mobility")},
+		{name: "overview_apple_json", seed: apple, now: n, args: ov("--json")},
+		{name: "overview_apple_category_json", seed: apple, now: n, args: ov("--json", "--category", "sleep,workouts")},
+		{name: "overview_sparse_w80", seed: seedScenario(seedOverview, "import:sparse"), now: n, cols: "80", args: ov()},
+		{name: "overview_sparse_json", seed: seedScenario(seedOverview, "import:sparse"), now: n, args: ov("--json")},
+		{name: "overview_full_scenario_w80", seed: seedScenario(seedOverview, "full"), now: n, cols: "80", args: ov()},
+		{name: "overview_stale_w80", seed: seedScenario(seedOverview, "stale"), now: n, cols: "80", args: ov()},
+		{name: "overview_stale_json", seed: seedScenario(seedOverview, "stale"), now: n, args: ov("--json")},
+		{name: "overview_steps_only_w60", seed: seedScenario(seedOverview, "steps-only"), now: n, cols: "60", args: ov()},
+		{name: "overview_sleep_only_json", seed: seedScenario(seedOverview, "sleep-only"), now: n, args: ov("--json")},
+		{name: "overview_empty_w80", seed: emptyDB, now: n, cols: "80", args: ov()},
+		{name: "overview_empty_json", seed: emptyDB, now: n, args: ov("--json")},
+		{name: "overview_err_category", seed: emptyDB, now: n, args: ov("--category", "bogus")},
+		{name: "overview_err_weeks", seed: emptyDB, now: n, args: ov("--weeks", "99")},
+		{name: "overview_err_heatmap", seed: apple, now: n, args: ov("--heatmap", "bogus")},
+		{name: "overview_err_arg", seed: emptyDB, now: n, args: ov("today")},
+		{name: "overview_err_no_db", now: n, args: []string{"--db", "/nonexistent-dir/none.db", "overview"}},
+	}
+	runNetCases(t, cases)
+}
+
+// (l) --category scopes the headline, the legend and the empty headers.
+func TestCategoryScopesHeadlineAndLegend(t *testing.T) {
+	all := overviewText(t, "import:small", uni80, overviewView{})
+	vitals := overviewText(t, "import:small", uni80, overviewView{categories: []string{"vitals"}})
+	if !strings.Contains(all, "3 better, 1 worse") || strings.Contains(vitals, "3 better, 1 worse") {
+		t.Errorf("headline must count only the shown categories:\n%s", vitals)
+	}
+	if strings.Contains(vitals, "slept") || strings.Contains(vitals, "Walking asymmetry") {
+		t.Errorf("sleep and other categories leaked into --category vitals:\n%s", vitals)
+	}
+	for _, cat := range []string{"sleep", "workouts"} {
+		out := overviewText(t, "import:small", uni80, overviewView{categories: []string{cat}})
+		// (The sleep table has a legend of its own; the metric one must be gone.)
+		for _, bad := range []string{"METRIC", "better,", "typical vs", "LATEST"} {
+			if strings.Contains(out, bad) {
+				t.Errorf("--category %s must print no metric header, legend or metric headline (%q):\n%s", cat, bad, out)
+			}
+		}
+	}
+	// A category with nothing in it prints no header, legend or headline.
+	none := overviewText(t, "steps-only", uni80, overviewView{categories: []string{"body"}})
+	for _, bad := range []string{"METRIC", "green better", "typical", "better"} {
+		if strings.Contains(none, bad) {
+			t.Errorf("empty --category body printed %q:\n%s", bad, none)
+		}
+	}
+}
+
+// (o) one band style for every section; the legend words are the same
+// everywhere.
+func TestOneBandStyle(t *testing.T) {
+	for _, c := range []struct {
+		ti   termInfo
+		band string
+	}{{uni80, "━━ "}, {ascii80, "== "}} {
+		got := overviewText(t, "import:small", c.ti, overviewView{full: true})
+		for _, title := range []string{"SLEEP", "WORKOUTS", "CALENDAR", "DATA", "VITALS"} {
+			if !strings.Contains(got, " "+c.band+title+" ") {
+				t.Errorf("%s section should be a band (%q%s):\n%s", title, c.band, title, got)
+			}
+		}
+		if strings.Count(got, "~ higher/lower, no good direction") != 2 {
+			t.Errorf("both legends should say '~ higher/lower, no good direction':\n%s", got)
+		}
+		if strings.Contains(got, "cyan") || strings.Contains(got, "cyan neutral") || strings.Contains(got, "per night") {
+			t.Errorf("old wording left in:\n%s", got)
+		}
+	}
+}
+
+// (p) --compact keeps a one-character flag in the margin.
+func TestCompactKeepsOneCharacterFlag(t *testing.T) {
+	got := overviewText(t, "import:small", uni80, overviewView{compact: true})
+	if !strings.Contains(got, "\n! Resting HR") || !strings.Contains(got, "\n+ Walking heart rate") || !strings.Contains(got, "\n~ Respiratory rate") {
+		t.Errorf("compact rows need the ! + ~ flag:\n%s", got)
+	}
+}
+
+// Summary lines drop whole items and say "+N more"; they never end mid-word.
+func TestSummaryLinesDropWholeItems(t *testing.T) {
+	counts := map[string]int64{stats.ClassWatch: 64, stats.ClassIPhone: 22, stats.ClassManual: 1, stats.ClassOther: 13}
+	got := listFit("sources: ", sourceParts(counts), 0, 48)
+	if got != "sources: Watch 64%, iPhone 22%, +2 more" {
+		t.Errorf("sources: %q", got)
+	}
+	gaps := []stats.Gap{{Label: "Weight", Missing: 10, Span: 16}, {Label: "Body fat", Missing: 8, Span: 13}, {Label: "BMI", Missing: 8, Span: 13}, {Label: "HRV", Missing: 1, Span: 28}}
+	if got := gapsLine(gaps, 48); got != "days missing: Weight 10 of 16, +3 more" {
+		t.Errorf("gaps narrow: %q", got)
+	}
+	if got := gapsLine(gaps, 100); got != "days missing: Weight 10 of 16, Body fat 8 of 13, BMI 8 of 13, +1 more" {
+		t.Errorf("gaps wide: %q", got)
+	}
+}
+
+func TestNotEnoughHistoryHeadlineIsNotCut(t *testing.T) {
+	t.Setenv("COLUMNS", "50")
+	fixClock(t, time.Date(2026, 11, 9, 9, 0, 0, 0, time.UTC))
+	// One weigh-in: a fresh value with too little history for a baseline.
+	path := tempDB(t)
+	if _, _, err := run(t, "--db", path, "log", "weight", "72", "--at", "2026-11-08 08:00"); err != nil {
+		t.Fatal(err)
+	}
+	out, _, err := run(t, "--db", path, "overview")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out, "Not enough history") {
+		t.Fatalf("no headline in:\n%s", out)
+	}
+	for _, line := range strings.Split(out, "\n") {
+		if strings.Contains(line, "Not enough history") && (strings.HasSuffix(line, "...") || len([]rune(line)) > 50) {
+			t.Errorf("headline line: %q", line)
 		}
 	}
 }

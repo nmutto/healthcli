@@ -3,17 +3,10 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 )
-
-// tempDB returns a --db flag pointing at a fresh database file.
-func tempDB(t *testing.T) string {
-	t.Helper()
-	return filepath.Join(t.TempDir(), "test.db")
-}
 
 func TestLogWeightPounds(t *testing.T) {
 	db := tempDB(t)
@@ -92,40 +85,6 @@ func TestLogErrors(t *testing.T) {
 	}
 }
 
-func TestQueryTable(t *testing.T) {
-	db := tempDB(t)
-	run(t, "--db", db, "log", "weight", "70", "--at", "2025-03-01T08:30:00Z")
-	out, _, err := run(t, "--db", db, "query", "SELECT metric, value, unit FROM samples")
-	if err != nil {
-		t.Fatal(err)
-	}
-	lines := strings.Split(strings.TrimSpace(out), "\n")
-	if len(lines) != 2 || !strings.HasPrefix(lines[0], "metric") || !strings.Contains(lines[1], "body_mass") {
-		t.Errorf("unexpected table:\n%s", out)
-	}
-}
-
-func TestQueryEmptyJSONIsArray(t *testing.T) {
-	out, _, err := run(t, "--db", emptyDB(t), "query", "SELECT * FROM samples", "--json")
-	if err != nil || strings.TrimSpace(out) != "[]" {
-		t.Errorf("want [], got %q, %v", out, err)
-	}
-}
-
-func TestQueryRejectsWrites(t *testing.T) {
-	db := tempDB(t)
-	for _, q := range []string{"DELETE FROM samples", "  drop table samples", "INSERT INTO meta VALUES ('a','b')"} {
-		if _, _, err := run(t, "--db", db, "query", q); err == nil {
-			t.Errorf("%q should be rejected", q)
-		}
-	}
-	// A write hidden inside a WITH statement must be stopped by query_only.
-	q := "WITH x AS (SELECT 1) INSERT INTO meta VALUES ('a','b')"
-	if _, _, err := run(t, "--db", db, "query", q); err == nil {
-		t.Errorf("%q should fail", q)
-	}
-}
-
 func TestLogRoundsConvertedValue(t *testing.T) {
 	db := tempDB(t)
 	args := []string{"--db", db, "log", "weight", "160", "--unit", "lb", "--at", "2025-03-01T08:30:00Z", "--json"}
@@ -137,23 +96,6 @@ func TestLogRoundsConvertedValue(t *testing.T) {
 	out, _, err = run(t, args...)
 	if err != nil || !strings.Contains(out, `"inserted":false`) {
 		t.Errorf("want inserted:false, got %q, %v", out, err)
-	}
-}
-
-func TestQueryJSONKeepsColumnOrder(t *testing.T) {
-	db := tempDB(t)
-	run(t, "--db", db, "log", "hr", "60", "--at", "2025-03-01T08:30:00Z")
-	out, _, err := run(t, "--db", db, "query", "SELECT value, metric, unit AS a FROM samples", "--json")
-	if err != nil {
-		t.Fatal(err)
-	}
-	want := "[\n  {\"value\": 60, \"metric\": \"heart_rate\", \"a\": \"bpm\"}\n]\n"
-	if out != want {
-		t.Errorf("got %q, want %q", out, want)
-	}
-	var rows []map[string]any
-	if err := json.Unmarshal([]byte(out), &rows); err != nil {
-		t.Errorf("output is not valid JSON: %v", err)
 	}
 }
 
@@ -303,5 +245,87 @@ func TestLogHelpListsAliases(t *testing.T) {
 		if !strings.Contains(out, a+" (") {
 			t.Errorf("log --help does not list the alias %q", a)
 		}
+	}
+}
+
+// Logging a different value for a reading that already exists must not claim
+// success: the old value stays, so the user has to be told.
+func TestLogDifferentValueSameTimeIsAnError(t *testing.T) {
+	db := tempDB(t)
+	if _, _, err := run(t, "--db", db, "log", "weight", "70", "--at", "2025-04-01 08:00"); err != nil {
+		t.Fatal(err)
+	}
+	_, _, err := run(t, "--db", db, "log", "weight", "71", "--at", "2025-04-01 08:00")
+	if err == nil || !strings.Contains(err.Error(), "already") || !strings.Contains(err.Error(), "70") {
+		t.Fatalf("want an error naming the stored value 70, got %v", err)
+	}
+	// the identical value is still a harmless repeat
+	if out, _, err := run(t, "--db", db, "log", "weight", "70", "--at", "2025-04-01 08:00"); err != nil || !strings.Contains(out, "Already logged") {
+		t.Fatalf("repeat: %q, %v", out, err)
+	}
+}
+
+func TestLogRejectsImpossibleValues(t *testing.T) {
+	for _, args := range [][]string{
+		{"weight", "0"}, {"hr", "0"}, {"hrv_sdnn", "0"}, {"resting_heart_rate", "0"},
+		{"steps", "--", "-5"}, {"weight", "--", "-5"},
+	} {
+		db := emptyDB(t)
+		if _, _, err := run(t, append([]string{"--db", db, "log"}, args...)...); err == nil {
+			t.Errorf("log %v should fail", args)
+		}
+		out, _, _ := run(t, "--db", db, "query", "SELECT count(*) AS n FROM samples", "--json")
+		if !strings.Contains(out, `"n": 0`) {
+			t.Errorf("log %v left a row: %s", args, out)
+		}
+	}
+	// zero steps is a legitimate reading
+	if _, _, err := run(t, "--db", tempDB(t), "log", "steps", "0"); err != nil {
+		t.Errorf("steps 0 should be accepted: %v", err)
+	}
+}
+
+const logAt = "2025-03-01T08:30:00Z"
+
+func TestNetLog(t *testing.T) {
+	// Every case ends with a query so the stored row is part of the golden.
+	rows := []string{"query", "SELECT metric, round(value, 3) AS value, unit, source, start_ts, end_ts, tz_offset FROM samples ORDER BY metric, start_ts"}
+	lg := func(args ...string) []string { return append([]string{"log"}, args...) }
+	for _, c := range []struct {
+		name string
+		cmds [][]string
+	}{
+		{"log_weight_kg", [][]string{lg("weight", "72.5", "--at", logAt), rows}},
+		{"log_weight_lb", [][]string{lg("weight", "160", "--unit", "lb", "--at", logAt), rows}},
+		{"log_weight_json", [][]string{lg("weight", "160", "--unit", "lb", "--at", logAt, "--json"), rows}},
+		{"log_heart_rate_alias", [][]string{lg("hr", "61", "--at", "2025-03-01T07:45:00+01:00"), rows}},
+		{"log_idempotent", [][]string{lg("hr", "61", "--at", logAt), lg("hr", "61", "--at", logAt), lg("hr", "61", "--at", logAt, "--json"), rows}},
+		{"log_every_alias", [][]string{
+			lg("steps", "8000", "--at", logAt), lg("rhr", "52", "--at", logAt), lg("hrv", "48.5", "--at", logAt),
+			lg("rr", "15.2", "--at", logAt), lg("spo2", "97", "--at", logAt), lg("temp", "36.4", "--at", logAt),
+			lg("vo2", "42", "--at", logAt), lg("bmi", "23.1", "--at", logAt), rows}},
+		{"log_percent_metric", [][]string{lg("body_fat_percentage", "18.5", "--at", logAt), lg("walking_double_support", "28", "--at", logAt), rows}},
+		{"log_rejections", [][]string{
+			lg("bogus", "1", "--at", logAt),
+			lg("weight", "abc", "--at", logAt),
+			lg("weight", "-5", "--at", logAt),
+			lg("weight", "0", "--at", logAt),
+			lg("weight", "1e9", "--at", logAt),
+			lg("weight", "NaN", "--at", logAt),
+			lg("weight", "72", "--unit", "stone", "--at", logAt),
+			lg("hr", "61", "--unit", "kg", "--at", logAt),
+			lg("hr", "500", "--at", logAt),
+			lg("spo2", "40", "--at", logAt),
+			lg("spo2", "101", "--at", logAt),
+			lg("weight", "72", "--at", "next tuesday"),
+			lg("weight", "72", "--at", "2999-01-01T00:00:00Z"),
+			lg("weight"),
+			lg(),
+			lg("weight", "72", "73"),
+			rows}},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			checkViewGolden(t, netGoldenFile(c.name), netSequence(t, tempDB(t), c.cmds...))
+		})
 	}
 }
