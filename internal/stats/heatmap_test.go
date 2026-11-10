@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/nmutto/healthcli/internal/metrics"
 )
 
 func TestQuintileThresholds(t *testing.T) {
@@ -132,6 +134,26 @@ func TestSleepHeatmapsAreBlue(t *testing.T) {
 	}
 }
 
+// oldMetricHues is a copy of the map the registry replaced. The test below
+// proves that HueFor gives the same answer for every registry metric.
+var oldMetricHues = map[string]string{
+	"heart_rate": HueRed, "resting_heart_rate": HueRed, "walking_heart_rate_average": HueRed,
+	"heart_rate_recovery_one_minute": HueRed, "hrv_sdnn": HueRed, "vo2_max": HueRed,
+	"blood_pressure_systolic": HueRed, "blood_pressure_diastolic": HueRed,
+	"respiratory_rate": HueCyan, "oxygen_saturation": HueCyan,
+	"apple_sleeping_wrist_temperature": HuePurple, "body_fat_percentage": HuePurple,
+	"body_mass_index": HuePurple, "lean_body_mass": HuePurple, "height": HuePurple,
+	"body_mass": HueViolet,
+}
+
+func TestHueForMatchesOldMap(t *testing.T) {
+	for _, name := range metrics.Names() {
+		if got := HueFor(name); got != oldMetricHues[name] {
+			t.Errorf("%s: HueFor = %q, old map %q", name, got, oldMetricHues[name])
+		}
+	}
+}
+
 // The metrics with their own colour keep it; everything else stays orange.
 func TestMetricHues(t *testing.T) {
 	want := map[string]string{
@@ -139,14 +161,15 @@ func TestMetricHues(t *testing.T) {
 		"heart_rate_recovery_one_minute": HueRed, "hrv_sdnn": HueRed, "vo2_max": HueRed,
 		"respiratory_rate": HueCyan, "oxygen_saturation": HueCyan,
 		"apple_sleeping_wrist_temperature": HuePurple, "body_fat_percentage": HuePurple, "body_mass": HueViolet,
+		"sleep": HueBlue,
 	}
 	for name, hue := range want {
-		if metricHues[name] != hue {
-			t.Errorf("%s: hue %q, want %q", name, metricHues[name], hue)
+		if HueFor(name) != hue {
+			t.Errorf("%s: hue %q, want %q", name, HueFor(name), hue)
 		}
 	}
-	for _, m := range []string{"step_count", "walking_speed", "active_energy"} {
-		if metricHues[m] != "" {
+	for _, m := range []string{"step_count", "walking_speed", "active_energy", "hr", "unknown"} {
+		if HueFor(m) != "" {
 			t.Errorf("%s must stay orange", m)
 		}
 	}

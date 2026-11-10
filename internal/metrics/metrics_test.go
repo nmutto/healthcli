@@ -230,3 +230,18 @@ func TestInRangeMetricsHaveARange(t *testing.T) {
 		}
 	}
 }
+
+// A few metrics of each hue; the full comparison with the old map lives in
+// stats.TestHueForMatchesOldMap.
+func TestRegistryHues(t *testing.T) {
+	want := map[string]string{
+		"resting_heart_rate": HueRed, "respiratory_rate": HueCyan,
+		"height": HuePurple, "body_mass": HueViolet, "step_count": "",
+	}
+	for name, hue := range want {
+		m, _ := Lookup(name)
+		if m.Hue != hue {
+			t.Errorf("%s: Hue = %q, want %q", name, m.Hue, hue)
+		}
+	}
+}

@@ -60,12 +60,30 @@ func (p Polarity) Valid() bool {
 }
 
 // Metric describes one kind of measurement.
+// Colour families for heatmaps and trend lines. The CLI turns them into ramps.
+// They follow the Apple Health app categories: Heart is red, Respiratory cyan,
+// Body Measurements purple (body mass deep violet). Mobility, activity and
+// everything else stay orange (a Metric with an empty Hue); sleep and
+// workouts set their own hue.
+const (
+	HueOrange = "orange" // steps and other activity (the default)
+	HueGreen  = "green"  // workouts
+	HueBlue   = "blue"   // sleep
+	HueRed    = "red"    // heart rate metrics
+	HueCyan   = "cyan"   // respiratory rate
+	HuePurple = "purple" // wrist temperature
+	HueViolet = "violet" // body mass
+)
+
 type Metric struct {
 	Name     string   // stored in samples.metric, e.g. "heart_rate"
 	Label    string   // display name, e.g. "Respiratory rate"
 	Short    string   // shorter name for narrow tables; "" = same as Label
 	Category Category // which overview section it belongs in
-	Unit     string   // canonical unit, stored in samples.unit
+	// Hue is the colour family of the metric's heatmaps and trend line (one
+	// of the Hue constants). "" means orange.
+	Hue  string
+	Unit string // canonical unit, stored in samples.unit
 	// Decimals is how many digits after the point the CLI prints for this
 	// metric (0 for most; 1 for weight, temperature, rates like 16.2/min).
 	// It is display only: stored values keep full precision.
@@ -150,23 +168,23 @@ var toMinutes = map[string]float64{"s": 1.0 / 60, "hr": 60, "h": 60}
 // resting rate is usually fine, but a rise matters more than the direction.
 var known = []Metric{
 	// The original six, in their original order (the overview lists them first).
-	{Name: "heart_rate", Label: "Heart rate", Category: Vitals, Unit: "bpm", Polarity: Neutral, Daily: Avg, Conversions: perMin},
-	{Name: "resting_heart_rate", Label: "Resting heart rate", Category: Vitals, Unit: "bpm", Polarity: LowerBetter, Range: &Range{High: 100, Source: "adult resting heart rate, 60-100 bpm"}, Daily: Avg, Conversions: perMin},
+	{Name: "heart_rate", Label: "Heart rate", Category: Vitals, Hue: HueRed, Unit: "bpm", Polarity: Neutral, Daily: Avg, Conversions: perMin},
+	{Name: "resting_heart_rate", Label: "Resting heart rate", Category: Vitals, Hue: HueRed, Unit: "bpm", Polarity: LowerBetter, Range: &Range{High: 100, Source: "adult resting heart rate, 60-100 bpm"}, Daily: Avg, Conversions: perMin},
 	{Name: "step_count", Label: "Steps", Category: Activity, Unit: "count", Polarity: HigherBetter, Daily: Sum},
-	{Name: "hrv_sdnn", Label: "Heart rate variability", Category: Vitals, Unit: "ms", Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"s": 1000}},
-	{Name: "body_mass", Label: "Weight", Category: Body, Unit: "kg", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
+	{Name: "hrv_sdnn", Label: "Heart rate variability", Category: Vitals, Hue: HueRed, Unit: "ms", Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"s": 1000}},
+	{Name: "body_mass", Label: "Weight", Category: Body, Hue: HueViolet, Unit: "kg", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
 	{Name: "active_energy", Label: "Active energy", Category: Activity, Unit: "kcal", Polarity: HigherBetter, Daily: Sum, Conversions: energyUnits},
 
 	// Newer metrics, grouped by category.
 	// Vitals
-	{Name: "respiratory_rate", Label: "Respiratory rate", Category: Vitals, Unit: "breaths/min", Decimals: 1, MinDelta: 0.5, Polarity: Neutral, Range: &Range{High: 20, Source: "adult resting respiratory rate, 12-20 breaths/min"}, Daily: Avg, Conversions: perMin},
-	{Name: "apple_sleeping_wrist_temperature", Label: "Wrist temperature", Category: Vitals, Unit: "degC", Decimals: 1, MinDelta: 0.2, Polarity: Neutral, Daily: Avg, Conversions: map[string]float64{"c": 1, "°c": 1}},
-	{Name: "oxygen_saturation", Label: "Blood oxygen", Category: Vitals, Unit: "percent", MinDelta: 1, Polarity: HigherBetter, Range: &Range{Low: 95, Source: "typical healthy adult reading, 95% and above"}, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
-	{Name: "vo2_max", Label: "VO2 max", Category: Vitals, Unit: "mL/kg/min", Decimals: 1, Polarity: HigherBetter, Daily: Latest, Conversions: vo2Spellings},
-	{Name: "walking_heart_rate_average", Label: "Walking heart rate", Category: Vitals, Unit: "bpm", Polarity: LowerBetter, Daily: Avg, Conversions: perMin},
-	{Name: "heart_rate_recovery_one_minute", Label: "Heart rate recovery", Category: Vitals, Unit: "bpm", Polarity: HigherBetter, Daily: Avg, Conversions: perMin},
-	{Name: "blood_pressure_systolic", Label: "Systolic blood pressure", Category: Vitals, Unit: "mmHg", Polarity: LowerBetter, Daily: Avg},
-	{Name: "blood_pressure_diastolic", Label: "Diastolic blood pressure", Category: Vitals, Unit: "mmHg", Polarity: LowerBetter, Daily: Avg},
+	{Name: "respiratory_rate", Label: "Respiratory rate", Category: Vitals, Hue: HueCyan, Unit: "breaths/min", Decimals: 1, MinDelta: 0.5, Polarity: Neutral, Range: &Range{High: 20, Source: "adult resting respiratory rate, 12-20 breaths/min"}, Daily: Avg, Conversions: perMin},
+	{Name: "apple_sleeping_wrist_temperature", Label: "Wrist temperature", Category: Vitals, Hue: HuePurple, Unit: "degC", Decimals: 1, MinDelta: 0.2, Polarity: Neutral, Daily: Avg, Conversions: map[string]float64{"c": 1, "°c": 1}},
+	{Name: "oxygen_saturation", Label: "Blood oxygen", Category: Vitals, Hue: HueCyan, Unit: "percent", MinDelta: 1, Polarity: HigherBetter, Range: &Range{Low: 95, Source: "typical healthy adult reading, 95% and above"}, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "vo2_max", Label: "VO2 max", Category: Vitals, Hue: HueRed, Unit: "mL/kg/min", Decimals: 1, Polarity: HigherBetter, Daily: Latest, Conversions: vo2Spellings},
+	{Name: "walking_heart_rate_average", Label: "Walking heart rate", Category: Vitals, Hue: HueRed, Unit: "bpm", Polarity: LowerBetter, Daily: Avg, Conversions: perMin},
+	{Name: "heart_rate_recovery_one_minute", Label: "Heart rate recovery", Category: Vitals, Hue: HueRed, Unit: "bpm", Polarity: HigherBetter, Daily: Avg, Conversions: perMin},
+	{Name: "blood_pressure_systolic", Label: "Systolic blood pressure", Category: Vitals, Hue: HueRed, Unit: "mmHg", Polarity: LowerBetter, Daily: Avg},
+	{Name: "blood_pressure_diastolic", Label: "Diastolic blood pressure", Category: Vitals, Hue: HueRed, Unit: "mmHg", Polarity: LowerBetter, Daily: Avg},
 	// Glucose has a healthy range, not a direction, hence Neutral. Apple's
 	// mmol/L unit carries a molar-mass suffix, "mmol<180.15...>/L".
 	{Name: "blood_glucose", Label: "Blood glucose", Category: Vitals, Unit: "mg/dL", Polarity: Neutral, Daily: Avg,
@@ -182,11 +200,11 @@ var known = []Metric{
 	{Name: "time_in_daylight", Label: "Time in daylight", Category: Activity, Unit: "min", Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
 
 	// Body
-	{Name: "body_fat_percentage", Label: "Body fat", Category: Body, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "body_fat_percentage", Label: "Body fat", Category: Body, Hue: HuePurple, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
 	// Apple's BMI unit is the dimensionless "count".
-	{Name: "body_mass_index", Label: "BMI", Category: Body, Unit: "kg/m2", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"count": 1}},
-	{Name: "lean_body_mass", Label: "Lean body mass", Category: Body, Unit: "kg", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
-	{Name: "height", Label: "Height", Category: Body, Unit: "cm", Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"m": 100, "in": 2.54, "ft": 30.48}},
+	{Name: "body_mass_index", Label: "BMI", Category: Body, Hue: HuePurple, Unit: "kg/m2", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"count": 1}},
+	{Name: "lean_body_mass", Label: "Lean body mass", Category: Body, Hue: HuePurple, Unit: "kg", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
+	{Name: "height", Label: "Height", Category: Body, Hue: HuePurple, Unit: "cm", Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"m": 100, "in": 2.54, "ft": 30.48}},
 
 	// Mobility
 	{Name: "walking_speed", Label: "Walking speed", Category: Mobility, Unit: "km/h", Decimals: 1, Polarity: HigherBetter, Daily: Avg,
