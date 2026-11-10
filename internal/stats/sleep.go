@@ -258,15 +258,70 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 
 // bestSleepSource picks the preferred source of one night. It returns a nil
 // totals when the map is empty (nil maps are fine to range over in Go).
+//
+// A source only counts when it has asleep time (a Watch that wrote one awake
+// row must not beat an iPhone that has the whole night) and when its main
+// sleep block is near the longest main block of all sources (a Watch that
+// only caught an afternoon nap did not see the night). Among those the
+// existing class priority decides, then more asleep time, then row count.
+// If no source has asleep time (in_bed rows, awake-only rows) the old rule
+// applies to all of them.
 func bestSleepSource(bySource map[string]*sleepTotals) (string, *sleepTotals) {
+	// The longest main block of any source is "the night".
+	var night block
+	for _, t := range bySource {
+		if m, ok := t.mainSleepBlock(); ok && m.asleep > night.asleep {
+			night = m
+		}
+	}
+
 	best := ""
 	var bt *sleepTotals
 	for source, t := range bySource {
-		if bt == nil || better(source, t.rows, best, bt.rows) {
+		if bt == nil || preferSleepSource(source, t, best, bt, night) {
 			best, bt = source, t
 		}
 	}
 	return best, bt
+}
+
+// preferSleepSource reports whether source a (totals ta) beats source b (tb)
+// for a night whose main block is night (zero when nobody has asleep time).
+func preferSleepSource(a string, ta *sleepTotals, b string, tb *sleepTotals, night block) bool {
+	seesA, seesB := ta.seesNight(night), tb.seesNight(night)
+	if seesA != seesB {
+		return seesA
+	}
+	if SourcePriority(a) == SourcePriority(b) {
+		if da, db := length(ta.asleepUnion()), length(tb.asleepUnion()); da != db {
+			return da > db
+		}
+	}
+	return better(a, ta.rows, b, tb.rows)
+}
+
+// mainSleepBlock is the main block of the source's own asleep time; ok is
+// false when the source has none.
+func (t *sleepTotals) mainSleepBlock() (block, bool) {
+	blocks := sleepBlocks(t.asleepUnion())
+	if len(blocks) == 0 {
+		return block{}, false
+	}
+	return mainBlock(blocks), true
+}
+
+// seesNight reports whether the source has asleep time whose main block is
+// within napGap of night. With no night (nobody has asleep time) every
+// source qualifies, so the usual priority picks one.
+func (t *sleepTotals) seesNight(night block) bool {
+	if night.asleep == 0 {
+		return true
+	}
+	m, ok := t.mainSleepBlock()
+	if !ok {
+		return false
+	}
+	return time.Duration(max(m.start-night.end, night.start-m.end))*time.Second <= napGap
 }
 
 // napGap is how far apart two pieces of sleep must be to be separate blocks.
