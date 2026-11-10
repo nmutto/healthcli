@@ -921,3 +921,22 @@ func TestOverviewJSONHonoursCategory(t *testing.T) {
 		t.Errorf("--category sleep,workouts has no metric rows, got %s", m["metrics"])
 	}
 }
+
+// The help names the JSON fields and rules the commands really have.
+func TestOverviewAndTodayHelpNameTheNewFields(t *testing.T) {
+	for cmd, wants := range map[string][]string{
+		"overview": {"range {low, high, source, basis, position", "sleep_nights", "in_range", "only with --heatmap", "sleep_summary.heatmap", "stale rows"},
+		"today":    {"range {low, high, source, basis, position", "in_range", "above 100 bpm", "double support (above 40%)", "asymmetry (above 35%)"},
+	} {
+		out, _, err := run(t, cmd, "--help")
+		if err != nil {
+			t.Fatal(err)
+		}
+		flat := strings.Join(strings.Fields(out), " ")
+		for _, want := range wants {
+			if !strings.Contains(flat, want) {
+				t.Errorf("%s --help is missing %q", cmd, want)
+			}
+		}
+	}
+}

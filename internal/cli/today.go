@@ -126,6 +126,13 @@ healthy: green "better", red "worse"; metrics with no good direction say
 comparison ("need 7d (have 3)" until then). That direction is a general guide,
 not medical advice.
 
+A few metrics also have a reference limit for the level itself (resting heart
+rate above 100 bpm, respiratory rate above 20 per minute, blood oxygen below
+95%); when the day's value is outside it, a plain dim note under that category
+says so, without changing the row's verdict. Walking double support (above 40%)
+and walking asymmetry (above 35%) are judged by level, not by the direction of
+the move, and also get a dim note when they leave their range.
+
 Metrics with no reading on the day are not listed; one dim line counts the
 tracked ones. If the date has no data at all, the latest day that does is shown
 instead, and a dim line says so. A date in the future is an error.
@@ -147,7 +154,9 @@ JSON output (--json) has these fields (the ones marked * were added later):
                   categories[], tracked_without_reading[], sleep and workouts[] alike): metric, label, unit, value, source,
                   baseline {available, days_with_data, days_needed, from, to, mean, stddev},
                   comparison {delta, delta_pct, z, label: above|below|typical} (null without baseline),
-                  *category, *polarity, *state (ok|no_baseline),
+                  *category, *polarity (higher_better|lower_better|in_range|neutral),
+                  *range {low, high, source, basis, position: below|within|above}
+                  (left out for metrics without a reference range), *state (ok|no_baseline),
                   *verdict (better|worse|changed|typical, "" without baseline; unlike
                   comparison.label it ignores changes too small to matter), *usual (the
                   baseline mean)

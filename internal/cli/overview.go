@@ -47,8 +47,9 @@ Beyond-usual values are coloured by which direction is generally healthy for
 that metric: green with the word "better", red with "worse". Metrics with no
 good direction (weight, respiratory rate, ...) get no colour, only the word
 "higher" or "lower". That direction is a general guide, not medical advice.
-Stale data is yellow. Colour is never the only signal: every row has an
-arrow, and beyond-usual rows also carry the word.
+Stale data is yellow. Colour is never the only signal: rows with a usual to
+compare with have an arrow (stale rows and "need 7d" rows have none), and
+beyond-usual rows also carry the word.
 
 Walking double support time and walking asymmetry are judged by their level,
 not by the direction of the move: a rise that stays inside the range (double
@@ -95,11 +96,14 @@ JSON output (--json) is the same report:
   today, empty (true when the database has no data)
   categories[]  name, total, better, worse, changed, typical, stale,
              no_baseline, no_data
-  metrics[]  metric, label, category, polarity, unit,
+  metrics[]  metric, label, category, polarity (higher_better|lower_better|
+             in_range|neutral), unit,
              state (ok|no_baseline|stale|no_data), latest_day,
              age_days, value, source, baseline_days_with_data, baseline_mean,
              baseline_stddev, delta_pct, z, comparison (above|below|typical),
              verdict (better|worse|changed|typical)
+             range {low, high, source, basis, position: below|within|above},
+             only for metrics with a reference range
              spark (28 daily values ending today, null = no data)
   sleep      state, night, age_days, source, *_seconds per stage, in_bed_seconds
   workouts   days, count, duration_seconds, energy_kcal, latest
@@ -107,10 +111,11 @@ JSON output (--json) is the same report:
                    without sleep
   workouts_report  the full workouts report ("healthcli workouts --help"); left
                    out without workouts
-  heatmaps   calendars for the metrics named in --heatmap, by metric name
+  heatmaps   only with --heatmap: calendars for the metrics named there, by
+             metric name (the sleep calendar is in sleep_summary.heatmap)
   not_tracked[]  metrics with no data at all
   heatmap    the activity grid ("healthcli heatmap --help"), left out if none
-  data       samples, first_day, last_day, source_samples, last_import, gaps[]`,
+  data       samples, sleep_nights, first_day, last_day, source_samples, last_import, gaps[]`,
 		Example: `  healthcli overview
   healthcli overview --category vitals,activity
   healthcli overview --compact
