@@ -1,0 +1,18 @@
+ == WORKOUTS == 16 sessions  16h 44m  6,820 kcal  187.5 km  active 16 of 28 d =
+
+ TYPE      N TIME       KCAL     KM SHARE
+ cycling   6 7h 57m    3,450  126.0 ##########..........  48%
+ running   5 5h 00m    2,740   49.6 ######..............  30%
+ walking   3 2h 09m      630   11.9 ###.................  13%
+ yoga      2 1h 38m        -      - ##..................  10%
+
+ RECENT
+ Sat Nov 07 cycling  1h 07m 21.0 km 18.8 km/h 550 kcal
+ Fri Nov 06 walking     33m  4.3 km 7:40 /km  210 kcal
+ Wed Nov 04 running  1h 10m 11.0 km 6:22 /km  580 kcal
+
+ BESTS (90 d)
+ longest   cycling 1h 32m, Oct 13 *new*
+ fastest   running 3:11 /km, Sep 30
+ furthest  cycling 21.0 km, Sep 03
+ biggest   cycling 700 kcal, Sep 23

@@ -1,0 +1,30 @@
+{
+  "today": "2026-11-04",
+  "empty": false,
+  "age_days": 0,
+  "kind": "in_bed",
+  "night": {
+    "night": "2026-11-04",
+    "in_bed_source": "Test iPhone",
+    "asleep_seconds": 0,
+    "core_seconds": 0,
+    "deep_seconds": 0,
+    "rem_seconds": 0,
+    "unspecified_seconds": 0,
+    "awake_seconds": 0,
+    "in_bed_seconds": 22200,
+    "awakenings": 0
+  },
+  "seven_nights": {
+    "nights": 4,
+    "in_bed_seconds": 23370
+  },
+  "fourteen_nights": {
+    "nights": 4,
+    "in_bed_seconds": 23370
+  },
+  "usual": {
+    "nights": 3,
+    "in_bed_seconds": 23760
+  }
+}

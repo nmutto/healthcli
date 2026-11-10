@@ -1,0 +1,7 @@
+ == WORKOUTS == 1 session  40m  400 kcal  6.0 km  active 1 of 90 d ============
+
+ TYPE      N TIME       KCAL     KM SHARE
+ running   1 40m         400    6.0 #################### 100%
+
+
+ (weekly volume, bests and the heatmap need more sessions)

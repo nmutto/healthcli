@@ -1,0 +1,36 @@
+ == SLEEP == Wed 4 Nov (46 days ago) | Watch stages, iPhone in bed ============
+       00:05                                                              06:00
+ awake                                      .                  .               
+ REM                                    ++++             ++++++           +++++
+ core  ::::::::::::::         ::::::::::     ::::::::::::       ::::::::::     
+ deep                #########                                                 
+                  01          02          03          04          05
+
+ STAT         LAST NIGHT          7 NIGHTS            VS 28-NIGHT USUAL
+ Asleep       5h 50m              6h 08m              v -11% worse
+ In bed       6h 03m              6h 29m              v -13% shorter
+ Efficiency   96%                 94%                 - typical
+ Awake        5m / 2 awakenings   9m / 2 awakenings   - typical
+ Latency      ~8m                 11m                 - typical
+ Deep         45m 13%             45m                 - typical
+ REM          1h 15m 21%          1h 14m              - typical
+ Core         3h 50m 66%          4h 08m              v -16% shorter
+ Bedtime      00:05               23:58               ^ +50m later
+ Wake         06:00               06:15               - typical
+ Midpoint     03:03               03:07               ^ +26m later
+ Regularity   +/-51m bed +/-34m mid                   ^ worse (usual +/-38m)
+ Sleep debt   2h 10m short last night, 7 nights: 13h 07m short vs 8h target
+ + better  ! worse  ~ higher/lower, no good direction
+
+ == CALENDAR == time asleep per day, 12 weeks to 2026-12-20 ===================
+     Oct     Nov       Dec
+ Mon . + # + # . _ _ _ _ _ _
+ Tue # - # - # . _ _ _ _ _ _
+ Wed + - + . # . _ _ _ _ _ _
+ Thu + # - # . _ _ _ _ _ _ _
+ Fri - # - # . _ _ _ _ _ _ _
+ Sat # + # # - _ _ _ _ _ _ _
+ Sun # - + # . _ _ _ _ _ _ _ <
+
+ . <=6h 36m  - <=6h 54m  + <=7h 11m  # <=7h 20m
+ _ no data   < today   per day

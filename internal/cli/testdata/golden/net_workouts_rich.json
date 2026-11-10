@@ -1,0 +1,163 @@
+{
+  "today": "2026-11-09",
+  "days": 28,
+  "count": 16,
+  "duration_seconds": 60240,
+  "energy_kcal": 6820,
+  "distance_km": 187.5,
+  "active_days": 16,
+  "by_type": [
+    {
+      "activity": "cycling",
+      "count": 6,
+      "duration_seconds": 28620,
+      "energy_kcal": 3450,
+      "distance_km": 126
+    },
+    {
+      "activity": "running",
+      "count": 5,
+      "duration_seconds": 18000,
+      "energy_kcal": 2740,
+      "distance_km": 49.6
+    },
+    {
+      "activity": "walking",
+      "count": 3,
+      "duration_seconds": 7740,
+      "energy_kcal": 630,
+      "distance_km": 11.9
+    },
+    {
+      "activity": "yoga",
+      "count": 2,
+      "duration_seconds": 5880
+    }
+  ],
+  "weeks": [
+    {
+      "start": "2026-09-21",
+      "duration_seconds": 10800,
+      "count": 3,
+      "days": 7,
+      "delta_pct": -23.076923076923073
+    },
+    {
+      "start": "2026-09-28",
+      "duration_seconds": 11580,
+      "count": 4,
+      "days": 7,
+      "delta_pct": -12.471655328798182
+    },
+    {
+      "start": "2026-10-05",
+      "duration_seconds": 10200,
+      "count": 4,
+      "days": 7,
+      "delta_pct": -23.937360178970913
+    },
+    {
+      "start": "2026-10-12",
+      "duration_seconds": 19860,
+      "count": 5,
+      "days": 7,
+      "delta_pct": 62.05630354957161
+    },
+    {
+      "start": "2026-10-19",
+      "duration_seconds": 11820,
+      "count": 3,
+      "days": 7,
+      "delta_pct": -9.839816933638446
+    },
+    {
+      "start": "2026-10-26",
+      "duration_seconds": 14040,
+      "count": 4,
+      "days": 7,
+      "delta_pct": 5.050505050505061
+    },
+    {
+      "start": "2026-11-02",
+      "duration_seconds": 14520,
+      "count": 4,
+      "days": 7,
+      "delta_pct": 3.862660944205998
+    },
+    {
+      "start": "2026-11-09",
+      "duration_seconds": 0,
+      "count": 0,
+      "partial": true,
+      "days": 1
+    }
+  ],
+  "bests": [
+    {
+      "kind": "longest",
+      "activity": "cycling",
+      "day": "2026-10-13",
+      "duration_seconds": 5520,
+      "distance_km": 21,
+      "energy_kcal": 600,
+      "new": true
+    },
+    {
+      "kind": "fastest",
+      "activity": "running",
+      "day": "2026-09-30",
+      "duration_seconds": 2100,
+      "distance_km": 11,
+      "energy_kcal": 540,
+      "pace_sec_per_km": 190.9090909090909
+    },
+    {
+      "kind": "furthest",
+      "activity": "cycling",
+      "day": "2026-09-03",
+      "duration_seconds": 4920,
+      "distance_km": 21,
+      "energy_kcal": 500
+    },
+    {
+      "kind": "biggest",
+      "activity": "cycling",
+      "day": "2026-09-23",
+      "duration_seconds": 3720,
+      "distance_km": 21,
+      "energy_kcal": 700
+    }
+  ],
+  "recent": [
+    {
+      "day": "2026-11-07",
+      "activity": "cycling",
+      "start": "2026-11-07T18:00:00Z",
+      "end": "2026-11-07T19:07:00Z",
+      "duration_seconds": 4020,
+      "energy_kcal": 550,
+      "distance_km": 21,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-06",
+      "activity": "walking",
+      "start": "2026-11-06T18:00:00Z",
+      "end": "2026-11-06T18:33:00Z",
+      "duration_seconds": 1980,
+      "energy_kcal": 210,
+      "distance_km": 4.3,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-04",
+      "activity": "running",
+      "start": "2026-11-04T18:00:00Z",
+      "end": "2026-11-04T19:10:00Z",
+      "duration_seconds": 4200,
+      "energy_kcal": 580,
+      "distance_km": 11,
+      "source": "Test Apple Watch"
+    }
+  ]
+}

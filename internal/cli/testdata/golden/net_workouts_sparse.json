@@ -1,0 +1,49 @@
+{
+  "today": "2026-11-09",
+  "days": 30,
+  "count": 2,
+  "duration_seconds": 5700,
+  "distance_km": 7,
+  "active_days": 2,
+  "by_type": [
+    {
+      "activity": "running",
+      "count": 1,
+      "duration_seconds": 3000,
+      "distance_km": 7
+    },
+    {
+      "activity": "yoga",
+      "count": 1,
+      "duration_seconds": 2700
+    }
+  ],
+  "weeks": [
+    {
+      "start": "2026-10-19",
+      "duration_seconds": 3000,
+      "count": 1,
+      "days": 7
+    },
+    {
+      "start": "2026-10-26",
+      "duration_seconds": 0,
+      "count": 0,
+      "days": 7
+    },
+    {
+      "start": "2026-11-02",
+      "duration_seconds": 2700,
+      "count": 1,
+      "days": 7
+    },
+    {
+      "start": "2026-11-09",
+      "duration_seconds": 0,
+      "count": 0,
+      "partial": true,
+      "days": 1
+    }
+  ],
+  "recent": []
+}

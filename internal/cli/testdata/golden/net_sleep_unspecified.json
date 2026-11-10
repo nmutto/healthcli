@@ -1,0 +1,145 @@
+{
+  "today": "2026-11-04",
+  "empty": false,
+  "age_days": 0,
+  "kind": "unspecified",
+  "night": {
+    "night": "2026-11-04",
+    "source": "Test iPhone",
+    "asleep_seconds": 21300,
+    "core_seconds": 0,
+    "deep_seconds": 0,
+    "rem_seconds": 0,
+    "unspecified_seconds": 21300,
+    "awake_seconds": 0,
+    "in_bed_seconds": 0,
+    "awakenings": 0,
+    "bedtime": "00:05",
+    "wake": "06:00",
+    "midpoint": "03:03",
+    "stages": [
+      {
+        "stage": "asleep_unspecified",
+        "start": "2026-11-04T00:05:00Z",
+        "end": "2026-11-04T06:00:00Z"
+      }
+    ]
+  },
+  "seven_nights": {
+    "nights": 6,
+    "asleep_seconds": 22650,
+    "bedtime_min_since_18h": 360,
+    "wake_min_since_18h": 737.5,
+    "midpoint_min_since_18h": 548.75
+  },
+  "fourteen_nights": {
+    "nights": 6,
+    "asleep_seconds": 22650,
+    "bedtime_min_since_18h": 360,
+    "wake_min_since_18h": 737.5,
+    "midpoint_min_since_18h": 548.75
+  },
+  "usual": {
+    "nights": 5,
+    "asleep_seconds": 22920,
+    "bedtime_min_since_18h": 359,
+    "wake_min_since_18h": 741,
+    "midpoint_min_since_18h": 550
+  },
+  "regularity": {
+    "nights": 6,
+    "bedtime_stddev_min": 19.131126469708992,
+    "midpoint_stddev_min": 12.879246872391258
+  },
+  "debt": {
+    "target_seconds": 28800,
+    "last_night_seconds": 7500,
+    "nights": 6,
+    "window_seconds": 36900
+  },
+  "heatmap": {
+    "metric": "sleep_asleep",
+    "unit": "",
+    "today": "2026-11-04",
+    "from": "2026-10-26",
+    "thresholds": [
+      360,
+      368,
+      381,
+      394
+    ],
+    "days_with_data": 6,
+    "weeks": [
+      [
+        {
+          "day": "2026-10-26",
+          "level": 0
+        },
+        {
+          "day": "2026-10-27",
+          "level": 0
+        },
+        {
+          "day": "2026-10-28",
+          "level": 0
+        },
+        {
+          "day": "2026-10-29",
+          "level": 0
+        },
+        {
+          "day": "2026-10-30",
+          "value": 360,
+          "level": 1
+        },
+        {
+          "day": "2026-10-31",
+          "value": 407,
+          "level": 5
+        },
+        {
+          "day": "2026-11-01",
+          "value": 394,
+          "level": 4
+        }
+      ],
+      [
+        {
+          "day": "2026-11-02",
+          "value": 381,
+          "level": 3
+        },
+        {
+          "day": "2026-11-03",
+          "value": 368,
+          "level": 2
+        },
+        {
+          "day": "2026-11-04",
+          "value": 355,
+          "level": 1
+        },
+        {
+          "day": "2026-11-05",
+          "level": 0,
+          "future": true
+        },
+        {
+          "day": "2026-11-06",
+          "level": 0,
+          "future": true
+        },
+        {
+          "day": "2026-11-07",
+          "level": 0,
+          "future": true
+        },
+        {
+          "day": "2026-11-08",
+          "level": 0,
+          "future": true
+        }
+      ]
+    ]
+  }
+}

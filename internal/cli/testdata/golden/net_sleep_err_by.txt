@@ -1,0 +1,2 @@
+--- error ---
+--by must be asleep, bedtime or efficiency, got "colour"

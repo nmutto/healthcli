@@ -1,0 +1,25 @@
+ == SLEEP == Wed 4 Nov | Watch stages =========================================
+       00:05                                                              06:00
+ awake                                      .                  .               
+ REM                                    ++++             ++++++           +++++
+ core  ::::::::::::::         ::::::::::     ::::::::::::       ::::::::::     
+ deep                #########                                                 
+                  01          02          03          04          05
+
+ STAT         LAST NIGHT          3 NIGHTS            VS USUAL
+ Asleep       5h 50m              5h 59m              need 7 nights (have 2)
+ Efficiency   99%                 97%                 need 7 nights (have 2)
+ Awake        5m / 2 awakenings   9m / 2 awakenings   need 7 nights (have 2)
+ Deep         45m 13%             45m                 need 7 nights (have 2)
+ REM          1h 15m 21%          1h 15m              need 7 nights (have 2)
+ Core         3h 50m 66%          3h 59m              need 7 nights (have 2)
+ Bedtime      00:05               23:59               need 7 nights (have 2)
+ Wake         06:00               06:07               need 7 nights (have 2)
+ Midpoint     03:03               03:03               need 7 nights (have 2)
+ Sleep debt   2h 10m short last night, 3 nights: 6h 04m short vs 8h target
+ not available: in bed, latency
+
+ == CALENDAR == time asleep per day, last 3 nights ============================
+ Mon Tue Wed
+ 6h  6h  6h
+ +++ +++ +++

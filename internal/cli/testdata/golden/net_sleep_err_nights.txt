@@ -1,0 +1,2 @@
+--- error ---
+--nights must be between 7 and 90, got 3
