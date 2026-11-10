@@ -132,8 +132,8 @@ the next day's night (as in "healthcli sleep"); its "usual" is the nights
 before the one shown. --category vitals,sleep shows only those (vitals,
 activity, body, mobility, other, sleep, workouts) in the text and in --json
 alike, including the "no reading" count; --compact drops the blank lines and keeps a
-one-character flag in the gutter. The output is 50-100 columns wide ($COLUMNS or
-the terminal width). On a pipe, or with --ascii, only plain ASCII characters are
+one-character flag in the gutter. Pages fit 50 to 100 columns ($COLUMNS or the
+terminal width; a narrower terminal is treated as 50, so lines may wrap there). On a pipe, or with --ascii, only plain ASCII characters are
 used. NO_COLOR and --no-color switch colours off; FORCE_COLOR switches them on
 even for a pipe.
 

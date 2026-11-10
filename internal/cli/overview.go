@@ -82,7 +82,8 @@ sections (all stat rows, weekly bars, bests, their heatmaps) and the activity
 heatmap. A single --category sleep or --category workouts also shows the full
 section, the same as "healthcli sleep" and "healthcli workouts".
 
-The output is 50-100 columns wide ($COLUMNS or the terminal width). On a pipe,
+Pages fit 50 to 100 columns ($COLUMNS or the terminal width; a narrower
+terminal is treated as 50, so lines may wrap there). On a pipe,
 or with --ascii, only plain ASCII characters are used. NO_COLOR and --no-color
 switch colours off; FORCE_COLOR switches them on even for a pipe. Samples dated
 more than a day in the future are ignored.

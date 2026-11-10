@@ -82,13 +82,17 @@ func newTrendCmd(opts *options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "trend <metric>",
 		Short: "Show how a metric changes over the last days",
-		Long: `Show one metric over the last N days as a sparkline (· marks a day without
+		Long: `Show one metric over the last N days as a sparkline (a dot marks a day without
 data), with min, max and mean, the last 7 days against the 7 before, and the
-current 28-day baseline. On a pipe, or with --ascii, the sparkline uses plain
-ASCII characters (. : - = + * # @) instead of block bars.
+baseline (the 28 days before the last day, as in overview and today). On a
+pipe, or with --ascii, the sparkline uses plain ASCII characters instead of
+block bars (_ marks a day without data).
 
 Metrics: ` + strings.Join(metrics.Names(), ", ") + `, sleep (hours asleep per night).
 Aliases: hr, hrv, rhr, rr, spo2, steps, temp, vo2, weight, bmi.
+
+Pages fit 50 to 100 columns ($COLUMNS or the terminal width); a narrower
+terminal is treated as 50, so lines may wrap there.
 
 The window ends today unless --date says otherwise. With --verbose, a table
 lists every day with its value and source.

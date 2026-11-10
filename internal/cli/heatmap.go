@@ -345,7 +345,8 @@ the lowest shade; for workouts a dot means a rest day. Today is marked.
 The metric defaults to step_count; "sleep" (time asleep per day) and
 "workouts" (workout minutes per day, with rest days) work too. --weeks sets the
 maximum number of weeks (default 12); fewer are shown if the terminal is too
-narrow (oldest dropped).
+narrow (oldest dropped). Pages fit 50 to 100 columns ($COLUMNS or the terminal
+width); a narrower terminal is treated as 50, so lines may wrap there.
 
 JSON output (--json):
   metric, unit, today, from, thresholds (4 upper bounds of levels 1-4),
