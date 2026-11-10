@@ -66,7 +66,7 @@ type trendChange struct {
 	DeltaPct  *float64 `json:"delta_pct"`
 }
 
-// trendBase is the baseline of the 28 days ending on the last day shown.
+// trendBase is the baseline of the 28 days before the last day shown.
 type trendBase struct {
 	Available    bool     `json:"available"`
 	DaysWithData int      `json:"days_with_data"`
@@ -88,7 +88,7 @@ current 28-day baseline. On a pipe, or with --ascii, the sparkline uses plain
 ASCII characters (. : - = + * # @) instead of block bars.
 
 Metrics: ` + strings.Join(metrics.Names(), ", ") + `, sleep (hours asleep per night).
-Aliases: steps, weight, hr.
+Aliases: hr, hrv, rhr, rr, spo2, steps, temp, vo2, weight, bmi.
 
 The window ends today unless --date says otherwise. With --verbose, a table
 lists every day with its value and source.
@@ -100,7 +100,7 @@ JSON output (--json) has these fields:
   summary     days_with_data, min, min_day, max, max_day, mean   (null if no data)
   change_7d   available, last7_mean, last7_days_with_data, previous7_mean,
               previous7_days_with_data, delta, delta_pct
-  baseline    available, days_with_data, days_needed, mean   (28 days up to "to")
+  baseline    available, days_with_data, days_needed, mean   (the 28 days before "to")
 Sleep values are hours asleep.`,
 		Example: `  healthcli trend steps
   healthcli trend weight --days 90
@@ -176,9 +176,10 @@ func buildTrend(ctx context.Context, conn *sql.DB, metric, unit, end string, day
 	if err != nil {
 		return nil, err
 	}
-	// Read at least 28 days back: the 7-vs-7 comparison needs 14 and the
-	// baseline 28, even when the window shown is shorter.
-	readDays := max(days, stats.DefaultBaselineDays)
+	// Read at least 29 days back: the 7-vs-7 comparison needs 14 and the
+	// sleep baseline the 28 days before the last day, even when the window
+	// shown is shorter.
+	readDays := max(days, stats.DefaultBaselineDays+1)
 	readFrom, err := stats.AddDays(end, -(readDays - 1))
 	if err != nil {
 		return nil, err
@@ -315,28 +316,23 @@ func weekChange(byDay map[string]stats.DayValue, end string) trendChange {
 	return c
 }
 
-// trendBaseline is the baseline of the 28 days ending on end (end included:
-// this is "what is normal now", unlike `today`, which leaves the day out).
+// trendBaseline is the baseline of the 28 days BEFORE end, the same one
+// overview and today compare their latest day against (end itself is left out).
 func trendBaseline(ctx context.Context, conn *sql.DB, metric, end string, byDay map[string]stats.DayValue) (trendBase, error) {
 	tb := trendBase{DaysNeeded: stats.MinBaselineDays}
 	if metric == sleepMetric {
 		// Sleep is not in the registry, so stats.BaselineFor cannot be used;
-		// apply the same rule (mean of the last 28 days, at least 7 with data).
-		from, _ := stats.AddDays(end, -(stats.DefaultBaselineDays - 1))
-		mean, n := meanOver(byDay, from, end)
+		// apply the same rule (mean of the 28 days before, at least 7 with data).
+		from, _ := stats.AddDays(end, -stats.DefaultBaselineDays)
+		to, _ := stats.AddDays(end, -1)
+		mean, n := meanOver(byDay, from, to)
 		tb.DaysWithData = n
 		if n >= stats.MinBaselineDays {
 			tb.Available, tb.Mean = true, &mean
 		}
 		return tb, nil
 	}
-	// BaselineFor looks at the days BEFORE its day argument, so pass the
-	// day after end to include end itself.
-	next, err := stats.AddDays(end, 1)
-	if err != nil {
-		return tb, err
-	}
-	b, err := stats.BaselineFor(ctx, conn, metric, next, stats.DefaultBaselineDays)
+	b, err := stats.BaselineFor(ctx, conn, metric, end, stats.DefaultBaselineDays)
 	tb.DaysWithData = b.N
 	switch {
 	case errors.Is(err, stats.ErrNotEnoughData):
