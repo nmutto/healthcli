@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/nmutto/healthcli/internal/db"
 	"strings"
 	"testing"
 	"time"
@@ -13,9 +14,17 @@ func TestTodayNeverCutsDigitsOfABigNumber(t *testing.T) {
 	t.Setenv("COLUMNS", "50")
 	fixClock(t, time.Date(2026, 11, 10, 9, 0, 0, 0, time.UTC))
 	path := seedDB(t)
-	if _, _, err := run(t, "--db", path, "log", "steps", "99999999999", "--at", "2026-11-09 12:00"); err != nil {
+	// `log` now refuses an absurd value, so put it in the way an odd export would.
+	conn, err := db.Open(path)
+	if err != nil {
 		t.Fatal(err)
 	}
+	ts := day(t, "2026-11-09") + 12*3600
+	if _, err := conn.Exec(`INSERT INTO samples (metric, start_ts, end_ts, value, unit, tz_offset, source)
+		VALUES ('step_count', ?, ?, 99999999999, 'count', 0, 'manual')`, ts, ts+60); err != nil {
+		t.Fatal(err)
+	}
+	conn.Close()
 	out, _, err := run(t, "--db", path, "today", "--date", "2026-11-09")
 	if err != nil {
 		t.Fatal(err)
