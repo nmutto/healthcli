@@ -904,19 +904,7 @@
       "midpoint_min_since_18h": 510
     },
     "usual": {
-      "nights": 1,
-      "asleep_seconds": 25200,
-      "in_bed_seconds": 30600,
-      "efficiency_pct": 82.35294117647058,
-      "awake_seconds": 0,
-      "awakenings": 0,
-      "latency_seconds": 1800,
-      "deep_seconds": 5400,
-      "rem_seconds": 2400,
-      "core_seconds": 17400,
-      "bedtime_min_since_18h": 300,
-      "wake_min_since_18h": 720,
-      "midpoint_min_since_18h": 510
+      "nights": 0
     },
     "debt": {
       "target_seconds": 28800,

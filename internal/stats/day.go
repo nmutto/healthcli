@@ -82,7 +82,7 @@ func BuildDay(ctx context.Context, conn *sql.DB, day string) (*DayReport, error)
 
 	// Sleep: the report looks back from Day, so its newest night is Day's
 	// night when one ended on it, and an older night otherwise.
-	sleep, err := BuildSleepReport(ctx, conn, t, SleepOptions{UsualExcludesLast: true})
+	sleep, err := BuildSleepReport(ctx, conn, t, SleepOptions{})
 	if err != nil {
 		return nil, err
 	}

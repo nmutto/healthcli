@@ -533,3 +533,24 @@ func TestMobilityMetricsAreJudgedByTheirRange(t *testing.T) {
 		t.Errorf("double support 44: verdict %q range %+v, want worse and above", r.Verdict, r.Range)
 	}
 }
+
+// A night with only in_bed rows is not a sleep night: the overview counts
+// two nights here, and its sleep state says "in_bed_only", not "ok" with
+// zero hours asleep.
+func TestOverviewInBedOnlyNightIsNotSleep(t *testing.T) {
+	conn := newDB(t)
+	addSleep(t, conn, "core", "2026-11-05 23:00 +0000", "2026-11-06 06:00 +0000", watch)
+	addSleep(t, conn, "core", "2026-11-06 23:00 +0000", "2026-11-07 06:00 +0000", watch)
+	addSleep(t, conn, "in_bed", "2026-11-07 23:00 +0000", "2026-11-08 07:00 +0000", iphone)
+
+	o, err := BuildOverview(context.Background(), conn, overviewNow, DefaultOverviewOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if o.Data.SleepNights != 2 {
+		t.Errorf("sleep_nights %d, want 2 (the in-bed-only night does not count)", o.Data.SleepNights)
+	}
+	if o.Sleep.State != StateInBedOnly || o.Sleep.AsleepSecs != 0 || o.Sleep.InBedSecs != 8*3600 {
+		t.Errorf("sleep %+v, want state %q with 8 h in bed and no sleep", o.Sleep, StateInBedOnly)
+	}
+}

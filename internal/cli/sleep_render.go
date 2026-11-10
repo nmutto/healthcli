@@ -521,9 +521,6 @@ func compareSleep(s sleepStat, week, usual *float64, g glyphSet) (sleepVerdict, 
 	if delta < 0 {
 		arrow = g.down
 	}
-	// Direction words. Rows with no good direction say what happened, in plain
-	// text: later / earlier for clock times, longer / shorter for durations,
-	// higher / lower for the rest.
 	// Too long (over 9.5 h) or too quick falling asleep (under 5 min) is not "good".
 	polarity := s.polarity
 	switch {
@@ -532,6 +529,9 @@ func compareSleep(s sleepStat, week, usual *float64, g glyphSet) (sleepVerdict, 
 	case s.name == "Latency" && *week < 5*60:
 		polarity = 0
 	}
+	// Direction words. Rows with no good direction say what happened, in plain
+	// text: later / earlier for clock times, longer / shorter for durations,
+	// higher / lower for the rest.
 	word, verdict := map[bool]string{true: "higher", false: "lower"}[delta > 0], "changed"
 	switch {
 	case s.kind == kindClock:
@@ -717,7 +717,7 @@ func regularityLine(r *stats.SleepReport, g glyphSet, st style, width, nameW, co
 	} {
 		cell := c.numbers
 		if c.vs != "" {
-			cell = padRight(c.numbers, cols)
+			cell = padRight(c.numbers+" ", cols) // at least one space before the verdict
 		}
 		if runeLen(cell)+runeLen(c.vs) <= room {
 			line := sleepIndent + padRight("Regularity", nameW) + cell

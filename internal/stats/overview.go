@@ -33,6 +33,7 @@ const (
 	StateNoBaseline = "no_baseline" // fresh value, fewer than MinBaselineDays days of history
 	StateStale      = "stale"       // newest value is older than StaleDays
 	StateNoData     = "no_data"     // this metric has never been recorded
+	StateInBedOnly  = "in_bed_only" // sleep only: the latest night has in-bed time and no sleep
 )
 
 // labels are short table names that override the registry label where the
@@ -225,7 +226,7 @@ func (r MetricRow) Differs() bool {
 
 // OverviewSleep is the most recent night within RecentDays.
 type OverviewSleep struct {
-	State string `json:"state"` // ok, stale or no_data
+	State string `json:"state"` // ok, stale, in_bed_only (latest night has no asleep time) or no_data
 	Night string `json:"night,omitempty"`
 	// AgeDays is today minus Night.
 	AgeDays    int    `json:"age_days"`
@@ -259,7 +260,7 @@ type LatestWorkout struct {
 // DataHealth says how much data there is and how complete it looks.
 type DataHealth struct {
 	Samples     int64            `json:"samples"`
-	SleepNights int64            `json:"sleep_nights"` // distinct nights with sleep rows
+	SleepNights int64            `json:"sleep_nights"` // distinct nights with asleep time (in-bed-only nights are not counted)
 	FirstDay    string           `json:"first_day,omitempty"`
 	LastDay     string           `json:"last_day,omitempty"`
 	SourceCount map[string]int64 `json:"source_samples"`        // by source class: watch, iphone, manual, other
@@ -700,6 +701,9 @@ func buildSleep(ctx context.Context, conn *sql.DB, today string) (OverviewSleep,
 	if s.AgeDays, err = ageOf(today, n.Night); err != nil {
 		return s, err
 	}
+	if n.Asleep == 0 {
+		s.State = StateInBedOnly
+	}
 	if s.AgeDays > StaleDays {
 		s.State = StateStale
 	}
@@ -757,7 +761,8 @@ func buildDataHealth(ctx context.Context, conn *sql.DB, rows []MetricRow, now ti
 	}
 
 	err = conn.QueryRowContext(ctx, `
-		SELECT count(DISTINCT date(end_ts + tz_offset + ?, 'unixepoch')) FROM sleep_stages`, nightShift).Scan(&d.SleepNights)
+		SELECT count(DISTINCT date(end_ts + tz_offset + ?, 'unixepoch')) FROM sleep_stages
+		WHERE stage IN ('core', 'deep', 'rem', 'asleep_unspecified')`, nightShift).Scan(&d.SleepNights)
 	if err != nil {
 		return d, fmt.Errorf("stats: count sleep nights: %w", err)
 	}

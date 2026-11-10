@@ -24,7 +24,7 @@ func overviewText(t *testing.T, scenario string, ti termInfo, v overviewView) st
 // hypnogram axis is a clock (00 01 02).
 func TestSleepWordsAndNumbersAgree(t *testing.T) {
 	got := overviewText(t, "import:small", uni80, overviewView{})
-	if !strings.Contains(got, "VS 13-NIGHT USUAL") || strings.Contains(got, "VS 28-NIGHT USUAL") {
+	if !strings.Contains(got, "VS 12-NIGHT USUAL") || strings.Contains(got, "VS 28-NIGHT USUAL") {
 		t.Errorf("header must say the real number of nights:\n%s", got)
 	}
 	for _, bad := range []string{" n)", " n:", "2x", "1x", "0x"} {

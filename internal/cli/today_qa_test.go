@@ -84,7 +84,7 @@ func TestTodayFallbackLineIsWrappedNotCut(t *testing.T) {
 	}
 }
 
-// Sleep's usual is the nights BEFORE the shown night.
+// Sleep's usual is the nights BEFORE the shown night, in `today` and `sleep` alike.
 func TestTodaySleepUsualExcludesThatNight(t *testing.T) {
 	conn, err := db.Open(seedOverview(t, "import:small"))
 	if err != nil {
@@ -99,8 +99,8 @@ func TestTodaySleepUsualExcludesThatNight(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if d.Sleep.Usual.Nights != all.Usual.Nights-1 {
-		t.Errorf("usual has %d nights, want %d (one less than %d)", d.Sleep.Usual.Nights, all.Usual.Nights-1, all.Usual.Nights)
+	if d.Sleep.Usual.Nights != all.Usual.Nights {
+		t.Errorf("today's usual has %d nights, sleep's has %d", d.Sleep.Usual.Nights, all.Usual.Nights)
 	}
 }
 
