@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	// The blank import registers the "sqlite" driver with database/sql.
 	// modernc.org/sqlite is SQLite translated to pure Go, so building this
@@ -42,12 +43,20 @@ func Open(path string) (*sql.DB, error) {
 		}
 	}
 
+	// Create the file ourselves, private from the start. SQLite gives the
+	// -wal and -shm files the same permissions as the database file.
+	if path != ":memory:" {
+		if f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600); err == nil {
+			f.Close()
+		}
+	}
+
 	// _pragma options in the connection string are applied by the driver to
 	// every new connection, so they can't be forgotten:
 	//   foreign_keys(1)    enforce FOREIGN KEY constraints (off by default!)
 	//   busy_timeout(5000) wait up to 5s for a lock instead of failing at once
 	//   journal_mode(WAL)  safer and faster writes than the default journal
-	dsn := "file:" + path +
+	dsn := "file:" + escapePath(path) +
 		"?_pragma=foreign_keys(1)" +
 		"&_pragma=busy_timeout(5000)" +
 		"&_pragma=journal_mode(WAL)"
@@ -68,7 +77,22 @@ func Open(path string) (*sql.DB, error) {
 		conn.Close()
 		return nil, err
 	}
+	if path != ":memory:" {
+		// Best effort: a file that already existed may have looser
+		// permissions, and the -wal and -shm files exist only now. Failing to
+		// tighten them must never stop the user from using the database.
+		for _, suffix := range []string{"", "-wal", "-shm"} {
+			_ = os.Chmod(path+suffix, 0o600)
+		}
+	}
 	return conn, nil
+}
+
+// escapePath makes a file path safe to put after "file:" in the connection
+// string. There "?" starts the options, "#" starts a fragment and "%" starts
+// an escape, so a path containing them would be cut short or misread.
+func escapePath(path string) string {
+	return strings.NewReplacer("%", "%25", "?", "%3F", "#", "%23").Replace(path)
 }
 
 // OpenReadOnly opens an existing database for reading only. SQLite itself
@@ -78,7 +102,7 @@ func OpenReadOnly(path string) (*sql.DB, error) {
 	if path == "" {
 		return nil, errors.New("db: empty database path")
 	}
-	dsn := "file:" + path +
+	dsn := "file:" + escapePath(path) +
 		"?mode=ro" +
 		"&_pragma=busy_timeout(5000)" +
 		"&_pragma=query_only(1)"
