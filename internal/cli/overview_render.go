@@ -215,6 +215,7 @@ func headline(o *stats.Overview, v overviewView, g glyphSet, width int) string {
 	counts := map[string]int{}
 	var mover *stats.MetricRow // the differing metric with the largest |z|
 	waiting := false           // some metric still lacks history for a baseline
+	unusable := false          // some metric has the history, but its baseline is not a usable number
 	newest := -1               // age of the freshest reading, -1 = none
 	scoped := len(v.categories) > 0
 	shown := 0 // metric rows in scope
@@ -228,12 +229,16 @@ func headline(o *stats.Overview, v overviewView, g glyphSet, width int) string {
 		case stats.StateOK:
 			counts[r.Verdict]++
 			if r.Differs() {
-				if mover == nil || math.Abs(*r.Z) > math.Abs(*mover.Z) {
+				if mover == nil || biggerMove(r, mover) {
 					mover = r
 				}
 			}
 		case stats.StateNoBaseline:
-			waiting = true
+			if r.BaselineDays >= stats.MinBaselineDays {
+				unusable = true
+			} else {
+				waiting = true
+			}
 		}
 		if r.State != stats.StateNoData && (newest < 0 || r.AgeDays < newest) {
 			newest = r.AgeDays
@@ -263,6 +268,8 @@ func headline(o *stats.Overview, v overviewView, g glyphSet, width int) string {
 			fmt.Sprintf("Not enough history to compare yet (a baseline needs %d days)", stats.MinBaselineDays),
 			"Not enough history to compare yet",
 			"Not enough history yet"))
+	case unusable:
+		parts = append(parts, firstFit(width, "No usable baseline to compare against", "No usable baseline"))
 	case newest > 0:
 		parts = append(parts, fmt.Sprintf("No recent readings: the newest is %d d old", newest))
 	default:
@@ -285,6 +292,40 @@ func headline(o *stats.Overview, v overviewView, g glyphSet, width int) string {
 		return ""
 	}
 	return joinFit(parts, width, g)
+}
+
+// biggerMove says whether row a moved more than row b: by |z| first. A flat
+// baseline makes every z zero, so ties go to the larger change (percentage
+// points for a metric that is itself a percentage, else relative change).
+func biggerMove(a, b *stats.MetricRow) bool {
+	if za, zb := math.Abs(*a.Z), math.Abs(*b.Z); za != zb {
+		return za > zb
+	}
+	return moveSize(a) > moveSize(b)
+}
+
+// moveSize is the size of a row's change, in points or in percent.
+func moveSize(r *stats.MetricRow) float64 {
+	if inPoints(*r) {
+		return math.Abs(*r.Value - *r.Mean)
+	}
+	if r.DeltaPct != nil {
+		return math.Abs(*r.DeltaPct)
+	}
+	return 0
+}
+
+// noBaselineText says why a row has nothing to compare against, in at most
+// width characters: too few days of history, or history that is there but
+// whose mean overflowed, or a value that overflowed.
+func noBaselineText(r stats.MetricRow, width int) string {
+	switch {
+	case r.Value == nil:
+		return firstFit(width, "no usable value", "no value")
+	case r.BaselineDays >= stats.MinBaselineDays:
+		return firstFit(width, "no usable baseline", "no baseline")
+	}
+	return fmt.Sprintf("need %dd (have %d)", stats.MinBaselineDays, r.BaselineDays)
 }
 
 // firstFit returns the first text that fits width (the last one if none do),
@@ -489,7 +530,7 @@ func deltaAreaIn(r stats.MetricRow, g glyphSet, st style, showBand bool, areaW i
 		}
 		return out + strings.Repeat(" ", max(areaW-used, 0))
 	case stats.StateNoBaseline:
-		return st.dim(padRight(fit(fmt.Sprintf("need %dd (have %d)", stats.MinBaselineDays, r.BaselineDays), areaW, g), areaW))
+		return st.dim(padRight(fit(noBaselineText(r, areaW), areaW, g), areaW))
 	case stats.StateStale:
 		word := "stale"
 		if foldAge { // no AGE column at this width
