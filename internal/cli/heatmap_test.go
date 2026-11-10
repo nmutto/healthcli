@@ -3,6 +3,7 @@ package cli
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -268,5 +269,57 @@ func TestHeatmapShadeUsesOneBlockWhenColoured(t *testing.T) {
 		if len(plain) != stats.HeatLevels {
 			t.Errorf("unicode=%v: uncoloured shades must be %d distinct glyphs, got %d", unicode, stats.HeatLevels, len(plain))
 		}
+	}
+}
+
+// Few days: the legend lists only levels a day can have, and the by-type map
+// only advertises UPPERCASE when a day is that long.
+func TestHeatmapLegendWithFewDays(t *testing.T) {
+	ti := termInfo{width: 80, unicode: true}
+	now := time.Date(2026, 11, 9, 12, 0, 0, 0, time.UTC)
+	spec := stats.HeatSpec{Title: "workouts", Format: minutesText, ZeroIsRest: true}
+	legendOf := func(spec stats.HeatSpec, byDay map[string]float64) string {
+		h, err := stats.HeatmapFromDays(spec, now, 2, byDay)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return strings.Join(renderHeatmap(h, ti), "\n")
+	}
+
+	// Four days: the 60 minute day is level 5 and the legend says so.
+	got := legendOf(spec, map[string]float64{"2026-11-02": 15, "2026-11-04": 30, "2026-11-06": 45, "2026-11-08": 60})
+	if !strings.Contains(got, "█ >") {
+		t.Errorf("legend should list the top level:\n%s", got)
+	}
+
+	// Two days: only levels 1 and 5 exist, so only one ≤ bound is listed.
+	got = legendOf(spec, map[string]float64{"2026-11-02": 20, "2026-11-04": 40})
+	if n := strings.Count(got, "≤"); n != 1 {
+		t.Errorf("two days should list one ≤ bound, got %d:\n%s", n, got)
+	}
+
+	// Efficiency bounds that round to the same text are listed once.
+	pct := stats.HeatSpec{Title: "sleep efficiency", Format: func(v float64) string { return fmt.Sprintf("%.0f%%", v) }}
+	got = legendOf(pct, map[string]float64{
+		"2026-11-01": 94.6, "2026-11-02": 94.8, "2026-11-03": 95.0, "2026-11-04": 95.2, "2026-11-05": 95.4, "2026-11-06": 99,
+	})
+	if n := strings.Count(got, "≤95%"); n > 1 {
+		t.Errorf("≤95%% listed %d times:\n%s", n, got)
+	}
+
+	// By type: one lone day is level 1 or 5; with two days of 20 and 40
+	// minutes the longer one is uppercase and the key says so, a flat
+	// single-level week never does.
+	r := &stats.WorkoutsReport{
+		TopTypeByDay: map[string]string{"2026-11-02": "running", "2026-11-04": "running"},
+		ByType:       []stats.TypeTotal{{Activity: "running"}},
+	}
+	h, _ := stats.HeatmapFromDays(spec, now, 2, map[string]float64{"2026-11-02": 20, "2026-11-04": 40})
+	if got := strings.Join(renderTypeHeatmap(h, r, ti), "\n"); !strings.Contains(got, "UPPERCASE") {
+		t.Errorf("a long day exists, key should explain UPPERCASE:\n%s", got)
+	}
+	h, _ = stats.HeatmapFromDays(spec, now, 2, map[string]float64{"2026-11-02": 20})
+	if got := strings.Join(renderTypeHeatmap(h, r, ti), "\n"); strings.Contains(got, "UPPERCASE") {
+		t.Errorf("no uppercase day, key should not mention it:\n%s", got)
 	}
 }

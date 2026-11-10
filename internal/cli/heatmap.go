@@ -275,16 +275,40 @@ func heatLegend(h *stats.Heatmap, ti termInfo, st style) []string {
 			st.wrap(colors[level-1], string(g.shade(level, st.color))) + " every day: " + heatFormat(h, h.Thresholds[0]),
 		}, heatTail(h, ti, st)...)
 	}
+	// Only levels some day has are listed (with few days or ties some are
+	// unreachable), and a bound that prints like the one before it is skipped.
+	used := heatLevelsUsed(h.Weeks)
 	var parts []string
+	prev := ""
 	for i := 1; i <= stats.HeatLevels; i++ {
-		glyph := st.wrap(colors[i-1], string(g.shade(i, st.color)))
-		if i < stats.HeatLevels {
-			parts = append(parts, glyph+" "+le+heatFormat(h, h.Thresholds[i-1]))
-		} else {
-			parts = append(parts, glyph+" "+gt+heatFormat(h, h.Thresholds[i-2]))
+		if !used[i] {
+			continue
 		}
+		glyph := st.wrap(colors[i-1], string(g.shade(i, st.color)))
+		var bound string
+		if i < stats.HeatLevels {
+			bound = le + heatFormat(h, h.Thresholds[i-1])
+		} else {
+			bound = gt + heatFormat(h, h.Thresholds[i-2])
+		}
+		if bound == prev {
+			continue
+		}
+		prev = bound
+		parts = append(parts, glyph+" "+bound)
 	}
 	return append(wrapParts(parts, "  ", ti.width), heatTail(h, ti, st)...)
+}
+
+// heatLevelsUsed reports which levels (1..5) at least one cell has.
+func heatLevelsUsed(weeks [][]stats.HeatDay) [stats.HeatLevels + 1]bool {
+	var used [stats.HeatLevels + 1]bool
+	for _, week := range weeks {
+		for _, c := range week {
+			used[c.Level] = true
+		}
+	}
+	return used
 }
 
 // wrapParts joins parts with sep, starting a new line before a part that

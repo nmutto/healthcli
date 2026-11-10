@@ -500,7 +500,7 @@ $ healthcli sleep
  Sat · · · · · ▅ ▇ ▅ ▇ ▇ ▃
  Sun · · · · · ▃ ▇ ▃ ▇ ▇ ▁
 
- ▁ ≤6h 36m  ▃ ≤6h 52m  ▅ ≤7h 10m  ▇ ≤7h 20m  █ >7h 20m
+ ▁ ≤6h 36m  ▃ ≤6h 52m  ▅ ≤7h 10m  ▇ ≤7h 20m
  · no data   ◂ today   per day
 ```
 

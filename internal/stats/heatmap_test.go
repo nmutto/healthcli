@@ -151,3 +151,22 @@ func TestMetricHues(t *testing.T) {
 		}
 	}
 }
+
+// With fewer than 5 days nearest-rank made the top threshold the maximum, so
+// level 5 could never be reached.
+func TestTopLevelReachableWithFewDays(t *testing.T) {
+	vals := []float64{15, 30, 45, 60}
+	th := QuintileThresholds(vals)
+	if got := HeatLevel(60, th); got != HeatLevels {
+		t.Errorf("highest of 4 days got level %d, want %d (thresholds %v)", got, HeatLevels, th)
+	}
+	if HeatLevel(15, th) != 1 {
+		t.Errorf("lowest of 4 days should be level 1, thresholds %v", th)
+	}
+	for n := 2; n <= 4; n++ {
+		th := QuintileThresholds(vals[:n])
+		if got := HeatLevel(vals[n-1], th); got != HeatLevels {
+			t.Errorf("%d days: highest got level %d, thresholds %v", n, got, th)
+		}
+	}
+}

@@ -237,19 +237,32 @@ func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string
 // QuintileThresholds returns the 4 cut points that split values into fifths,
 // or nil for no values.
 //
-// Method: sort, then take the value at "nearest rank" 20%, 40%, 60% and 80%
-// (index ceil(p*n)-1). Every threshold is therefore a real value from the
+// With 5 or more values: sort, then take the value at "nearest rank" 20%, 40%,
+// 60% and 80% (index ceil(p*n)-1). Every threshold is a real value from the
 // data, which makes the legend honest ("up to 6,100 steps").
+//
+// With fewer than 5 values nearest rank makes the last cut the maximum, so
+// the top level could never be reached. There the cuts are interpolated
+// between neighbouring values instead (the 80% point lies between the two
+// highest), which keeps the highest value above the last cut.
 func QuintileThresholds(values []float64) []float64 {
 	if len(values) == 0 {
 		return nil
 	}
 	sorted := append([]float64(nil), values...)
 	sort.Float64s(sorted)
+	n := len(sorted)
 	out := make([]float64, HeatLevels-1)
 	for i := range out {
 		p := float64(i+1) / HeatLevels
-		out[i] = sorted[int(math.Ceil(p*float64(len(sorted))))-1]
+		if n >= HeatLevels {
+			out[i] = sorted[int(math.Ceil(p*float64(n)))-1]
+			continue
+		}
+		pos := p * float64(n-1) // fractional index into the sorted values
+		lo := int(pos)
+		hi := min(lo+1, n-1)
+		out[i] = sorted[lo] + (pos-float64(lo))*(sorted[hi]-sorted[lo])
 	}
 	return out
 }
