@@ -1,0 +1,7 @@
+[1mSleep, last 10 days (2026-10-30 to 2026-11-08)[0m
+
+[2m_[0m[2m_[0m[2m_[0m[2m_[0m[2m_[0m[2m_[0m[2m_[0m[2m_[0m[2m_[0m[38;5;33m=[0m
+
+min 7h 00m   max 7h 00m   mean 7h 00m   (1 of 10 days with data)
+Last 7 days vs previous 7: n/a (need data in both weeks)
+Baseline (28 days): n/a (need 7 days, have 0)

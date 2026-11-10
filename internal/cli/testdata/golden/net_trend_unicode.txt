@@ -1,0 +1,137 @@
+## steps w80 unicode
+Steps, last 21 days (2026-10-19 to 2026-11-08)
+
+▂▃▃▄▄▁▂▂▃▃▄▄▁·▂▃▃▄▄▁█
+
+min 6,000 steps   max 12,345 steps   mean 7,842 steps
+(20 of 21 days with data)
+Last 7 days vs previous 7: 8,335 steps vs 7,667 steps  (+668 steps, +8.7%)
+Baseline (28 days): 7,537 steps
+
+## steps w50 unicode
+Steps, last 21 days (2026-10-19 to 2026-11-08)
+
+▂▃▃▄▄▁▂▂▃▃▄▄▁·▂▃▃▄▄▁█
+
+min 6,000 steps   max 12,345 steps
+mean 7,842 steps   (20 of 21 days with data)
+Last 7 days: 8,335 steps
+Previous 7:  7,667 steps
+Change:      +668 steps, +8.7%
+Baseline (28 days): 7,537 steps
+
+day         value (steps)  source
+2026-10-19          7,000  Test Apple Watch
+2026-10-20          7,500  Test Apple Watch
+2026-10-21          8,000  Test Apple Watch
+2026-10-22          8,500  Test Apple Watch
+2026-10-23          9,000  Test Apple Watch
+2026-10-24          6,000  Test Apple Watch
+2026-10-25          6,500  Test Apple Watch
+2026-10-26          7,000  Test Apple Watch
+2026-10-27          7,500  Test Apple Watch
+2026-10-28          8,000  Test Apple Watch
+2026-10-29          8,500  Test Apple Watch
+2026-10-30          9,000  Test Apple Watch
+2026-10-31          6,000  Test Apple Watch
+2026-11-01              -
+2026-11-02          7,000  Test Apple Watch
+2026-11-03          7,500  Test Apple Watch
+2026-11-04          8,000  Test Apple Watch
+2026-11-05          8,500  Test Apple Watch
+2026-11-06          9,000  Test Apple Watch
+2026-11-07          6,000  Test Apple Watch
+2026-11-08         12,345  Test Apple Watch
+
+## steps w80 unicode colour
+[1mSteps, last 21 days (2026-10-19 to 2026-11-08)[0m
+
+[38;5;130m▂[0m[38;5;130m▃[0m[38;5;130m▃[0m[38;5;166m▄[0m[38;5;166m▄[0m[38;5;94m▁[0m[38;5;130m▂[0m[38;5;130m▂[0m[38;5;130m▃[0m[38;5;130m▃[0m[38;5;166m▄[0m[38;5;166m▄[0m[38;5;94m▁[0m[2m·[0m[38;5;130m▂[0m[38;5;130m▃[0m[38;5;130m▃[0m[38;5;166m▄[0m[38;5;166m▄[0m[38;5;94m▁[0m[38;5;214m█[0m
+
+min 6,000 steps   max 12,345 steps   mean 7,842 steps
+(20 of 21 days with data)
+Last 7 days vs previous 7: 8,335 steps vs 7,667 steps  (+668 steps, +8.7%)
+Baseline (28 days): 7,537 steps
+
+## steps w50 unicode colour
+[1mSteps, last 21 days (2026-10-19 to 2026-11-08)[0m
+
+[38;5;130m▂[0m[38;5;130m▃[0m[38;5;130m▃[0m[38;5;166m▄[0m[38;5;166m▄[0m[38;5;94m▁[0m[38;5;130m▂[0m[38;5;130m▂[0m[38;5;130m▃[0m[38;5;130m▃[0m[38;5;166m▄[0m[38;5;166m▄[0m[38;5;94m▁[0m[2m·[0m[38;5;130m▂[0m[38;5;130m▃[0m[38;5;130m▃[0m[38;5;166m▄[0m[38;5;166m▄[0m[38;5;94m▁[0m[38;5;214m█[0m
+
+min 6,000 steps   max 12,345 steps
+mean 7,842 steps   (20 of 21 days with data)
+Last 7 days: 8,335 steps
+Previous 7:  7,667 steps
+Change:      +668 steps, +8.7%
+Baseline (28 days): 7,537 steps
+
+[2mday         value (steps)  source[0m
+2026-10-19          7,000  Test Apple Watch
+2026-10-20          7,500  Test Apple Watch
+2026-10-21          8,000  Test Apple Watch
+2026-10-22          8,500  Test Apple Watch
+2026-10-23          9,000  Test Apple Watch
+2026-10-24          6,000  Test Apple Watch
+2026-10-25          6,500  Test Apple Watch
+2026-10-26          7,000  Test Apple Watch
+2026-10-27          7,500  Test Apple Watch
+2026-10-28          8,000  Test Apple Watch
+2026-10-29          8,500  Test Apple Watch
+2026-10-30          9,000  Test Apple Watch
+2026-10-31          6,000  Test Apple Watch
+2026-11-01              -
+2026-11-02          7,000  Test Apple Watch
+2026-11-03          7,500  Test Apple Watch
+2026-11-04          8,000  Test Apple Watch
+2026-11-05          8,500  Test Apple Watch
+2026-11-06          9,000  Test Apple Watch
+2026-11-07          6,000  Test Apple Watch
+2026-11-08         12,345  Test Apple Watch
+
+## rhr w80 unicode colour
+[1mResting heart rate, last 21 days (2026-10-19 to 2026-11-08)[0m
+
+[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[38;5;124m▄[0m[38;5;124m▄[0m[38;5;124m▄[0m
+
+min 58 bpm   max 58 bpm   mean 58 bpm   (3 of 21 days with data)
+Last 7 days vs previous 7: n/a (need data in both weeks)
+Baseline (28 days): n/a (need 7 days, have 2)
+
+## respiratory_rate w80 unicode colour
+[1mRespiratory rate, last 21 days (2026-10-19 to 2026-11-08)[0m
+
+[38;5;30m▂[0m[38;5;23m▁[0m[38;5;30m▃[0m[38;5;37m▅[0m[38;5;44m▆[0m[38;5;44m▇[0m[38;5;51m█[0m[38;5;44m▆[0m[38;5;37m▅[0m[38;5;30m▃[0m[38;5;30m▂[0m[38;5;30m▃[0m[38;5;37m▅[0m[38;5;44m▆[0m[38;5;37m▅[0m[38;5;30m▃[0m[38;5;30m▂[0m[38;5;30m▃[0m[38;5;37m▅[0m[38;5;44m▆[0m[2m·[0m
+
+min 13.0/min   max 19.0/min   mean 15.8/min   (20 of 21 days with data)
+Last 7 days vs previous 7: 15.5/min vs 15.7/min  (-0.2/min, -1.4%)
+Baseline (28 days): 15.8/min
+
+## weight w80 unicode colour
+[1mWeight, last 21 days (2026-10-19 to 2026-11-08)[0m
+
+[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[38;5;61m▄[0m
+
+min 72.5 kg   max 72.5 kg   mean 72.5 kg   (1 of 21 days with data)
+Last 7 days vs previous 7: n/a (need data in both weeks)
+Baseline (28 days): n/a (need 7 days, have 0)
+
+## sleep w80 unicode colour
+[1mSleep, last 21 days (2026-10-19 to 2026-11-08)[0m
+
+[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[2m·[0m[38;5;33m▄[0m
+
+min 7h 00m   max 7h 00m   mean 7h 00m   (1 of 21 days with data)
+Last 7 days vs previous 7: n/a (need data in both weeks)
+Baseline (28 days): n/a (need 7 days, have 0)
+
+## sleep w50 unicode
+Sleep, last 21 days (2026-10-19 to 2026-11-08)
+
+····················▄
+
+min 7h 00m   max 7h 00m   mean 7h 00m
+(1 of 21 days with data)
+Last 7 days vs previous 7: n/a (need data in both
+weeks)
+Baseline (28 days): n/a (need 7 days, have 0)
+

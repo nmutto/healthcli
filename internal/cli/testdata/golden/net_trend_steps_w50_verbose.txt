@@ -1,0 +1,22 @@
+Steps, last 10 days (2026-10-30 to 2026-11-08)
+
+=._:--==.@
+
+min 6,000 steps   max 12,345 steps
+mean 8,149 steps   (9 of 10 days with data)
+Last 7 days: 8,335 steps
+Previous 7:  7,667 steps
+Change:      +668 steps, +8.7%
+Baseline (28 days): 7,537 steps
+
+day         value (steps)  source
+2026-10-30          9,000  Test Apple Watch
+2026-10-31          6,000  Test Apple Watch
+2026-11-01              -
+2026-11-02          7,000  Test Apple Watch
+2026-11-03          7,500  Test Apple Watch
+2026-11-04          8,000  Test Apple Watch
+2026-11-05          8,500  Test Apple Watch
+2026-11-06          9,000  Test Apple Watch
+2026-11-07          6,000  Test Apple Watch
+2026-11-08         12,345  Test Apple Watch

@@ -1,0 +1,242 @@
+{
+  "status": "ok",
+  "metric": "step_count",
+  "unit": "count",
+  "from": "2026-09-25",
+  "to": "2026-11-08",
+  "days": 45,
+  "daily": [
+    {
+      "day": "2026-09-25",
+      "value": null
+    },
+    {
+      "day": "2026-09-26",
+      "value": null
+    },
+    {
+      "day": "2026-09-27",
+      "value": null
+    },
+    {
+      "day": "2026-09-28",
+      "value": null
+    },
+    {
+      "day": "2026-09-29",
+      "value": null
+    },
+    {
+      "day": "2026-09-30",
+      "value": null
+    },
+    {
+      "day": "2026-10-01",
+      "value": null
+    },
+    {
+      "day": "2026-10-02",
+      "value": null
+    },
+    {
+      "day": "2026-10-03",
+      "value": null
+    },
+    {
+      "day": "2026-10-04",
+      "value": null
+    },
+    {
+      "day": "2026-10-05",
+      "value": null
+    },
+    {
+      "day": "2026-10-06",
+      "value": null
+    },
+    {
+      "day": "2026-10-07",
+      "value": null
+    },
+    {
+      "day": "2026-10-08",
+      "value": null
+    },
+    {
+      "day": "2026-10-09",
+      "value": null
+    },
+    {
+      "day": "2026-10-10",
+      "value": 6000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-11",
+      "value": 6500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-12",
+      "value": 7000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-13",
+      "value": 7500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-14",
+      "value": 8000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-15",
+      "value": 8500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-16",
+      "value": 9000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-17",
+      "value": 6000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-18",
+      "value": 6500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-19",
+      "value": 7000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-20",
+      "value": 7500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-21",
+      "value": 8000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-22",
+      "value": 8500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-23",
+      "value": 9000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-24",
+      "value": 6000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-25",
+      "value": 6500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-26",
+      "value": 7000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-27",
+      "value": 7500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-28",
+      "value": 8000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-29",
+      "value": 8500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-30",
+      "value": 9000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-31",
+      "value": 6000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-01",
+      "value": null
+    },
+    {
+      "day": "2026-11-02",
+      "value": 7000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-03",
+      "value": 7500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-04",
+      "value": 8000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-05",
+      "value": 8500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-06",
+      "value": 9000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-07",
+      "value": 6000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-08",
+      "value": 12345,
+      "source": "Test Apple Watch"
+    }
+  ],
+  "summary": {
+    "days_with_data": 29,
+    "min": 6000,
+    "min_day": "2026-10-10",
+    "max": 12345,
+    "max_day": "2026-11-08",
+    "mean": 7649.827586206897
+  },
+  "change_7d": {
+    "available": true,
+    "last7_mean": 8335,
+    "last7_days_with_data": 7,
+    "previous7_mean": 7666.666666666667,
+    "previous7_days_with_data": 6,
+    "delta": 668.333333333333,
+    "delta_pct": 8.71739130434782
+  },
+  "baseline": {
+    "available": true,
+    "days_with_data": 27,
+    "days_needed": 7,
+    "mean": 7537.037037037037
+  }
+}

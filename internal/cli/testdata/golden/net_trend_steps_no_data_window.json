@@ -1,0 +1,55 @@
+{
+  "status": "no_data",
+  "metric": "step_count",
+  "unit": "count",
+  "from": "2026-08-26",
+  "to": "2026-09-01",
+  "days": 7,
+  "latest_day": "2026-11-08",
+  "daily": [
+    {
+      "day": "2026-08-26",
+      "value": null
+    },
+    {
+      "day": "2026-08-27",
+      "value": null
+    },
+    {
+      "day": "2026-08-28",
+      "value": null
+    },
+    {
+      "day": "2026-08-29",
+      "value": null
+    },
+    {
+      "day": "2026-08-30",
+      "value": null
+    },
+    {
+      "day": "2026-08-31",
+      "value": null
+    },
+    {
+      "day": "2026-09-01",
+      "value": null
+    }
+  ],
+  "summary": null,
+  "change_7d": {
+    "available": false,
+    "last7_mean": null,
+    "last7_days_with_data": 0,
+    "previous7_mean": null,
+    "previous7_days_with_data": 0,
+    "delta": null,
+    "delta_pct": null
+  },
+  "baseline": {
+    "available": false,
+    "days_with_data": 0,
+    "days_needed": 7,
+    "mean": null
+  }
+}

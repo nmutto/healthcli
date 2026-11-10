@@ -1,0 +1,2 @@
+--- error ---
+database not found: /nonexistent-dir/none.db; run "healthcli import apple <export.zip>" first

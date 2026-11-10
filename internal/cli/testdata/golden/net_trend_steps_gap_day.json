@@ -1,0 +1,82 @@
+{
+  "status": "ok",
+  "metric": "step_count",
+  "unit": "count",
+  "from": "2026-10-25",
+  "to": "2026-11-03",
+  "days": 10,
+  "daily": [
+    {
+      "day": "2026-10-25",
+      "value": 6500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-26",
+      "value": 7000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-27",
+      "value": 7500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-28",
+      "value": 8000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-29",
+      "value": 8500,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-30",
+      "value": 9000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-10-31",
+      "value": 6000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-01",
+      "value": null
+    },
+    {
+      "day": "2026-11-02",
+      "value": 7000,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-03",
+      "value": 7500,
+      "source": "Test Apple Watch"
+    }
+  ],
+  "summary": {
+    "days_with_data": 9,
+    "min": 6000,
+    "min_day": "2026-10-31",
+    "max": 9000,
+    "max_day": "2026-10-30",
+    "mean": 7444.444444444444
+  },
+  "change_7d": {
+    "available": true,
+    "last7_mean": 7666.666666666667,
+    "last7_days_with_data": 6,
+    "previous7_mean": 7500,
+    "previous7_days_with_data": 7,
+    "delta": 166.66666666666697,
+    "delta_pct": 2.2222222222222263
+  },
+  "baseline": {
+    "available": true,
+    "days_with_data": 23,
+    "days_needed": 7,
+    "mean": 7413.04347826087
+  }
+}
