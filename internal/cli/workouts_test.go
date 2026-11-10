@@ -151,7 +151,7 @@ func TestWorkoutsCommand(t *testing.T) {
 			t.Errorf("%v should fail", args)
 		}
 	}
-	empty := tempDB(t)
+	empty := emptyDB(t)
 	out, _, err = run(t, "--db", empty, "workouts")
 	if err != nil || !strings.Contains(out, "none in the last 28 days") {
 		t.Errorf("empty: %v\n%s", err, out)

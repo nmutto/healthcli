@@ -162,7 +162,7 @@ func TestTodayJSONAdditiveFields(t *testing.T) {
 
 func TestTodayEmptyJSONHasNoNewNulls(t *testing.T) {
 	fixClock(t, overviewNow)
-	out, _, err := run(t, "--db", tempDB(t), "today", "--json")
+	out, _, err := run(t, "--db", emptyDB(t), "today", "--json")
 	if err != nil {
 		t.Fatal(err)
 	}

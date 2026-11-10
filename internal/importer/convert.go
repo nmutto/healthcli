@@ -82,7 +82,13 @@ var positiveOnly = map[string]bool{
 // sensible reports whether value can be a real reading of m. Amounts that add
 // up over a day cannot be negative and a heart rate cannot be 0. Other
 // metrics are left alone: wrist temperature, for one, is a delta below zero.
+// A percentage above 100 is a unit mix-up: Apple writes 0.97 as a fraction
+// (converted to 97), but another source may write 97 with unit "%", which
+// would become 9700.
 func sensible(m metrics.Metric, value float64) bool {
+	if m.IsPercent() && value > 100 {
+		return false
+	}
 	if positiveOnly[m.Name] {
 		return value > 0
 	}

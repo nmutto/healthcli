@@ -49,7 +49,7 @@ func TestTrendSleepIgnoresInBedOnlyNights(t *testing.T) {
 }
 
 func TestDateAndDaysValidation(t *testing.T) {
-	db := tempDB(t)
+	db := emptyDB(t)
 	bad := [][]string{
 		{"today", "--date", "2026-13-01"},
 		{"today", "--date", "2026-02-30"},

@@ -13,9 +13,9 @@ import (
 	"fmt"
 	"io"
 	"sort"
-	"strconv"
-	"strings"
 	"time"
+
+	"github.com/nmutto/healthcli/internal/metrics"
 )
 
 // Skip reasons. Every record we cannot import is counted under one of these.
@@ -111,6 +111,11 @@ func Import(conn *sql.DB, path string, opts Options) (*Summary, error) {
 	defer w.rollback()
 
 	if err := parse(src, sum, w, opts); err != nil {
+		// Earlier batches are already committed. Say so, because the
+		// database is not as it was before the import.
+		if w.committed > 0 {
+			err = fmt.Errorf("%w; %d rows were saved before the error; run the import again to complete it (re-importing is safe)", err, w.committed)
+		}
 		return nil, err
 	}
 	if err := w.finish(start); err != nil {
@@ -246,18 +251,8 @@ func attrs(el xml.StartElement) map[string]string {
 	return m
 }
 
-// number parses a float attribute. ok is false when it is empty or not numeric.
+// number parses a float attribute. ok is false when it is empty or not a
+// plain decimal number (see metrics.ParseNumber).
 func number(s string) (float64, bool) {
-	if s == "" {
-		return 0, false
-	}
-	// ParseFloat also reads hex floats ("0x1p6") and underscores ("1_000"),
-	// which are not measurements. Allow only the characters of a plain
-	// decimal number with an optional exponent.
-	if strings.Trim(s, "0123456789+-.eE") != "" {
-		return 0, false
-	}
-	f, err := strconv.ParseFloat(s, 64)
-	// ParseFloat accepts "NaN" and "Inf"; neither is a measurement.
-	return f, err == nil && finite(f)
+	return metrics.ParseNumber(s)
 }

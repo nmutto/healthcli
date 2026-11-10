@@ -38,6 +38,8 @@ type writer struct {
 	sleep   *sql.Stmt
 	workout *sql.Stmt
 	pending int // rows in the current transaction
+
+	committed int64 // rows in batches already committed; they stay saved if the import fails
 }
 
 func newWriter(conn *sql.DB, sum *Summary) (*writer, error) {
@@ -105,6 +107,7 @@ func (w *writer) exec(st *sql.Stmt, args ...any) error {
 		if err := w.tx.Commit(); err != nil {
 			return err
 		}
+		w.committed += int64(w.pending)
 		return w.begin()
 	}
 	return nil

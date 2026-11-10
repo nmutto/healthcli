@@ -159,3 +159,47 @@ func TestOnlyPlainDecimalNumbersAreAccepted(t *testing.T) {
 		t.Errorf("summary = %+v, want 2 inserted and 2 bad_value", sum)
 	}
 }
+
+// BUG: a file cut off after rows were already committed (every 5000 rows)
+// failed with a bare XML error, and nothing said that most of it was saved.
+func TestTruncatedImportSaysHowManyRowsWereSaved(t *testing.T) {
+	var sb strings.Builder
+	sb.WriteString("<?xml version=\"1.0\"?>\n<HealthData locale=\"en_US\">\n")
+	for i := 0; i < 12000; i++ {
+		fmt.Fprintf(&sb, `<Record type="HKQuantityTypeIdentifierStepCount" sourceName="a" unit="count" startDate="2024-12-01 10:00:00 +0100" endDate="2024-12-01 10:00:%02d +0100" value="%d"/>`+"\n", i%60, i+1)
+	}
+	// no closing </HealthData>
+	p := writeFile(t, "export.xml", sb.String())
+	conn := newDB(t)
+	_, err := Import(conn, p, Options{})
+	if err == nil {
+		t.Fatal("a truncated file should fail")
+	}
+	want := "10000 rows were saved before the error; run the import again to complete it (re-importing is safe)"
+	if !strings.Contains(err.Error(), want) {
+		t.Errorf("error = %q, want it to contain %q", err, want)
+	}
+	if n := count(t, conn, "SELECT COUNT(*) FROM samples"); n == 0 || n > 10000 {
+		t.Errorf("samples = %d, want the committed rows only", n)
+	}
+}
+
+// BUG: a third-party source that writes 97 with unit "%" (Apple writes 0.97)
+// would have become 9700 percent. Such values are skipped as bad_value.
+func TestPercentAbove100IsSkipped(t *testing.T) {
+	p := writeFile(t, "export.xml", wrap(`
+<Record type="HKQuantityTypeIdentifierOxygenSaturation" sourceName="apple" unit="%" `+qaWhen+` value="0.97"/>
+<Record type="HKQuantityTypeIdentifierOxygenSaturation" sourceName="other" unit="%" `+qaWhen+` value="97"/>
+<Record type="HKQuantityTypeIdentifierBodyFatPercentage" sourceName="other" unit="%" `+qaWhen+` value="0.15"/>`))
+	conn := newDB(t)
+	sum, err := Import(conn, p, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Inserted != 2 || sum.Skipped[reasonBadValue] != 1 {
+		t.Errorf("summary = %+v, want 2 inserted and 1 bad_value", sum)
+	}
+	if n := count(t, conn, "SELECT COUNT(*) FROM samples WHERE value > 100"); n != 0 {
+		t.Errorf("%d rows above 100 percent were stored", n)
+	}
+}

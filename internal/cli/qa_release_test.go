@@ -27,7 +27,7 @@ func TestLogRejectsImpossibleValues(t *testing.T) {
 		{"weight", "0"}, {"hr", "0"}, {"hrv_sdnn", "0"}, {"resting_heart_rate", "0"},
 		{"steps", "--", "-5"}, {"weight", "--", "-5"},
 	} {
-		db := tempDB(t)
+		db := emptyDB(t)
 		if _, _, err := run(t, append([]string{"--db", db, "log"}, args...)...); err == nil {
 			t.Errorf("log %v should fail", args)
 		}

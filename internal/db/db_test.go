@@ -1,6 +1,7 @@
 package db
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -95,5 +96,56 @@ func TestMemoryDatabase(t *testing.T) {
 
 	if _, err := conn.Exec(`INSERT INTO meta (key, value) VALUES ('k', 'v')`); err != nil {
 		t.Fatalf("insert into meta: %v", err)
+	}
+}
+
+// A path with URI characters must be used as typed, not read as a URI.
+func TestOpenPathWithURICharacters(t *testing.T) {
+	dir := t.TempDir()
+	for _, name := range []string{"we?ird#.db", "100%.db", "a%3Fb.db", "sp ace.db"} {
+		path := filepath.Join(dir, name)
+		conn, err := Open(path)
+		if err != nil {
+			t.Fatalf("Open(%q): %v", name, err)
+		}
+		conn.Close()
+		if _, err := os.Stat(path); err != nil {
+			t.Errorf("%q: database not created at the given path: %v", name, err)
+		}
+		ro, err := OpenReadOnly(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var n int
+		if err := ro.QueryRow(`SELECT count(*) FROM meta`).Scan(&n); err != nil {
+			t.Errorf("%q: read-only open: %v", name, err)
+		}
+		ro.Close()
+	}
+	// Nothing else (such as a file named "we") may appear.
+	entries, _ := os.ReadDir(dir)
+	for _, e := range entries {
+		if e.Name() == "we" || e.Name() == "100" {
+			t.Errorf("stray file %q: the path was cut at a URI character", e.Name())
+		}
+	}
+}
+
+func TestOpenCreatesPrivateFiles(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "private.db")
+	conn, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	conn.Exec(`INSERT INTO meta (key, value) VALUES ('k', 'v')`) // makes the -wal file
+	for _, p := range []string{path, path + "-wal", path + "-shm"} {
+		st, err := os.Stat(p)
+		if err != nil {
+			continue // not every build leaves a -wal or -shm around
+		}
+		if st.Mode().Perm() != 0o600 {
+			t.Errorf("%s has mode %v, want 0600", filepath.Base(p), st.Mode().Perm())
+		}
 	}
 }

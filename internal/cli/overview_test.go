@@ -298,7 +298,7 @@ func TestOverviewCommandOnPipeIsASCIIAndPlain(t *testing.T) {
 }
 
 func TestOverviewEmptyJSON(t *testing.T) {
-	out, _, err := run(t, "--db", tempDB(t), "overview", "--json")
+	out, _, err := run(t, "--db", emptyDB(t), "overview", "--json")
 	if err != nil || !strings.Contains(out, `"empty": true`) {
 		t.Errorf("got %q, %v", out, err)
 	}

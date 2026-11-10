@@ -136,7 +136,7 @@ func TestTodayFallsBackToLatestDay(t *testing.T) {
 }
 
 func TestTodayEmptyDatabaseHint(t *testing.T) {
-	out, _, err := run(t, "--db", tempDB(t), "today")
+	out, _, err := run(t, "--db", emptyDB(t), "today")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -145,7 +145,7 @@ func TestTodayEmptyDatabaseHint(t *testing.T) {
 			t.Errorf("missing %q in:\n%s", want, out)
 		}
 	}
-	jsonOut, _, err := run(t, "--db", tempDB(t), "today", "--json")
+	jsonOut, _, err := run(t, "--db", emptyDB(t), "today", "--json")
 	if err != nil || !strings.Contains(jsonOut, `"status": "no_data"`) {
 		t.Errorf("want no_data status, got %q, %v", jsonOut, err)
 	}
