@@ -1,0 +1,61 @@
+{
+  "today": "2026-11-08",
+  "empty": true,
+  "metrics": [],
+  "categories": [],
+  "not_tracked": [
+    "heart_rate",
+    "resting_heart_rate",
+    "step_count",
+    "hrv_sdnn",
+    "body_mass",
+    "active_energy",
+    "respiratory_rate",
+    "apple_sleeping_wrist_temperature",
+    "oxygen_saturation",
+    "vo2_max",
+    "walking_heart_rate_average",
+    "heart_rate_recovery_one_minute",
+    "blood_pressure_systolic",
+    "blood_pressure_diastolic",
+    "blood_glucose",
+    "basal_energy",
+    "apple_exercise_time",
+    "apple_stand_time",
+    "flights_climbed",
+    "distance_walking_running",
+    "time_in_daylight",
+    "body_fat_percentage",
+    "body_mass_index",
+    "lean_body_mass",
+    "height",
+    "walking_speed",
+    "walking_step_length",
+    "walking_asymmetry",
+    "walking_double_support",
+    "apple_walking_steadiness"
+  ],
+  "sleep": {
+    "state": "no_data",
+    "age_days": 0,
+    "asleep_seconds": 0,
+    "core_seconds": 0,
+    "deep_seconds": 0,
+    "rem_seconds": 0,
+    "unspecified_seconds": 0,
+    "awake_seconds": 0,
+    "in_bed_seconds": 0
+  },
+  "workouts": {
+    "days": 28,
+    "count": 0,
+    "duration_seconds": 0,
+    "energy_kcal": 0
+  },
+  "data": {
+    "samples": 0,
+    "sleep_nights": 0,
+    "source_samples": {},
+    "gaps": []
+  }
+}

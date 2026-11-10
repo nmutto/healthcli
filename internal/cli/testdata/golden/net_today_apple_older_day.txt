@@ -1,0 +1,50 @@
+ Monday 2026-11-02 (6 days ago)
+ ------------------------------------------------------------------------------
+ 5 better, 2 worse, 3 changed, 9 typical vs your 28-day usual
+ VITALS 8 | ACTIVITY 8 !2 | MOBILITY 5 | SLEEP
+
+   METRIC               LATEST          USUAL   VS USUAL
+
+ == VITALS == 8 metrics | 2 better | 2 changed ================================
+   Avg heart rate       75 bpm          74      - 0%              ...==*=...
+ + Resting HR           54 bpm          57      v -5% better      ..*====...
+ + HRV                  54 ms           43      ^ +24% better     ...====*..
+ ~ Respiratory rate     15.9/min        13.7    ^ +16% higher     ...====..*
+ ~ Wrist temperature    35.3 C          35.9    v -2% lower       .*.====...
+   Blood oxygen         98%             97      ^ +0.9pt          ...===*...
+   VO2 max              41.9 mL/kg/min  -       need 7d (have 1)
+   Walking heart rate   95 bpm          94      ^ +2%             ...==*=...
+
+ == ACTIVITY == 8 metrics | 1 better | 2 worse ================================
+   Steps                17,731 steps    19,563  v -9%             ...*===...
+   Active energy        709 kcal        783     v -9%             ...*===...
+   Resting energy       1,677 kcal      1,696   v -1%             ...*===...
+ ! Exercise time        28 min          43      v -34% worse      ...*===...
+ + Stand time           529 min         387     ^ +37% better     ...====*..
+   Flights climbed      14 flights      12      ^ +13%            ...==*=...
+   Walk + run distance  5.8 km          6.1     v -4%             ...=*==...
+ ! Time in daylight     28 min          48      v -41% worse      ...*===...
+
+ == MOBILITY == 5 metrics | 2 better | 1 changed ==============================
+ + Walking speed        5.6 km/h        5.4     ^ +3% better      ...===*...
+ + Step length          74 cm           71      ^ +4% better      ...====*..
+   Walking asymmetry    3.1%            3.4     v -0.3pt          ...=*==...
+ ~ Double support time  26.7%           28.7    v -2pt lower      ..*====...
+   Walking steadiness   94%             -       need 7d (have 1)
+ + better  ! worse  ~ higher/lower, no good direction
+ 5 tracked metrics have no reading on this day
+
+ == SLEEP == Mon 2 Nov | iPhone, no stages (unspecified asleep only), in bed ==
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ asleep 7h 24m   23:10 -> 06:34   midpoint 02:52          (stages not recorded)
+
+ STAT         LAST NIGHT          7 NIGHTS            VS USUAL
+ Asleep       7h 24m              7h 03m              need 7 nights (have 6)
+ In bed       7h 34m              7h 32m              need 7 nights (have 6)
+ Efficiency   98%                 94%                 need 7 nights (have 6)
+ Awake        -                   20m / 2 awakenings  need 7 nights (have 6)
+ Deep         -                   1h 30m              need 7 nights (have 6)
+ REM          -                   1h 16m              need 7 nights (have 6)
+ Bedtime      23:10               23:12               need 7 nights (have 6)
+ Midpoint     02:52               02:52               need 7 nights (have 6)
+ Sleep debt   36m short last night, 7 nights: 6h 40m short vs 8h target

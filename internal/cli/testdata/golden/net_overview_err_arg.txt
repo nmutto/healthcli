@@ -1,0 +1,2 @@
+--- error ---
+unknown command "today" for "healthcli overview"

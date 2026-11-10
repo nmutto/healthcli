@@ -1,0 +1,93 @@
+ [1mhealthcli overview[0m                              [2mdb: test.db | imported 1 d ago[0m
+ ------------------------------------------------------------------------------
+ 3 better, 1 worse, 3 changed, 12 typical vs your 28-day usual | Resting HR +6%
+ VITALS 9 !1 | ACTIVITY 8 | BODY 4 | MOBILITY 5 | SLEEP | WORKOUTS
+
+[2m   METRIC                      LATEST          VS 28-DAY USUAL               AGE[0m
+
+ [2m==[0m [1mVITALS[0m [2m==[0m 9 metrics | 1 better | 1 worse | 1 changed | 1 stale [2m============[0m
+   Avg heart rate              76[2m bpm[0m          ^ +2%             ...===*...
+ [1;31m![0m Resting HR                  60[2m bpm[0m          [1;31m^ +6% worse[0m       ...====[1;31m*[0m..
+   HRV                         46[2m ms[0m           v -4%             ...=*==...
+ ~ Respiratory rate            15.6[2m/min[0m        ^ +9% higher      ...====*..
+   Wrist temperature           36.0[2m C[0m          - 0%              ...==*=...
+   Blood oxygen                97[2m%[0m             ^ +0.2pt          ...==*=...
+   VO2 max                     41.9[2m mL/kg/min[0m  [33mstale                       [0m  [33m6 d[0m
+ [32m+[0m Walking heart rate          90[2m bpm[0m          [32mv -4% better[0m      ...[32m*[0m===...
+   Heart rate recovery         26[2m bpm[0m          [2mneed 7d (have 6)            [0m
+
+ [2m==[0m [1mACTIVITY[0m [2m==[0m 8 metrics | 2 better [2m==========================================[0m
+ [32m+[0m Steps                       21,999[2m steps[0m    [32m^ +10% better[0m     ...===[32m*[0m...
+ [32m+[0m Active energy               880[2m kcal[0m        [32m^ +10% better[0m     ...===[32m*[0m...
+   Resting energy              1,730[2m kcal[0m      ^ +2%             ...===*...
+   Exercise time               43[2m min[0m          ^ +16%            ...==*=...
+   Stand time                  364[2m min[0m         v -12%            ...=*==...
+   Flights climbed             8[2m flights[0m       v -39%            ...*===...
+   Walking + running distance  6.5[2m km[0m          - 0%              ...==*=...
+   Time in daylight            53[2m min[0m          ^ +14%            ...==*=...
+
+ [2m==[0m [1mBODY[0m [2m==[0m 4 metrics | not enough data [2m=======================================[0m
+   Weight                      78.5[2m kg[0m         [2mneed 7d (have 4)            [0m
+   Body fat                    18.5[2m%[0m           [2mneed 7d (have 4)            [0m
+   BMI                         24.0            [2mneed 7d (have 4)            [0m
+   Lean body mass              63.2[2m kg[0m         [2mneed 7d (have 4)            [0m
+
+ [2m==[0m [1mMOBILITY[0m [2m==[0m 5 metrics | 2 changed | 1 stale [2m===============================[0m
+   Walking speed               5.5[2m km/h[0m        ^ +2%             ...==*=...
+   Step length                 73[2m cm[0m           ^ +2%             ...===*...
+ ~ Walking asymmetry           4.9[2m%[0m            ^ +1.4pt higher   ...====*..
+ ~ Double support time         30.7[2m%[0m           ^ +2.1pt higher   ...====*..
+   Walking steadiness          94[2m%[0m             [33mstale                       [0m  [33m6 d[0m
+ [32m+[0m[2m better[0m  [1;31m![0m[2m worse[0m  [2m~ higher/lower, no good direction[0m
+
+ [2m==[0m [1mSLEEP[0m [2m==[0m Sun 8 Nov | Watch stages, iPhone in bed [2m==========================[0m
+[2m       23:12                                                              06:30[0m
+ awake [38;5;208m                      ...                        ..                     [0m
+ REM   [38;5;117m                 +++++                      +++++                     ++[0m
+ core  [38;5;33m::::::::    :::::        ::::::::     ::::::       :::::::::    ::::::  [0m
+ deep  [38;5;21m        ####                     #####                      ####        [0m
+[2m              00        01        02        03        04        05        06[0m
+
+[2m STAT         LAST NIGHT          7 NIGHTS            VS 12-NIGHT USUAL[0m
+ Asleep       7h 01m              7h 08m              [2m- typical[0m
+ In bed       7h 30m              7h 37m              [2m- typical[0m
+ Efficiency   94%                 94%                 [2m- typical[0m
+ Awake        17m / 2 awakenings  20m / 3 awakenings  [2m- typical[0m
+ Deep         1h 27m 21%          1h 30m              [2m- typical[0m
+ REM          1h 18m 19%          1h 17m              [2m- typical[0m
+ Bedtime      23:12               23:12               [2m- typical[0m
+ Midpoint     02:51               02:54               [2m- typical[0m
+ Sleep debt   59m short last night, 7 nights: 6h 05m short vs 8h target
+
+ [2m==[0m [1mWORKOUTS[0m [2m==[0m 7 sessions  6h 13m  3,243 kcal  71.1 km  active 7 of 28 d [2m=====[0m
+
+[2m TYPE      N TIME       KCAL     KM SHARE[0m
+ running   3 2h 49m    1,828   28.1 #########...........  45%
+ cycling   2 1h 44m    1,039   34.6 ######..............  28%
+ walking   2 1h 40m      375    8.3 #####...............  27%
+
+ [2mRECENT[0m
+ Sat Nov 07 running     51m  8.5 km 6:00 /km  551 kcal
+ Thu Nov 05 cycling  1h 04m 21.3 km 20.0 km/h 638 kcal
+ Tue Nov 03 walking     28m  2.3 km 12:00 /km 104 kcal
+
+ [2m==[0m [1mCALENDAR[0m [2m==[0m Steps per day, 12 weeks to 2026-11-08 [2m=========================[0m
+     Aug Sep     Oct     Nov
+ Mon [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;94m#[0m [38;5;94m#[0m
+ Tue [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;208m#[0m [38;5;166m#[0m
+ Wed [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;208m#[0m [38;5;130m#[0m
+ Thu [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;166m#[0m [38;5;130m#[0m
+ Fri [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;166m#[0m [38;5;214m#[0m
+ Sat [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;130m#[0m [38;5;214m#[0m
+ Sun [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;94m#[0m [38;5;208m#[0m [1m<[0m
+
+ [38;5;94m#[0m <=17,731  [38;5;130m#[0m <=19,464  [38;5;166m#[0m <=20,972  [38;5;208m#[0m <=21,999  [38;5;214m#[0m >21,999
+ [2m_[0m no data   < today   steps per day
+
+ [2m==[0m [1mDATA[0m [2m==[0m 1,271 samples, 14 sleep nights [2m====================================[0m
+ range: 2026-10-26 -> 2026-11-08
+ sources: Watch 74%, iPhone 26%
+ last import: 1,468 added | 9 duplicates
+ skipped: 3 (bad_date 1, missing_value 1, unknown_type 1)
+ days missing: Weight 8 of 13, Body fat 8 of 13, BMI 8 of 13, +4 more
+ [2mnot tracked in your data: 4 metrics[0m

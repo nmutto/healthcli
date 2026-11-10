@@ -1,0 +1,52 @@
+ [1mSunday 2026-11-08[0m
+ ------------------------------------------------------------------------------
+ 3 better, 1 worse, 3 changed, 12 typical vs your 28-day usual | Resting HR +6%
+ VITALS 7 !1 | ACTIVITY 8 | MOBILITY 4 | SLEEP
+
+[2m   METRIC                      LATEST        USUAL   VS USUAL[0m
+
+ [2m==[0m [1mVITALS[0m [2m==[0m 7 metrics | 1 better | 1 worse | 1 changed [2m======================[0m
+   Avg heart rate              76[2m bpm[0m        [2m75    [0m  ^ +2%            ...===*...
+ [1;31m![0m Resting HR                  60[2m bpm[0m        [2m57    [0m  [1;31m^ +6% worse[0m      ...====[1;31m*[0m..
+   HRV                         46[2m ms[0m         [2m48    [0m  v -4%            ...=*==...
+ ~ Respiratory rate            15.6[2m/min[0m      [2m14.3  [0m  ^ +9% higher     ...====*..
+   Wrist temperature           36.0[2m C[0m        [2m35.9  [0m  - 0%             ...==*=...
+   Blood oxygen                97[2m%[0m           [2m97    [0m  ^ +0.2pt         ...==*=...
+ [32m+[0m Walking heart rate          90[2m bpm[0m        [2m94    [0m  [32mv -4% better[0m     ...[32m*[0m===...
+
+ [2m==[0m [1mACTIVITY[0m [2m==[0m 8 metrics | 2 better [2m==========================================[0m
+ [32m+[0m Steps                       21,999[2m steps[0m  [2m19,955[0m  [32m^ +10% better[0m    ...===[32m*[0m...
+ [32m+[0m Active energy               880[2m kcal[0m      [2m798   [0m  [32m^ +10% better[0m    ...===[32m*[0m...
+   Resting energy              1,730[2m kcal[0m    [2m1,701 [0m  ^ +2%            ...===*...
+   Exercise time               43[2m min[0m        [2m37    [0m  ^ +16%           ...==*=...
+   Stand time                  364[2m min[0m       [2m411   [0m  v -12%           ...=*==...
+   Flights climbed             8[2m flights[0m     [2m13    [0m  v -39%           ...*===...
+   Walking + running distance  6.5[2m km[0m        [2m6.5   [0m  - 0%             ...==*=...
+   Time in daylight            53[2m min[0m        [2m47    [0m  ^ +14%           ...==*=...
+
+ [2m==[0m [1mMOBILITY[0m [2m==[0m 4 metrics | 2 changed [2m=========================================[0m
+   Walking speed               5.5[2m km/h[0m      [2m5.4   [0m  ^ +2%            ...==*=...
+   Step length                 73[2m cm[0m         [2m72    [0m  ^ +2%            ...===*...
+ ~ Walking asymmetry           4.9[2m%[0m          [2m3.5   [0m  ^ +1.4pt higher  ...====*..
+ ~ Double support time         30.7[2m%[0m         [2m28.6  [0m  ^ +2.1pt higher  ...====*..
+ [32m+[0m[2m better[0m  [1;31m![0m[2m worse[0m  [2m~ higher/lower, no good direction[0m
+ [2m7 tracked metrics have no reading on this day[0m
+
+ [2m==[0m [1mSLEEP[0m [2m==[0m Sun 8 Nov | Watch stages, iPhone in bed [2m==========================[0m
+[2m       23:12                                                              06:30[0m
+ awake [38;5;208m                      ...                        ..                     [0m
+ REM   [38;5;117m                 +++++                      +++++                     ++[0m
+ core  [38;5;33m::::::::    :::::        ::::::::     ::::::       :::::::::    ::::::  [0m
+ deep  [38;5;21m        ####                     #####                      ####        [0m
+[2m              00        01        02        03        04        05        06[0m
+
+[2m STAT         LAST NIGHT          7 NIGHTS            VS 12-NIGHT USUAL[0m
+ Asleep       7h 01m              7h 08m              [2m- typical[0m
+ In bed       7h 30m              7h 37m              [2m- typical[0m
+ Efficiency   94%                 94%                 [2m- typical[0m
+ Awake        17m / 2 awakenings  20m / 3 awakenings  [2m- typical[0m
+ Deep         1h 27m 21%          1h 30m              [2m- typical[0m
+ REM          1h 18m 19%          1h 17m              [2m- typical[0m
+ Bedtime      23:12               23:12               [2m- typical[0m
+ Midpoint     02:51               02:54               [2m- typical[0m
+ Sleep debt   59m short last night, 7 nights: 6h 05m short vs 8h target

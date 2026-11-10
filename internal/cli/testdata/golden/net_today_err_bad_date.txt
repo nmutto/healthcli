@@ -1,0 +1,2 @@
+--- error ---
+bad --date "11/08/2026": want YYYY-MM-DD, e.g. 2026-11-08

@@ -1,0 +1,8 @@
+ healthcli overview                                                 db: test.db
+ ------------------------------------------------------------------------------
+
+ +------------------------------------------------+
+ | No data yet. Two ways to start:                |
+ |   import:  healthcli import apple <export.zip> |
+ |   log:     healthcli log weight 72.5           |
+ +------------------------------------------------+

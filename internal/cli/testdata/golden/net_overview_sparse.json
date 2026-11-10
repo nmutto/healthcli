@@ -1,0 +1,661 @@
+{
+  "today": "2026-11-08",
+  "empty": false,
+  "metrics": [
+    {
+      "metric": "heart_rate",
+      "label": "Avg heart rate",
+      "category": "vitals",
+      "polarity": "neutral",
+      "unit": "bpm",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 78.66666666666667,
+      "source": "FitBand 3",
+      "baseline_days_with_data": 27,
+      "baseline_mean": 79.43364197530865,
+      "baseline_stddev": 1.4129031485063648,
+      "delta_pct": -0.9655547568628204,
+      "z": -0.5428364353584846,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        81.27083333333333,
+        77.64583333333333,
+        80.83333333333333,
+        81.25,
+        78.35416666666667,
+        80.16666666666667,
+        78.70833333333333,
+        80.3125,
+        78.58333333333333,
+        77.3125,
+        77.64583333333333,
+        78.4375,
+        76.9375,
+        79.33333333333333,
+        82,
+        80.16666666666667,
+        80.45833333333333,
+        81.125,
+        79.375,
+        79.125,
+        78.97916666666667,
+        78.83333333333333,
+        77.77083333333333,
+        80.22916666666667,
+        81.79166666666667,
+        79.5,
+        78.5625,
+        78.66666666666667
+      ]
+    },
+    {
+      "metric": "step_count",
+      "label": "Steps",
+      "category": "activity",
+      "polarity": "higher_better",
+      "unit": "count",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 19415,
+      "source": "FitBand 3",
+      "baseline_days_with_data": 27,
+      "baseline_mean": 19115.962962962964,
+      "baseline_stddev": 2233.71442086049,
+      "delta_pct": 1.5643315359860162,
+      "z": 0.1338743369538882,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        16625,
+        19997,
+        17336,
+        20549,
+        21359,
+        16172,
+        18423,
+        20123,
+        21966,
+        19070,
+        18863,
+        22282,
+        20671,
+        19483,
+        17572,
+        18109,
+        15163,
+        18211,
+        19498,
+        19489,
+        22414,
+        14692,
+        21661,
+        16838,
+        21140,
+        16455,
+        21970,
+        19415
+      ]
+    },
+    {
+      "metric": "body_mass",
+      "label": "Weight",
+      "category": "body",
+      "polarity": "neutral",
+      "unit": "kg",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 83.6,
+      "source": "SmartScale",
+      "baseline_days_with_data": 9,
+      "baseline_mean": 82.87777777777778,
+      "baseline_stddev": 0.48419463487779807,
+      "delta_pct": 0.8714304866604007,
+      "z": 1.491594846779932,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        83.3,
+        null,
+        null,
+        83,
+        null,
+        null,
+        83.9,
+        null,
+        null,
+        82.8,
+        null,
+        null,
+        82.4,
+        null,
+        null,
+        82.7,
+        null,
+        null,
+        82.9,
+        null,
+        null,
+        82.5,
+        null,
+        null,
+        82.4,
+        null,
+        null,
+        83.6
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "name": "vitals",
+      "total": 1,
+      "better": 0,
+      "worse": 0,
+      "changed": 0,
+      "typical": 1,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    },
+    {
+      "name": "activity",
+      "total": 1,
+      "better": 0,
+      "worse": 0,
+      "changed": 0,
+      "typical": 1,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    },
+    {
+      "name": "body",
+      "total": 1,
+      "better": 0,
+      "worse": 0,
+      "changed": 0,
+      "typical": 1,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    }
+  ],
+  "not_tracked": [
+    "resting_heart_rate",
+    "hrv_sdnn",
+    "active_energy",
+    "respiratory_rate",
+    "apple_sleeping_wrist_temperature",
+    "oxygen_saturation",
+    "vo2_max",
+    "walking_heart_rate_average",
+    "heart_rate_recovery_one_minute",
+    "blood_pressure_systolic",
+    "blood_pressure_diastolic",
+    "blood_glucose",
+    "basal_energy",
+    "apple_exercise_time",
+    "apple_stand_time",
+    "flights_climbed",
+    "distance_walking_running",
+    "time_in_daylight",
+    "body_fat_percentage",
+    "body_mass_index",
+    "lean_body_mass",
+    "height",
+    "walking_speed",
+    "walking_step_length",
+    "walking_asymmetry",
+    "walking_double_support",
+    "apple_walking_steadiness"
+  ],
+  "sleep": {
+    "state": "no_data",
+    "age_days": 0,
+    "asleep_seconds": 0,
+    "core_seconds": 0,
+    "deep_seconds": 0,
+    "rem_seconds": 0,
+    "unspecified_seconds": 0,
+    "awake_seconds": 0,
+    "in_bed_seconds": 0
+  },
+  "workouts": {
+    "days": 28,
+    "count": 0,
+    "duration_seconds": 0,
+    "energy_kcal": 0
+  },
+  "heatmap": {
+    "metric": "step_count",
+    "unit": "count",
+    "today": "2026-11-08",
+    "from": "2026-08-17",
+    "thresholds": [
+      16838,
+      18863,
+      19498,
+      21359
+    ],
+    "days_with_data": 28,
+    "weeks": [
+      [
+        {
+          "day": "2026-08-17",
+          "level": 0
+        },
+        {
+          "day": "2026-08-18",
+          "level": 0
+        },
+        {
+          "day": "2026-08-19",
+          "level": 0
+        },
+        {
+          "day": "2026-08-20",
+          "level": 0
+        },
+        {
+          "day": "2026-08-21",
+          "level": 0
+        },
+        {
+          "day": "2026-08-22",
+          "level": 0
+        },
+        {
+          "day": "2026-08-23",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-08-24",
+          "level": 0
+        },
+        {
+          "day": "2026-08-25",
+          "level": 0
+        },
+        {
+          "day": "2026-08-26",
+          "level": 0
+        },
+        {
+          "day": "2026-08-27",
+          "level": 0
+        },
+        {
+          "day": "2026-08-28",
+          "level": 0
+        },
+        {
+          "day": "2026-08-29",
+          "level": 0
+        },
+        {
+          "day": "2026-08-30",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-08-31",
+          "level": 0
+        },
+        {
+          "day": "2026-09-01",
+          "level": 0
+        },
+        {
+          "day": "2026-09-02",
+          "level": 0
+        },
+        {
+          "day": "2026-09-03",
+          "level": 0
+        },
+        {
+          "day": "2026-09-04",
+          "level": 0
+        },
+        {
+          "day": "2026-09-05",
+          "level": 0
+        },
+        {
+          "day": "2026-09-06",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-07",
+          "level": 0
+        },
+        {
+          "day": "2026-09-08",
+          "level": 0
+        },
+        {
+          "day": "2026-09-09",
+          "level": 0
+        },
+        {
+          "day": "2026-09-10",
+          "level": 0
+        },
+        {
+          "day": "2026-09-11",
+          "level": 0
+        },
+        {
+          "day": "2026-09-12",
+          "level": 0
+        },
+        {
+          "day": "2026-09-13",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-14",
+          "level": 0
+        },
+        {
+          "day": "2026-09-15",
+          "level": 0
+        },
+        {
+          "day": "2026-09-16",
+          "level": 0
+        },
+        {
+          "day": "2026-09-17",
+          "level": 0
+        },
+        {
+          "day": "2026-09-18",
+          "level": 0
+        },
+        {
+          "day": "2026-09-19",
+          "level": 0
+        },
+        {
+          "day": "2026-09-20",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-21",
+          "level": 0
+        },
+        {
+          "day": "2026-09-22",
+          "level": 0
+        },
+        {
+          "day": "2026-09-23",
+          "level": 0
+        },
+        {
+          "day": "2026-09-24",
+          "level": 0
+        },
+        {
+          "day": "2026-09-25",
+          "level": 0
+        },
+        {
+          "day": "2026-09-26",
+          "level": 0
+        },
+        {
+          "day": "2026-09-27",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-28",
+          "level": 0
+        },
+        {
+          "day": "2026-09-29",
+          "level": 0
+        },
+        {
+          "day": "2026-09-30",
+          "level": 0
+        },
+        {
+          "day": "2026-10-01",
+          "level": 0
+        },
+        {
+          "day": "2026-10-02",
+          "level": 0
+        },
+        {
+          "day": "2026-10-03",
+          "level": 0
+        },
+        {
+          "day": "2026-10-04",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-10-05",
+          "level": 0
+        },
+        {
+          "day": "2026-10-06",
+          "level": 0
+        },
+        {
+          "day": "2026-10-07",
+          "level": 0
+        },
+        {
+          "day": "2026-10-08",
+          "level": 0
+        },
+        {
+          "day": "2026-10-09",
+          "level": 0
+        },
+        {
+          "day": "2026-10-10",
+          "level": 0
+        },
+        {
+          "day": "2026-10-11",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-10-12",
+          "value": 16625,
+          "level": 1
+        },
+        {
+          "day": "2026-10-13",
+          "value": 19997,
+          "level": 4
+        },
+        {
+          "day": "2026-10-14",
+          "value": 17336,
+          "level": 2
+        },
+        {
+          "day": "2026-10-15",
+          "value": 20549,
+          "level": 4
+        },
+        {
+          "day": "2026-10-16",
+          "value": 21359,
+          "level": 4
+        },
+        {
+          "day": "2026-10-17",
+          "value": 16172,
+          "level": 1
+        },
+        {
+          "day": "2026-10-18",
+          "value": 18423,
+          "level": 2
+        }
+      ],
+      [
+        {
+          "day": "2026-10-19",
+          "value": 20123,
+          "level": 4
+        },
+        {
+          "day": "2026-10-20",
+          "value": 21966,
+          "level": 5
+        },
+        {
+          "day": "2026-10-21",
+          "value": 19070,
+          "level": 3
+        },
+        {
+          "day": "2026-10-22",
+          "value": 18863,
+          "level": 2
+        },
+        {
+          "day": "2026-10-23",
+          "value": 22282,
+          "level": 5
+        },
+        {
+          "day": "2026-10-24",
+          "value": 20671,
+          "level": 4
+        },
+        {
+          "day": "2026-10-25",
+          "value": 19483,
+          "level": 3
+        }
+      ],
+      [
+        {
+          "day": "2026-10-26",
+          "value": 17572,
+          "level": 2
+        },
+        {
+          "day": "2026-10-27",
+          "value": 18109,
+          "level": 2
+        },
+        {
+          "day": "2026-10-28",
+          "value": 15163,
+          "level": 1
+        },
+        {
+          "day": "2026-10-29",
+          "value": 18211,
+          "level": 2
+        },
+        {
+          "day": "2026-10-30",
+          "value": 19498,
+          "level": 3
+        },
+        {
+          "day": "2026-10-31",
+          "value": 19489,
+          "level": 3
+        },
+        {
+          "day": "2026-11-01",
+          "value": 22414,
+          "level": 5
+        }
+      ],
+      [
+        {
+          "day": "2026-11-02",
+          "value": 14692,
+          "level": 1
+        },
+        {
+          "day": "2026-11-03",
+          "value": 21661,
+          "level": 5
+        },
+        {
+          "day": "2026-11-04",
+          "value": 16838,
+          "level": 1
+        },
+        {
+          "day": "2026-11-05",
+          "value": 21140,
+          "level": 4
+        },
+        {
+          "day": "2026-11-06",
+          "value": 16455,
+          "level": 1
+        },
+        {
+          "day": "2026-11-07",
+          "value": 21970,
+          "level": 5
+        },
+        {
+          "day": "2026-11-08",
+          "value": 19415,
+          "level": 3
+        }
+      ]
+    ]
+  },
+  "data": {
+    "samples": 1802,
+    "sleep_nights": 0,
+    "first_day": "2026-10-12",
+    "last_day": "2026-11-08",
+    "source_samples": {
+      "other": 1802
+    },
+    "last_import": {
+      "at": 1794070800,
+      "read": 1802,
+      "inserted": 1802,
+      "duplicates": 0,
+      "skipped": {}
+    },
+    "gaps": [
+      {
+        "metric": "body_mass",
+        "label": "Weight",
+        "missing_days": 18,
+        "span_days": 28
+      }
+    ]
+  }
+}

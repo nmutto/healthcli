@@ -1,0 +1,17 @@
+ Sunday 2026-11-08
+ ------------------------------------------------------------------------------
+ 1 better, 1 worse, 1 changed, 4 typical vs your 28-day usual | Resting HR +6%
+ VITALS 7 !1
+
+   METRIC              LATEST    USUAL  VS USUAL
+
+ == VITALS == 7 metrics | 1 better | 1 worse | 1 changed ======================
+   Avg heart rate      76 bpm    75     ^ +2%         ...===*...
+ ! Resting HR          60 bpm    57     ^ +6% worse   ...====*..
+   HRV                 46 ms     48     v -4%         ...=*==...
+ ~ Respiratory rate    15.6/min  14.3   ^ +9% higher  ...====*..
+   Wrist temperature   36.0 C    35.9   - 0%          ...==*=...
+   Blood oxygen        97%       97     ^ +0.2pt      ...==*=...
+ + Walking heart rate  90 bpm    94     v -4% better  ...*===...
+ + better  ! worse  ~ higher/lower, no good direction
+ 2 tracked metrics have no reading on this day

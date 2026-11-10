@@ -1,0 +1,20 @@
+ healthcli overview                              db: test.db | imported 1 d ago
+ ------------------------------------------------------------------------------
+ 2 changed, 2 typical vs your 28-day usual | Walking asymmetry +1.4pt
+ BODY 4 | MOBILITY 5
+
+   METRIC               LATEST    VS 28-DAY USUAL               AGE
+
+ == BODY == 4 metrics | not enough data =======================================
+   Weight               78.5 kg   need 7d (have 4)
+   Body fat             18.5%     need 7d (have 4)
+   BMI                  24.0      need 7d (have 4)
+   Lean body mass       63.2 kg   need 7d (have 4)
+
+ == MOBILITY == 5 metrics | 2 changed | 1 stale ===============================
+   Walking speed        5.5 km/h  ^ +2%             ...==*=...
+   Step length          73 cm     ^ +2%             ...===*...
+ ~ Walking asymmetry    4.9%      ^ +1.4pt higher   ...====*..
+ ~ Double support time  30.7%     ^ +2.1pt higher   ...====*..
+   Walking steadiness   94%       stale                         6 d
+ + better  ! worse  ~ higher/lower, no good direction

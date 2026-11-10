@@ -1,0 +1,755 @@
+{
+  "today": "2026-11-08",
+  "empty": false,
+  "metrics": [],
+  "categories": [],
+  "not_tracked": [],
+  "data": {
+    "samples": 1271,
+    "sleep_nights": 14,
+    "first_day": "2026-10-26",
+    "last_day": "2026-11-08",
+    "source_samples": {
+      "iphone": 330,
+      "watch": 941
+    },
+    "last_import": {
+      "at": 1794070800,
+      "read": 1480,
+      "inserted": 1468,
+      "duplicates": 9,
+      "skipped": {
+        "bad_date": 1,
+        "missing_value": 1,
+        "unknown_type": 1
+      }
+    },
+    "gaps": [
+      {
+        "metric": "vo2_max",
+        "label": "VO2 max",
+        "missing_days": 6,
+        "span_days": 8
+      },
+      {
+        "metric": "heart_rate_recovery_one_minute",
+        "label": "Heart rate recovery",
+        "missing_days": 6,
+        "span_days": 13
+      },
+      {
+        "metric": "body_mass",
+        "label": "Weight",
+        "missing_days": 8,
+        "span_days": 13
+      },
+      {
+        "metric": "body_fat_percentage",
+        "label": "Body fat",
+        "missing_days": 8,
+        "span_days": 13
+      },
+      {
+        "metric": "body_mass_index",
+        "label": "BMI",
+        "missing_days": 8,
+        "span_days": 13
+      },
+      {
+        "metric": "lean_body_mass",
+        "label": "Lean body mass",
+        "missing_days": 8,
+        "span_days": 13
+      },
+      {
+        "metric": "apple_walking_steadiness",
+        "label": "Walking steadiness",
+        "missing_days": 6,
+        "span_days": 8
+      }
+    ]
+  },
+  "sleep_summary": {
+    "today": "2026-11-08",
+    "empty": false,
+    "age_days": 0,
+    "kind": "stages",
+    "night": {
+      "night": "2026-11-08",
+      "source": "Alex’s Apple Watch",
+      "in_bed_source": "Alex’s iPhone",
+      "asleep_seconds": 25260,
+      "core_seconds": 15360,
+      "deep_seconds": 5220,
+      "rem_seconds": 4680,
+      "unspecified_seconds": 0,
+      "awake_seconds": 1020,
+      "in_bed_seconds": 27000,
+      "efficiency_pct": 93.55555555555556,
+      "awakenings": 2,
+      "latency_seconds": 720,
+      "bedtime": "23:12",
+      "wake": "06:30",
+      "midpoint": "02:51",
+      "stages": [
+        {
+          "stage": "core",
+          "start": "2026-11-07T23:12:00+01:00",
+          "end": "2026-11-07T23:59:00+01:00"
+        },
+        {
+          "stage": "deep",
+          "start": "2026-11-07T23:59:00+01:00",
+          "end": "2026-11-08T00:25:00+01:00"
+        },
+        {
+          "stage": "core",
+          "start": "2026-11-08T00:25:00+01:00",
+          "end": "2026-11-08T00:57:00+01:00"
+        },
+        {
+          "stage": "rem",
+          "start": "2026-11-08T00:57:00+01:00",
+          "end": "2026-11-08T01:31:00+01:00"
+        },
+        {
+          "stage": "awake",
+          "start": "2026-11-08T01:31:00+01:00",
+          "end": "2026-11-08T01:41:00+01:00"
+        },
+        {
+          "stage": "core",
+          "start": "2026-11-08T01:41:00+01:00",
+          "end": "2026-11-08T02:33:00+01:00"
+        },
+        {
+          "stage": "deep",
+          "start": "2026-11-08T02:33:00+01:00",
+          "end": "2026-11-08T03:06:00+01:00"
+        },
+        {
+          "stage": "core",
+          "start": "2026-11-08T03:06:00+01:00",
+          "end": "2026-11-08T03:42:00+01:00"
+        },
+        {
+          "stage": "rem",
+          "start": "2026-11-08T03:42:00+01:00",
+          "end": "2026-11-08T04:15:00+01:00"
+        },
+        {
+          "stage": "awake",
+          "start": "2026-11-08T04:15:00+01:00",
+          "end": "2026-11-08T04:22:00+01:00"
+        },
+        {
+          "stage": "core",
+          "start": "2026-11-08T04:22:00+01:00",
+          "end": "2026-11-08T05:15:00+01:00"
+        },
+        {
+          "stage": "deep",
+          "start": "2026-11-08T05:15:00+01:00",
+          "end": "2026-11-08T05:43:00+01:00"
+        },
+        {
+          "stage": "core",
+          "start": "2026-11-08T05:43:00+01:00",
+          "end": "2026-11-08T06:19:00+01:00"
+        },
+        {
+          "stage": "rem",
+          "start": "2026-11-08T06:19:00+01:00",
+          "end": "2026-11-08T06:30:00+01:00"
+        }
+      ]
+    },
+    "seven_nights": {
+      "nights": 7,
+      "asleep_seconds": 25671.428571428572,
+      "in_bed_seconds": 27402.85714285714,
+      "efficiency_pct": 93.69885039535845,
+      "awake_seconds": 1200,
+      "awakenings": 2.5,
+      "latency_seconds": 702.8571428571429,
+      "deep_seconds": 5400,
+      "rem_seconds": 4630,
+      "core_seconds": 15480,
+      "bedtime_min_since_18h": 311.7142857142857,
+      "wake_min_since_18h": 756.7142857142857,
+      "midpoint_min_since_18h": 534.2142857142857
+    },
+    "fourteen_nights": {
+      "nights": 13,
+      "asleep_seconds": 25435.384615384617,
+      "in_bed_seconds": 27258.46153846154,
+      "efficiency_pct": 93.31704553251431,
+      "awake_seconds": 1205,
+      "awakenings": 2.3333333333333335,
+      "latency_seconds": 710.7692307692307,
+      "deep_seconds": 5405,
+      "rem_seconds": 4600,
+      "core_seconds": 15330,
+      "bedtime_min_since_18h": 311.84615384615387,
+      "wake_min_since_18h": 754.3076923076923,
+      "midpoint_min_since_18h": 533.0769230769231
+    },
+    "usual": {
+      "nights": 12,
+      "asleep_seconds": 25450,
+      "in_bed_seconds": 27280,
+      "efficiency_pct": 93.29716969726087,
+      "awake_seconds": 1221.8181818181818,
+      "awakenings": 2.3636363636363638,
+      "latency_seconds": 710,
+      "deep_seconds": 5421.818181818182,
+      "rem_seconds": 4592.727272727273,
+      "core_seconds": 15327.272727272728,
+      "bedtime_min_since_18h": 311.8333333333333,
+      "wake_min_since_18h": 754.6666666666666,
+      "midpoint_min_since_18h": 533.25
+    },
+    "regularity": {
+      "nights": 13,
+      "bedtime_stddev_min": 0.5547001962252291,
+      "midpoint_stddev_min": 8.383630264405534
+    },
+    "debt": {
+      "target_seconds": 28800,
+      "last_night_seconds": 3540,
+      "nights": 7,
+      "window_seconds": 21900
+    },
+    "heatmap": {
+      "metric": "sleep_asleep",
+      "unit": "",
+      "today": "2026-11-08",
+      "from": "2026-08-17",
+      "thresholds": [
+        408,
+        421,
+        427,
+        444
+      ],
+      "days_with_data": 13,
+      "weeks": [
+        [
+          {
+            "day": "2026-08-17",
+            "level": 0
+          },
+          {
+            "day": "2026-08-18",
+            "level": 0
+          },
+          {
+            "day": "2026-08-19",
+            "level": 0
+          },
+          {
+            "day": "2026-08-20",
+            "level": 0
+          },
+          {
+            "day": "2026-08-21",
+            "level": 0
+          },
+          {
+            "day": "2026-08-22",
+            "level": 0
+          },
+          {
+            "day": "2026-08-23",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-08-24",
+            "level": 0
+          },
+          {
+            "day": "2026-08-25",
+            "level": 0
+          },
+          {
+            "day": "2026-08-26",
+            "level": 0
+          },
+          {
+            "day": "2026-08-27",
+            "level": 0
+          },
+          {
+            "day": "2026-08-28",
+            "level": 0
+          },
+          {
+            "day": "2026-08-29",
+            "level": 0
+          },
+          {
+            "day": "2026-08-30",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-08-31",
+            "level": 0
+          },
+          {
+            "day": "2026-09-01",
+            "level": 0
+          },
+          {
+            "day": "2026-09-02",
+            "level": 0
+          },
+          {
+            "day": "2026-09-03",
+            "level": 0
+          },
+          {
+            "day": "2026-09-04",
+            "level": 0
+          },
+          {
+            "day": "2026-09-05",
+            "level": 0
+          },
+          {
+            "day": "2026-09-06",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-07",
+            "level": 0
+          },
+          {
+            "day": "2026-09-08",
+            "level": 0
+          },
+          {
+            "day": "2026-09-09",
+            "level": 0
+          },
+          {
+            "day": "2026-09-10",
+            "level": 0
+          },
+          {
+            "day": "2026-09-11",
+            "level": 0
+          },
+          {
+            "day": "2026-09-12",
+            "level": 0
+          },
+          {
+            "day": "2026-09-13",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-14",
+            "level": 0
+          },
+          {
+            "day": "2026-09-15",
+            "level": 0
+          },
+          {
+            "day": "2026-09-16",
+            "level": 0
+          },
+          {
+            "day": "2026-09-17",
+            "level": 0
+          },
+          {
+            "day": "2026-09-18",
+            "level": 0
+          },
+          {
+            "day": "2026-09-19",
+            "level": 0
+          },
+          {
+            "day": "2026-09-20",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-21",
+            "level": 0
+          },
+          {
+            "day": "2026-09-22",
+            "level": 0
+          },
+          {
+            "day": "2026-09-23",
+            "level": 0
+          },
+          {
+            "day": "2026-09-24",
+            "level": 0
+          },
+          {
+            "day": "2026-09-25",
+            "level": 0
+          },
+          {
+            "day": "2026-09-26",
+            "level": 0
+          },
+          {
+            "day": "2026-09-27",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-28",
+            "level": 0
+          },
+          {
+            "day": "2026-09-29",
+            "level": 0
+          },
+          {
+            "day": "2026-09-30",
+            "level": 0
+          },
+          {
+            "day": "2026-10-01",
+            "level": 0
+          },
+          {
+            "day": "2026-10-02",
+            "level": 0
+          },
+          {
+            "day": "2026-10-03",
+            "level": 0
+          },
+          {
+            "day": "2026-10-04",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-05",
+            "level": 0
+          },
+          {
+            "day": "2026-10-06",
+            "level": 0
+          },
+          {
+            "day": "2026-10-07",
+            "level": 0
+          },
+          {
+            "day": "2026-10-08",
+            "level": 0
+          },
+          {
+            "day": "2026-10-09",
+            "level": 0
+          },
+          {
+            "day": "2026-10-10",
+            "level": 0
+          },
+          {
+            "day": "2026-10-11",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-12",
+            "level": 0
+          },
+          {
+            "day": "2026-10-13",
+            "level": 0
+          },
+          {
+            "day": "2026-10-14",
+            "level": 0
+          },
+          {
+            "day": "2026-10-15",
+            "level": 0
+          },
+          {
+            "day": "2026-10-16",
+            "level": 0
+          },
+          {
+            "day": "2026-10-17",
+            "level": 0
+          },
+          {
+            "day": "2026-10-18",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-19",
+            "level": 0
+          },
+          {
+            "day": "2026-10-20",
+            "level": 0
+          },
+          {
+            "day": "2026-10-21",
+            "level": 0
+          },
+          {
+            "day": "2026-10-22",
+            "level": 0
+          },
+          {
+            "day": "2026-10-23",
+            "level": 0
+          },
+          {
+            "day": "2026-10-24",
+            "level": 0
+          },
+          {
+            "day": "2026-10-25",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-26",
+            "level": 0
+          },
+          {
+            "day": "2026-10-27",
+            "value": 422,
+            "level": 3
+          },
+          {
+            "day": "2026-10-28",
+            "value": 444,
+            "level": 4
+          },
+          {
+            "day": "2026-10-29",
+            "value": 406,
+            "level": 1
+          },
+          {
+            "day": "2026-10-30",
+            "value": 396,
+            "level": 1
+          },
+          {
+            "day": "2026-10-31",
+            "value": 432,
+            "level": 4
+          },
+          {
+            "day": "2026-11-01",
+            "value": 416,
+            "level": 2
+          }
+        ],
+        [
+          {
+            "day": "2026-11-02",
+            "value": 444,
+            "level": 4
+          },
+          {
+            "day": "2026-11-03",
+            "value": 445,
+            "level": 5
+          },
+          {
+            "day": "2026-11-04",
+            "value": 427,
+            "level": 3
+          },
+          {
+            "day": "2026-11-05",
+            "value": 409,
+            "level": 2
+          },
+          {
+            "day": "2026-11-06",
+            "value": 441,
+            "level": 4
+          },
+          {
+            "day": "2026-11-07",
+            "value": 408,
+            "level": 1
+          },
+          {
+            "day": "2026-11-08",
+            "value": 421,
+            "level": 2
+          }
+        ]
+      ]
+    }
+  },
+  "workouts_report": {
+    "today": "2026-11-08",
+    "days": 28,
+    "count": 7,
+    "duration_seconds": 22370.412,
+    "energy_kcal": 3243.2072999999996,
+    "distance_km": 71.12039999999999,
+    "active_days": 7,
+    "by_type": [
+      {
+        "activity": "running",
+        "count": 3,
+        "duration_seconds": 10125.57,
+        "energy_kcal": 1828.228,
+        "distance_km": 28.126600000000003
+      },
+      {
+        "activity": "cycling",
+        "count": 2,
+        "duration_seconds": 6236.898,
+        "energy_kcal": 1039.4831,
+        "distance_km": 34.6494
+      },
+      {
+        "activity": "walking",
+        "count": 2,
+        "duration_seconds": 6007.9439999999995,
+        "energy_kcal": 375.4962,
+        "distance_km": 8.3444
+      }
+    ],
+    "weeks": [
+      {
+        "start": "2026-10-26",
+        "duration_seconds": 13836.672,
+        "count": 4,
+        "days": 7
+      },
+      {
+        "start": "2026-11-02",
+        "duration_seconds": 8533.74,
+        "count": 3,
+        "partial": true,
+        "days": 7
+      }
+    ],
+    "bests": [
+      {
+        "kind": "longest",
+        "activity": "running",
+        "day": "2026-10-26",
+        "duration_seconds": 3572.514,
+        "distance_km": 9.9237,
+        "energy_kcal": 645.0377,
+        "new": true
+      },
+      {
+        "kind": "fastest",
+        "activity": "running",
+        "day": "2026-10-26",
+        "duration_seconds": 3572.514,
+        "distance_km": 9.9237,
+        "energy_kcal": 645.0377,
+        "pace_sec_per_km": 359.99818616040386,
+        "new": true
+      },
+      {
+        "kind": "furthest",
+        "activity": "running",
+        "day": "2026-10-26",
+        "duration_seconds": 3572.514,
+        "distance_km": 9.9237,
+        "energy_kcal": 645.0377,
+        "new": true
+      },
+      {
+        "kind": "biggest",
+        "activity": "running",
+        "day": "2026-10-26",
+        "duration_seconds": 3572.514,
+        "distance_km": 9.9237,
+        "energy_kcal": 645.0377,
+        "new": true
+      }
+    ],
+    "recent": [
+      {
+        "day": "2026-11-07",
+        "activity": "running",
+        "start": "2026-11-07T18:00:00+01:00",
+        "end": "2026-11-07T18:50:50+01:00",
+        "duration_seconds": 3050.214,
+        "energy_kcal": 550.7331,
+        "distance_km": 8.4728,
+        "source": "Alex’s Apple Watch"
+      },
+      {
+        "day": "2026-11-05",
+        "activity": "cycling",
+        "start": "2026-11-05T18:00:00+01:00",
+        "end": "2026-11-05T19:03:45+01:00",
+        "duration_seconds": 3825.234,
+        "energy_kcal": 637.5395,
+        "distance_km": 21.2513,
+        "source": "Alex’s Apple Watch"
+      },
+      {
+        "day": "2026-11-03",
+        "activity": "walking",
+        "start": "2026-11-03T18:00:00-05:00",
+        "end": "2026-11-03T18:27:38-05:00",
+        "duration_seconds": 1658.292,
+        "energy_kcal": 103.6431,
+        "distance_km": 2.3032,
+        "source": "Alex’s Apple Watch"
+      }
+    ]
+  },
+  "sleep": {
+    "state": "ok",
+    "night": "2026-11-08",
+    "age_days": 0,
+    "source": "Alex’s Apple Watch",
+    "asleep_seconds": 25260,
+    "core_seconds": 15360,
+    "deep_seconds": 5220,
+    "rem_seconds": 4680,
+    "unspecified_seconds": 0,
+    "awake_seconds": 1020,
+    "in_bed_seconds": 27000
+  },
+  "workouts": {
+    "days": 28,
+    "count": 7,
+    "duration_seconds": 22367,
+    "energy_kcal": 3243.2072999999996,
+    "latest": {
+      "activity": "running",
+      "day": "2026-11-07",
+      "age_days": 1,
+      "distance_m": 8472.8
+    }
+  }
+}

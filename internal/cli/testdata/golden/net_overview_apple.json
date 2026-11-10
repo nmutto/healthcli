@@ -1,0 +1,2454 @@
+{
+  "today": "2026-11-08",
+  "empty": false,
+  "metrics": [
+    {
+      "metric": "heart_rate",
+      "label": "Avg heart rate",
+      "category": "vitals",
+      "polarity": "neutral",
+      "unit": "bpm",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 76.33333333333333,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 74.94978632478632,
+      "baseline_stddev": 1.1535659184069902,
+      "delta_pct": 1.8459652473878572,
+      "z": 1.1993653647965024,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        74.20833333333333,
+        72.125,
+        73.75,
+        74.25,
+        75.75,
+        75.58333333333333,
+        75.54166666666667,
+        74.75,
+        76,
+        75.16666666666667,
+        76.55555555555556,
+        75.16666666666667,
+        75.5,
+        76.33333333333333
+      ]
+    },
+    {
+      "metric": "resting_heart_rate",
+      "label": "Resting HR",
+      "category": "vitals",
+      "polarity": "lower_better",
+      "unit": "bpm",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 60,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 56.76923076923077,
+      "baseline_stddev": 1.9644272343292228,
+      "delta_pct": 5.691056910569111,
+      "z": 1.6446367543221412,
+      "comparison": "above",
+      "verdict": "worse",
+      "range": {
+        "high": 100,
+        "source": "adult resting heart rate, 60-100 bpm",
+        "position": "within"
+      },
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60
+      ]
+    },
+    {
+      "metric": "hrv_sdnn",
+      "label": "HRV",
+      "category": "vitals",
+      "polarity": "higher_better",
+      "unit": "ms",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 45.84,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 47.899230769230776,
+      "baseline_stddev": 8.948677240742029,
+      "delta_pct": -4.299089434550104,
+      "z": -0.23011565998328712,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        41.67,
+        51.18,
+        42.52,
+        36.29,
+        36.98,
+        39.78,
+        54.85,
+        53.85,
+        48.74,
+        48.97,
+        63.38,
+        42.25,
+        62.23,
+        45.84
+      ]
+    },
+    {
+      "metric": "respiratory_rate",
+      "label": "Respiratory rate",
+      "category": "vitals",
+      "polarity": "neutral",
+      "unit": "breaths/min",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 15.6,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 14.292307692307691,
+      "baseline_stddev": 0.9268778582437732,
+      "delta_pct": 9.149623250807325,
+      "z": 1.410857208489254,
+      "comparison": "above",
+      "verdict": "changed",
+      "range": {
+        "high": 20,
+        "source": "adult resting respiratory rate, 12-20 breaths/min",
+        "position": "within"
+      },
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        13.1,
+        14.3,
+        13.1,
+        14.5,
+        13.4,
+        14.2,
+        13.4,
+        15.9,
+        15.3,
+        14.6,
+        15.2,
+        13.6,
+        15.2,
+        15.6
+      ]
+    },
+    {
+      "metric": "apple_sleeping_wrist_temperature",
+      "label": "Wrist temperature",
+      "category": "vitals",
+      "polarity": "neutral",
+      "unit": "degC",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 35.99,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 35.91692307692308,
+      "baseline_stddev": 0.31068163274174515,
+      "delta_pct": 0.20346097832605828,
+      "z": 0.23521481599033198,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        35.83,
+        35.94,
+        35.36,
+        36.25,
+        36.22,
+        36.01,
+        35.84,
+        35.28,
+        35.81,
+        36.22,
+        35.88,
+        36.22,
+        36.06,
+        35.99
+      ]
+    },
+    {
+      "metric": "oxygen_saturation",
+      "label": "Blood oxygen",
+      "category": "vitals",
+      "polarity": "higher_better",
+      "unit": "percent",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 97,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 96.76923076923077,
+      "baseline_stddev": 0.9919548170024476,
+      "delta_pct": 0.23847376788552807,
+      "z": 0.23264086913412005,
+      "comparison": "typical",
+      "verdict": "typical",
+      "range": {
+        "low": 95,
+        "source": "typical healthy adult reading, 95% and above",
+        "position": "within"
+      },
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        95,
+        98.5,
+        96,
+        97.5,
+        97.5,
+        95.5,
+        96.5,
+        97.5,
+        96,
+        97.5,
+        96.5,
+        96.5,
+        97.5,
+        97
+      ]
+    },
+    {
+      "metric": "vo2_max",
+      "label": "VO2 max",
+      "category": "vitals",
+      "polarity": "higher_better",
+      "unit": "mL/kg/min",
+      "state": "stale",
+      "latest_day": "2026-11-02",
+      "age_days": 6,
+      "value": 41.9,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 1,
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        41,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        41.9,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "metric": "walking_heart_rate_average",
+      "label": "Walking heart rate",
+      "category": "vitals",
+      "polarity": "lower_better",
+      "unit": "bpm",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 90,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 93.92307692307692,
+      "baseline_stddev": 3.7072347839851933,
+      "delta_pct": -4.1769041769041735,
+      "z": -1.0582218693092054,
+      "comparison": "below",
+      "verdict": "better",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        89,
+        94,
+        91,
+        94,
+        99,
+        89,
+        99,
+        95,
+        97,
+        93,
+        92,
+        90,
+        99,
+        90
+      ]
+    },
+    {
+      "metric": "heart_rate_recovery_one_minute",
+      "label": "Heart rate recovery",
+      "category": "vitals",
+      "polarity": "higher_better",
+      "unit": "bpm",
+      "state": "no_baseline",
+      "latest_day": "2026-11-07",
+      "age_days": 1,
+      "value": 26,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 6,
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        26,
+        null,
+        26,
+        null,
+        34,
+        null,
+        23,
+        null,
+        29,
+        null,
+        32,
+        null,
+        26,
+        null
+      ]
+    },
+    {
+      "metric": "step_count",
+      "label": "Steps",
+      "category": "activity",
+      "polarity": "higher_better",
+      "unit": "count",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 21999,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 19955.46153846154,
+      "baseline_stddev": 2014.5528294299213,
+      "delta_pct": 10.24049710701909,
+      "z": 1.014388122110822,
+      "comparison": "above",
+      "verdict": "better",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        16525,
+        21899,
+        21483,
+        19955,
+        20972,
+        18852,
+        17252,
+        17731,
+        20601,
+        19464,
+        19385,
+        23283,
+        22019,
+        21999
+      ]
+    },
+    {
+      "metric": "active_energy",
+      "label": "Active energy",
+      "category": "activity",
+      "polarity": "higher_better",
+      "unit": "kcal",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 879.9600000000002,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 798.2184615384615,
+      "baseline_stddev": 80.58211317719687,
+      "delta_pct": 10.240497107019117,
+      "z": 1.0143881221108244,
+      "comparison": "above",
+      "verdict": "better",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        661.0000000000001,
+        875.9599999999999,
+        859.32,
+        798.2,
+        838.88,
+        754.0799999999999,
+        690.0799999999999,
+        709.2399999999998,
+        824.0399999999998,
+        778.5600000000001,
+        775.3999999999999,
+        931.32,
+        880.76,
+        879.9600000000002
+      ]
+    },
+    {
+      "metric": "basal_energy",
+      "label": "Resting energy",
+      "category": "activity",
+      "polarity": "neutral",
+      "unit": "kcal",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 1729.9,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 1701.0615384615385,
+      "baseline_stddev": 25.29738255437832,
+      "delta_pct": 1.69532147346906,
+      "z": 1.1399780778296538,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        1693.1,
+        1721.4,
+        1679.1,
+        1715.2,
+        1651.3,
+        1728.3,
+        1682.8,
+        1677.4,
+        1704.4,
+        1715.3,
+        1699.4,
+        1747.8,
+        1698.3,
+        1729.9
+      ]
+    },
+    {
+      "metric": "apple_exercise_time",
+      "label": "Exercise time",
+      "category": "activity",
+      "polarity": "higher_better",
+      "unit": "min",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 43,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 37,
+      "baseline_stddev": 11.69045194450012,
+      "delta_pct": 16.216216216216218,
+      "z": 0.513239353660981,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        41,
+        46,
+        21,
+        41,
+        43,
+        59,
+        48,
+        28,
+        17,
+        33,
+        33,
+        43,
+        28,
+        43
+      ]
+    },
+    {
+      "metric": "apple_stand_time",
+      "label": "Stand time",
+      "category": "activity",
+      "polarity": "higher_better",
+      "unit": "min",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 364,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 411.3076923076923,
+      "baseline_stddev": 84.05790128971083,
+      "delta_pct": -11.501776697213394,
+      "z": -0.5627988753209933,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        402,
+        389,
+        531,
+        389,
+        314,
+        334,
+        349,
+        529,
+        373,
+        522,
+        521,
+        314,
+        380,
+        364
+      ]
+    },
+    {
+      "metric": "flights_climbed",
+      "label": "Flights climbed",
+      "category": "activity",
+      "polarity": "higher_better",
+      "unit": "count",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 8,
+      "source": "Alex’s iPhone",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 13.153846153846153,
+      "baseline_stddev": 5.565461254411801,
+      "delta_pct": -39.1812865497076,
+      "z": -0.9260411524311024,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        9,
+        5,
+        21,
+        19,
+        4,
+        17,
+        12,
+        14,
+        18,
+        6,
+        16,
+        16,
+        14,
+        8
+      ]
+    },
+    {
+      "metric": "distance_walking_running",
+      "label": "Walking + running distance",
+      "category": "activity",
+      "polarity": "higher_better",
+      "unit": "km",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 6.524,
+      "source": "Alex’s iPhone",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 6.493615384615385,
+      "baseline_stddev": 1.8644840456303875,
+      "delta_pct": 0.46791523034459304,
+      "z": 0.016296527425817626,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        7.919,
+        6.769,
+        7.393,
+        6.224,
+        6.41,
+        4.794,
+        3.223,
+        5.83,
+        7.339,
+        4.293,
+        8.915,
+        5.354,
+        9.954,
+        6.524
+      ]
+    },
+    {
+      "metric": "time_in_daylight",
+      "label": "Time in daylight",
+      "category": "activity",
+      "polarity": "higher_better",
+      "unit": "min",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 53,
+      "source": "Alex’s Apple Watch",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 46.53846153846154,
+      "baseline_stddev": 21.3057714583607,
+      "delta_pct": 13.884297520661153,
+      "z": 0.3032764372868018,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        82,
+        54,
+        34,
+        34,
+        36,
+        52,
+        41,
+        28,
+        66,
+        32,
+        30,
+        91,
+        25,
+        53
+      ]
+    },
+    {
+      "metric": "body_mass",
+      "label": "Weight",
+      "category": "body",
+      "polarity": "neutral",
+      "unit": "kg",
+      "state": "no_baseline",
+      "latest_day": "2026-11-07",
+      "age_days": 1,
+      "value": 78.5,
+      "source": "Alex’s iPhone",
+      "baseline_days_with_data": 4,
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        79.4,
+        null,
+        null,
+        79.3,
+        null,
+        null,
+        78.9,
+        null,
+        null,
+        79.7,
+        null,
+        null,
+        78.5,
+        null
+      ]
+    },
+    {
+      "metric": "body_fat_percentage",
+      "label": "Body fat",
+      "category": "body",
+      "polarity": "neutral",
+      "unit": "percent",
+      "state": "no_baseline",
+      "latest_day": "2026-11-07",
+      "age_days": 1,
+      "value": 18.5,
+      "source": "Alex’s iPhone",
+      "baseline_days_with_data": 4,
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        19.4,
+        null,
+        null,
+        19.5,
+        null,
+        null,
+        18.7,
+        null,
+        null,
+        19.5,
+        null,
+        null,
+        18.5,
+        null
+      ]
+    },
+    {
+      "metric": "body_mass_index",
+      "label": "BMI",
+      "category": "body",
+      "polarity": "neutral",
+      "unit": "kg/m2",
+      "state": "no_baseline",
+      "latest_day": "2026-11-07",
+      "age_days": 1,
+      "value": 24,
+      "source": "Alex’s iPhone",
+      "baseline_days_with_data": 4,
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        24.3,
+        null,
+        null,
+        24.2,
+        null,
+        null,
+        24.3,
+        null,
+        null,
+        24.2,
+        null,
+        null,
+        24,
+        null
+      ]
+    },
+    {
+      "metric": "lean_body_mass",
+      "label": "Lean body mass",
+      "category": "body",
+      "polarity": "neutral",
+      "unit": "kg",
+      "state": "no_baseline",
+      "latest_day": "2026-11-07",
+      "age_days": 1,
+      "value": 63.2,
+      "source": "Alex’s iPhone",
+      "baseline_days_with_data": 4,
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        63,
+        null,
+        null,
+        63.8,
+        null,
+        null,
+        64.4,
+        null,
+        null,
+        63.3,
+        null,
+        null,
+        63.2,
+        null
+      ]
+    },
+    {
+      "metric": "walking_speed",
+      "label": "Walking speed",
+      "category": "mobility",
+      "polarity": "higher_better",
+      "unit": "km/h",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 5.49,
+      "source": "Alex’s iPhone",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 5.38153846153846,
+      "baseline_stddev": 0.24734746659460505,
+      "delta_pct": 2.0154373927959197,
+      "z": 0.4384986834706722,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        5.32,
+        5.4,
+        5.74,
+        5.39,
+        5.33,
+        5.47,
+        5.33,
+        5.58,
+        4.93,
+        5.1,
+        5.05,
+        5.64,
+        5.68,
+        5.49
+      ]
+    },
+    {
+      "metric": "walking_step_length",
+      "label": "Step length",
+      "category": "mobility",
+      "polarity": "higher_better",
+      "unit": "cm",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 72.9,
+      "source": "Alex’s iPhone",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 71.76923076923076,
+      "baseline_stddev": 1.6575004350852203,
+      "delta_pct": 1.575562700964652,
+      "z": 0.6822135348103893,
+      "comparison": "typical",
+      "verdict": "typical",
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        70.9,
+        69.9,
+        69.2,
+        73,
+        73.3,
+        73.1,
+        69.6,
+        73.9,
+        71.1,
+        70.9,
+        73.9,
+        72.9,
+        71.3,
+        72.9
+      ]
+    },
+    {
+      "metric": "walking_asymmetry",
+      "label": "Walking asymmetry",
+      "category": "mobility",
+      "polarity": "in_range",
+      "unit": "percent",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 4.9,
+      "source": "Alex’s iPhone",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 3.5461538461538464,
+      "baseline_stddev": 0.8704552301481723,
+      "delta_pct": 38.17787418655097,
+      "z": 1.5553311726505417,
+      "comparison": "above",
+      "verdict": "changed",
+      "range": {
+        "high": 35,
+        "source": "Apple white paper 'Measuring Walking Quality Through iPhone Mobility Metrics' (2022): 35% is the iPhone value that best separates asymmetric from symmetric walkers; Apple gives no healthy range",
+        "basis": "the level Apple's research uses to tell asymmetric walking apart",
+        "position": "within"
+      },
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        3.5,
+        4.4,
+        3.4,
+        5.1,
+        2.5,
+        3,
+        2.2,
+        3.1,
+        3,
+        3.8,
+        5,
+        3.7,
+        3.4,
+        4.9
+      ]
+    },
+    {
+      "metric": "walking_double_support",
+      "label": "Double support time",
+      "category": "mobility",
+      "polarity": "in_range",
+      "unit": "percent",
+      "state": "ok",
+      "latest_day": "2026-11-08",
+      "age_days": 0,
+      "value": 30.7,
+      "source": "Alex’s iPhone",
+      "baseline_days_with_data": 13,
+      "baseline_mean": 28.569230769230767,
+      "baseline_stddev": 1.4418648892924604,
+      "delta_pct": 7.458266020463118,
+      "z": 1.477787028862895,
+      "comparison": "above",
+      "verdict": "changed",
+      "range": {
+        "high": 40,
+        "source": "Apple white paper 'Measuring Walking Quality Through iPhone Mobility Metrics' (2022): typical walking is 20-40%, lower is better",
+        "basis": "the top of Apple's typical walking range",
+        "position": "within"
+      },
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        29.6,
+        27.2,
+        28.2,
+        29.7,
+        30.1,
+        28.5,
+        27.7,
+        26.7,
+        26.8,
+        26.8,
+        29.3,
+        30.9,
+        29.9,
+        30.7
+      ]
+    },
+    {
+      "metric": "apple_walking_steadiness",
+      "label": "Walking steadiness",
+      "category": "mobility",
+      "polarity": "higher_better",
+      "unit": "percent",
+      "state": "stale",
+      "latest_day": "2026-11-02",
+      "age_days": 6,
+      "value": 94,
+      "source": "Alex’s iPhone",
+      "baseline_days_with_data": 1,
+      "spark": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        89,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        94,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "name": "vitals",
+      "total": 9,
+      "better": 1,
+      "worse": 1,
+      "changed": 1,
+      "typical": 4,
+      "stale": 1,
+      "no_baseline": 1,
+      "no_data": 0
+    },
+    {
+      "name": "activity",
+      "total": 8,
+      "better": 2,
+      "worse": 0,
+      "changed": 0,
+      "typical": 6,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    },
+    {
+      "name": "body",
+      "total": 4,
+      "better": 0,
+      "worse": 0,
+      "changed": 0,
+      "typical": 0,
+      "stale": 0,
+      "no_baseline": 4,
+      "no_data": 0
+    },
+    {
+      "name": "mobility",
+      "total": 5,
+      "better": 0,
+      "worse": 0,
+      "changed": 2,
+      "typical": 2,
+      "stale": 1,
+      "no_baseline": 0,
+      "no_data": 0
+    }
+  ],
+  "not_tracked": [
+    "blood_pressure_systolic",
+    "blood_pressure_diastolic",
+    "blood_glucose",
+    "height"
+  ],
+  "sleep": {
+    "state": "ok",
+    "night": "2026-11-08",
+    "age_days": 0,
+    "source": "Alex’s Apple Watch",
+    "asleep_seconds": 25260,
+    "core_seconds": 15360,
+    "deep_seconds": 5220,
+    "rem_seconds": 4680,
+    "unspecified_seconds": 0,
+    "awake_seconds": 1020,
+    "in_bed_seconds": 27000
+  },
+  "workouts": {
+    "days": 28,
+    "count": 7,
+    "duration_seconds": 22367,
+    "energy_kcal": 3243.2072999999996,
+    "latest": {
+      "activity": "running",
+      "day": "2026-11-07",
+      "age_days": 1,
+      "distance_m": 8472.8
+    }
+  },
+  "heatmap": {
+    "metric": "step_count",
+    "unit": "count",
+    "today": "2026-11-08",
+    "from": "2026-08-17",
+    "thresholds": [
+      17731,
+      19464,
+      20972,
+      21999
+    ],
+    "days_with_data": 14,
+    "weeks": [
+      [
+        {
+          "day": "2026-08-17",
+          "level": 0
+        },
+        {
+          "day": "2026-08-18",
+          "level": 0
+        },
+        {
+          "day": "2026-08-19",
+          "level": 0
+        },
+        {
+          "day": "2026-08-20",
+          "level": 0
+        },
+        {
+          "day": "2026-08-21",
+          "level": 0
+        },
+        {
+          "day": "2026-08-22",
+          "level": 0
+        },
+        {
+          "day": "2026-08-23",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-08-24",
+          "level": 0
+        },
+        {
+          "day": "2026-08-25",
+          "level": 0
+        },
+        {
+          "day": "2026-08-26",
+          "level": 0
+        },
+        {
+          "day": "2026-08-27",
+          "level": 0
+        },
+        {
+          "day": "2026-08-28",
+          "level": 0
+        },
+        {
+          "day": "2026-08-29",
+          "level": 0
+        },
+        {
+          "day": "2026-08-30",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-08-31",
+          "level": 0
+        },
+        {
+          "day": "2026-09-01",
+          "level": 0
+        },
+        {
+          "day": "2026-09-02",
+          "level": 0
+        },
+        {
+          "day": "2026-09-03",
+          "level": 0
+        },
+        {
+          "day": "2026-09-04",
+          "level": 0
+        },
+        {
+          "day": "2026-09-05",
+          "level": 0
+        },
+        {
+          "day": "2026-09-06",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-07",
+          "level": 0
+        },
+        {
+          "day": "2026-09-08",
+          "level": 0
+        },
+        {
+          "day": "2026-09-09",
+          "level": 0
+        },
+        {
+          "day": "2026-09-10",
+          "level": 0
+        },
+        {
+          "day": "2026-09-11",
+          "level": 0
+        },
+        {
+          "day": "2026-09-12",
+          "level": 0
+        },
+        {
+          "day": "2026-09-13",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-14",
+          "level": 0
+        },
+        {
+          "day": "2026-09-15",
+          "level": 0
+        },
+        {
+          "day": "2026-09-16",
+          "level": 0
+        },
+        {
+          "day": "2026-09-17",
+          "level": 0
+        },
+        {
+          "day": "2026-09-18",
+          "level": 0
+        },
+        {
+          "day": "2026-09-19",
+          "level": 0
+        },
+        {
+          "day": "2026-09-20",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-21",
+          "level": 0
+        },
+        {
+          "day": "2026-09-22",
+          "level": 0
+        },
+        {
+          "day": "2026-09-23",
+          "level": 0
+        },
+        {
+          "day": "2026-09-24",
+          "level": 0
+        },
+        {
+          "day": "2026-09-25",
+          "level": 0
+        },
+        {
+          "day": "2026-09-26",
+          "level": 0
+        },
+        {
+          "day": "2026-09-27",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-09-28",
+          "level": 0
+        },
+        {
+          "day": "2026-09-29",
+          "level": 0
+        },
+        {
+          "day": "2026-09-30",
+          "level": 0
+        },
+        {
+          "day": "2026-10-01",
+          "level": 0
+        },
+        {
+          "day": "2026-10-02",
+          "level": 0
+        },
+        {
+          "day": "2026-10-03",
+          "level": 0
+        },
+        {
+          "day": "2026-10-04",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-10-05",
+          "level": 0
+        },
+        {
+          "day": "2026-10-06",
+          "level": 0
+        },
+        {
+          "day": "2026-10-07",
+          "level": 0
+        },
+        {
+          "day": "2026-10-08",
+          "level": 0
+        },
+        {
+          "day": "2026-10-09",
+          "level": 0
+        },
+        {
+          "day": "2026-10-10",
+          "level": 0
+        },
+        {
+          "day": "2026-10-11",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-10-12",
+          "level": 0
+        },
+        {
+          "day": "2026-10-13",
+          "level": 0
+        },
+        {
+          "day": "2026-10-14",
+          "level": 0
+        },
+        {
+          "day": "2026-10-15",
+          "level": 0
+        },
+        {
+          "day": "2026-10-16",
+          "level": 0
+        },
+        {
+          "day": "2026-10-17",
+          "level": 0
+        },
+        {
+          "day": "2026-10-18",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-10-19",
+          "level": 0
+        },
+        {
+          "day": "2026-10-20",
+          "level": 0
+        },
+        {
+          "day": "2026-10-21",
+          "level": 0
+        },
+        {
+          "day": "2026-10-22",
+          "level": 0
+        },
+        {
+          "day": "2026-10-23",
+          "level": 0
+        },
+        {
+          "day": "2026-10-24",
+          "level": 0
+        },
+        {
+          "day": "2026-10-25",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-10-26",
+          "value": 16525,
+          "level": 1
+        },
+        {
+          "day": "2026-10-27",
+          "value": 21899,
+          "level": 4
+        },
+        {
+          "day": "2026-10-28",
+          "value": 21483,
+          "level": 4
+        },
+        {
+          "day": "2026-10-29",
+          "value": 19955,
+          "level": 3
+        },
+        {
+          "day": "2026-10-30",
+          "value": 20972,
+          "level": 3
+        },
+        {
+          "day": "2026-10-31",
+          "value": 18852,
+          "level": 2
+        },
+        {
+          "day": "2026-11-01",
+          "value": 17252,
+          "level": 1
+        }
+      ],
+      [
+        {
+          "day": "2026-11-02",
+          "value": 17731,
+          "level": 1
+        },
+        {
+          "day": "2026-11-03",
+          "value": 20601,
+          "level": 3
+        },
+        {
+          "day": "2026-11-04",
+          "value": 19464,
+          "level": 2
+        },
+        {
+          "day": "2026-11-05",
+          "value": 19385,
+          "level": 2
+        },
+        {
+          "day": "2026-11-06",
+          "value": 23283,
+          "level": 5
+        },
+        {
+          "day": "2026-11-07",
+          "value": 22019,
+          "level": 5
+        },
+        {
+          "day": "2026-11-08",
+          "value": 21999,
+          "level": 4
+        }
+      ]
+    ]
+  },
+  "data": {
+    "samples": 1271,
+    "sleep_nights": 14,
+    "first_day": "2026-10-26",
+    "last_day": "2026-11-08",
+    "source_samples": {
+      "iphone": 330,
+      "watch": 941
+    },
+    "last_import": {
+      "at": 1794070800,
+      "read": 1480,
+      "inserted": 1468,
+      "duplicates": 9,
+      "skipped": {
+        "bad_date": 1,
+        "missing_value": 1,
+        "unknown_type": 1
+      }
+    },
+    "gaps": [
+      {
+        "metric": "vo2_max",
+        "label": "VO2 max",
+        "missing_days": 6,
+        "span_days": 8
+      },
+      {
+        "metric": "heart_rate_recovery_one_minute",
+        "label": "Heart rate recovery",
+        "missing_days": 6,
+        "span_days": 13
+      },
+      {
+        "metric": "body_mass",
+        "label": "Weight",
+        "missing_days": 8,
+        "span_days": 13
+      },
+      {
+        "metric": "body_fat_percentage",
+        "label": "Body fat",
+        "missing_days": 8,
+        "span_days": 13
+      },
+      {
+        "metric": "body_mass_index",
+        "label": "BMI",
+        "missing_days": 8,
+        "span_days": 13
+      },
+      {
+        "metric": "lean_body_mass",
+        "label": "Lean body mass",
+        "missing_days": 8,
+        "span_days": 13
+      },
+      {
+        "metric": "apple_walking_steadiness",
+        "label": "Walking steadiness",
+        "missing_days": 6,
+        "span_days": 8
+      }
+    ]
+  },
+  "sleep_summary": {
+    "today": "2026-11-08",
+    "empty": false,
+    "age_days": 0,
+    "kind": "stages",
+    "night": {
+      "night": "2026-11-08",
+      "source": "Alex’s Apple Watch",
+      "in_bed_source": "Alex’s iPhone",
+      "asleep_seconds": 25260,
+      "core_seconds": 15360,
+      "deep_seconds": 5220,
+      "rem_seconds": 4680,
+      "unspecified_seconds": 0,
+      "awake_seconds": 1020,
+      "in_bed_seconds": 27000,
+      "efficiency_pct": 93.55555555555556,
+      "awakenings": 2,
+      "latency_seconds": 720,
+      "bedtime": "23:12",
+      "wake": "06:30",
+      "midpoint": "02:51",
+      "stages": [
+        {
+          "stage": "core",
+          "start": "2026-11-07T23:12:00+01:00",
+          "end": "2026-11-07T23:59:00+01:00"
+        },
+        {
+          "stage": "deep",
+          "start": "2026-11-07T23:59:00+01:00",
+          "end": "2026-11-08T00:25:00+01:00"
+        },
+        {
+          "stage": "core",
+          "start": "2026-11-08T00:25:00+01:00",
+          "end": "2026-11-08T00:57:00+01:00"
+        },
+        {
+          "stage": "rem",
+          "start": "2026-11-08T00:57:00+01:00",
+          "end": "2026-11-08T01:31:00+01:00"
+        },
+        {
+          "stage": "awake",
+          "start": "2026-11-08T01:31:00+01:00",
+          "end": "2026-11-08T01:41:00+01:00"
+        },
+        {
+          "stage": "core",
+          "start": "2026-11-08T01:41:00+01:00",
+          "end": "2026-11-08T02:33:00+01:00"
+        },
+        {
+          "stage": "deep",
+          "start": "2026-11-08T02:33:00+01:00",
+          "end": "2026-11-08T03:06:00+01:00"
+        },
+        {
+          "stage": "core",
+          "start": "2026-11-08T03:06:00+01:00",
+          "end": "2026-11-08T03:42:00+01:00"
+        },
+        {
+          "stage": "rem",
+          "start": "2026-11-08T03:42:00+01:00",
+          "end": "2026-11-08T04:15:00+01:00"
+        },
+        {
+          "stage": "awake",
+          "start": "2026-11-08T04:15:00+01:00",
+          "end": "2026-11-08T04:22:00+01:00"
+        },
+        {
+          "stage": "core",
+          "start": "2026-11-08T04:22:00+01:00",
+          "end": "2026-11-08T05:15:00+01:00"
+        },
+        {
+          "stage": "deep",
+          "start": "2026-11-08T05:15:00+01:00",
+          "end": "2026-11-08T05:43:00+01:00"
+        },
+        {
+          "stage": "core",
+          "start": "2026-11-08T05:43:00+01:00",
+          "end": "2026-11-08T06:19:00+01:00"
+        },
+        {
+          "stage": "rem",
+          "start": "2026-11-08T06:19:00+01:00",
+          "end": "2026-11-08T06:30:00+01:00"
+        }
+      ]
+    },
+    "seven_nights": {
+      "nights": 7,
+      "asleep_seconds": 25671.428571428572,
+      "in_bed_seconds": 27402.85714285714,
+      "efficiency_pct": 93.69885039535845,
+      "awake_seconds": 1200,
+      "awakenings": 2.5,
+      "latency_seconds": 702.8571428571429,
+      "deep_seconds": 5400,
+      "rem_seconds": 4630,
+      "core_seconds": 15480,
+      "bedtime_min_since_18h": 311.7142857142857,
+      "wake_min_since_18h": 756.7142857142857,
+      "midpoint_min_since_18h": 534.2142857142857
+    },
+    "fourteen_nights": {
+      "nights": 13,
+      "asleep_seconds": 25435.384615384617,
+      "in_bed_seconds": 27258.46153846154,
+      "efficiency_pct": 93.31704553251431,
+      "awake_seconds": 1205,
+      "awakenings": 2.3333333333333335,
+      "latency_seconds": 710.7692307692307,
+      "deep_seconds": 5405,
+      "rem_seconds": 4600,
+      "core_seconds": 15330,
+      "bedtime_min_since_18h": 311.84615384615387,
+      "wake_min_since_18h": 754.3076923076923,
+      "midpoint_min_since_18h": 533.0769230769231
+    },
+    "usual": {
+      "nights": 12,
+      "asleep_seconds": 25450,
+      "in_bed_seconds": 27280,
+      "efficiency_pct": 93.29716969726087,
+      "awake_seconds": 1221.8181818181818,
+      "awakenings": 2.3636363636363638,
+      "latency_seconds": 710,
+      "deep_seconds": 5421.818181818182,
+      "rem_seconds": 4592.727272727273,
+      "core_seconds": 15327.272727272728,
+      "bedtime_min_since_18h": 311.8333333333333,
+      "wake_min_since_18h": 754.6666666666666,
+      "midpoint_min_since_18h": 533.25
+    },
+    "regularity": {
+      "nights": 13,
+      "bedtime_stddev_min": 0.5547001962252291,
+      "midpoint_stddev_min": 8.383630264405534
+    },
+    "debt": {
+      "target_seconds": 28800,
+      "last_night_seconds": 3540,
+      "nights": 7,
+      "window_seconds": 21900
+    },
+    "heatmap": {
+      "metric": "sleep_asleep",
+      "unit": "",
+      "today": "2026-11-08",
+      "from": "2026-08-17",
+      "thresholds": [
+        408,
+        421,
+        427,
+        444
+      ],
+      "days_with_data": 13,
+      "weeks": [
+        [
+          {
+            "day": "2026-08-17",
+            "level": 0
+          },
+          {
+            "day": "2026-08-18",
+            "level": 0
+          },
+          {
+            "day": "2026-08-19",
+            "level": 0
+          },
+          {
+            "day": "2026-08-20",
+            "level": 0
+          },
+          {
+            "day": "2026-08-21",
+            "level": 0
+          },
+          {
+            "day": "2026-08-22",
+            "level": 0
+          },
+          {
+            "day": "2026-08-23",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-08-24",
+            "level": 0
+          },
+          {
+            "day": "2026-08-25",
+            "level": 0
+          },
+          {
+            "day": "2026-08-26",
+            "level": 0
+          },
+          {
+            "day": "2026-08-27",
+            "level": 0
+          },
+          {
+            "day": "2026-08-28",
+            "level": 0
+          },
+          {
+            "day": "2026-08-29",
+            "level": 0
+          },
+          {
+            "day": "2026-08-30",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-08-31",
+            "level": 0
+          },
+          {
+            "day": "2026-09-01",
+            "level": 0
+          },
+          {
+            "day": "2026-09-02",
+            "level": 0
+          },
+          {
+            "day": "2026-09-03",
+            "level": 0
+          },
+          {
+            "day": "2026-09-04",
+            "level": 0
+          },
+          {
+            "day": "2026-09-05",
+            "level": 0
+          },
+          {
+            "day": "2026-09-06",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-07",
+            "level": 0
+          },
+          {
+            "day": "2026-09-08",
+            "level": 0
+          },
+          {
+            "day": "2026-09-09",
+            "level": 0
+          },
+          {
+            "day": "2026-09-10",
+            "level": 0
+          },
+          {
+            "day": "2026-09-11",
+            "level": 0
+          },
+          {
+            "day": "2026-09-12",
+            "level": 0
+          },
+          {
+            "day": "2026-09-13",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-14",
+            "level": 0
+          },
+          {
+            "day": "2026-09-15",
+            "level": 0
+          },
+          {
+            "day": "2026-09-16",
+            "level": 0
+          },
+          {
+            "day": "2026-09-17",
+            "level": 0
+          },
+          {
+            "day": "2026-09-18",
+            "level": 0
+          },
+          {
+            "day": "2026-09-19",
+            "level": 0
+          },
+          {
+            "day": "2026-09-20",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-21",
+            "level": 0
+          },
+          {
+            "day": "2026-09-22",
+            "level": 0
+          },
+          {
+            "day": "2026-09-23",
+            "level": 0
+          },
+          {
+            "day": "2026-09-24",
+            "level": 0
+          },
+          {
+            "day": "2026-09-25",
+            "level": 0
+          },
+          {
+            "day": "2026-09-26",
+            "level": 0
+          },
+          {
+            "day": "2026-09-27",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-28",
+            "level": 0
+          },
+          {
+            "day": "2026-09-29",
+            "level": 0
+          },
+          {
+            "day": "2026-09-30",
+            "level": 0
+          },
+          {
+            "day": "2026-10-01",
+            "level": 0
+          },
+          {
+            "day": "2026-10-02",
+            "level": 0
+          },
+          {
+            "day": "2026-10-03",
+            "level": 0
+          },
+          {
+            "day": "2026-10-04",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-05",
+            "level": 0
+          },
+          {
+            "day": "2026-10-06",
+            "level": 0
+          },
+          {
+            "day": "2026-10-07",
+            "level": 0
+          },
+          {
+            "day": "2026-10-08",
+            "level": 0
+          },
+          {
+            "day": "2026-10-09",
+            "level": 0
+          },
+          {
+            "day": "2026-10-10",
+            "level": 0
+          },
+          {
+            "day": "2026-10-11",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-12",
+            "level": 0
+          },
+          {
+            "day": "2026-10-13",
+            "level": 0
+          },
+          {
+            "day": "2026-10-14",
+            "level": 0
+          },
+          {
+            "day": "2026-10-15",
+            "level": 0
+          },
+          {
+            "day": "2026-10-16",
+            "level": 0
+          },
+          {
+            "day": "2026-10-17",
+            "level": 0
+          },
+          {
+            "day": "2026-10-18",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-19",
+            "level": 0
+          },
+          {
+            "day": "2026-10-20",
+            "level": 0
+          },
+          {
+            "day": "2026-10-21",
+            "level": 0
+          },
+          {
+            "day": "2026-10-22",
+            "level": 0
+          },
+          {
+            "day": "2026-10-23",
+            "level": 0
+          },
+          {
+            "day": "2026-10-24",
+            "level": 0
+          },
+          {
+            "day": "2026-10-25",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-26",
+            "level": 0
+          },
+          {
+            "day": "2026-10-27",
+            "value": 422,
+            "level": 3
+          },
+          {
+            "day": "2026-10-28",
+            "value": 444,
+            "level": 4
+          },
+          {
+            "day": "2026-10-29",
+            "value": 406,
+            "level": 1
+          },
+          {
+            "day": "2026-10-30",
+            "value": 396,
+            "level": 1
+          },
+          {
+            "day": "2026-10-31",
+            "value": 432,
+            "level": 4
+          },
+          {
+            "day": "2026-11-01",
+            "value": 416,
+            "level": 2
+          }
+        ],
+        [
+          {
+            "day": "2026-11-02",
+            "value": 444,
+            "level": 4
+          },
+          {
+            "day": "2026-11-03",
+            "value": 445,
+            "level": 5
+          },
+          {
+            "day": "2026-11-04",
+            "value": 427,
+            "level": 3
+          },
+          {
+            "day": "2026-11-05",
+            "value": 409,
+            "level": 2
+          },
+          {
+            "day": "2026-11-06",
+            "value": 441,
+            "level": 4
+          },
+          {
+            "day": "2026-11-07",
+            "value": 408,
+            "level": 1
+          },
+          {
+            "day": "2026-11-08",
+            "value": 421,
+            "level": 2
+          }
+        ]
+      ]
+    }
+  },
+  "workouts_report": {
+    "today": "2026-11-08",
+    "days": 28,
+    "count": 7,
+    "duration_seconds": 22370.412,
+    "energy_kcal": 3243.2072999999996,
+    "distance_km": 71.12039999999999,
+    "active_days": 7,
+    "by_type": [
+      {
+        "activity": "running",
+        "count": 3,
+        "duration_seconds": 10125.57,
+        "energy_kcal": 1828.228,
+        "distance_km": 28.126600000000003
+      },
+      {
+        "activity": "cycling",
+        "count": 2,
+        "duration_seconds": 6236.898,
+        "energy_kcal": 1039.4831,
+        "distance_km": 34.6494
+      },
+      {
+        "activity": "walking",
+        "count": 2,
+        "duration_seconds": 6007.9439999999995,
+        "energy_kcal": 375.4962,
+        "distance_km": 8.3444
+      }
+    ],
+    "weeks": [
+      {
+        "start": "2026-10-26",
+        "duration_seconds": 13836.672,
+        "count": 4,
+        "days": 7
+      },
+      {
+        "start": "2026-11-02",
+        "duration_seconds": 8533.74,
+        "count": 3,
+        "partial": true,
+        "days": 7
+      }
+    ],
+    "bests": [
+      {
+        "kind": "longest",
+        "activity": "running",
+        "day": "2026-10-26",
+        "duration_seconds": 3572.514,
+        "distance_km": 9.9237,
+        "energy_kcal": 645.0377,
+        "new": true
+      },
+      {
+        "kind": "fastest",
+        "activity": "running",
+        "day": "2026-10-26",
+        "duration_seconds": 3572.514,
+        "distance_km": 9.9237,
+        "energy_kcal": 645.0377,
+        "pace_sec_per_km": 359.99818616040386,
+        "new": true
+      },
+      {
+        "kind": "furthest",
+        "activity": "running",
+        "day": "2026-10-26",
+        "duration_seconds": 3572.514,
+        "distance_km": 9.9237,
+        "energy_kcal": 645.0377,
+        "new": true
+      },
+      {
+        "kind": "biggest",
+        "activity": "running",
+        "day": "2026-10-26",
+        "duration_seconds": 3572.514,
+        "distance_km": 9.9237,
+        "energy_kcal": 645.0377,
+        "new": true
+      }
+    ],
+    "recent": [
+      {
+        "day": "2026-11-07",
+        "activity": "running",
+        "start": "2026-11-07T18:00:00+01:00",
+        "end": "2026-11-07T18:50:50+01:00",
+        "duration_seconds": 3050.214,
+        "energy_kcal": 550.7331,
+        "distance_km": 8.4728,
+        "source": "Alex’s Apple Watch"
+      },
+      {
+        "day": "2026-11-05",
+        "activity": "cycling",
+        "start": "2026-11-05T18:00:00+01:00",
+        "end": "2026-11-05T19:03:45+01:00",
+        "duration_seconds": 3825.234,
+        "energy_kcal": 637.5395,
+        "distance_km": 21.2513,
+        "source": "Alex’s Apple Watch"
+      },
+      {
+        "day": "2026-11-03",
+        "activity": "walking",
+        "start": "2026-11-03T18:00:00-05:00",
+        "end": "2026-11-03T18:27:38-05:00",
+        "duration_seconds": 1658.292,
+        "energy_kcal": 103.6431,
+        "distance_km": 2.3032,
+        "source": "Alex’s Apple Watch"
+      }
+    ]
+  }
+}

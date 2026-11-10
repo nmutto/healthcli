@@ -1,0 +1,28 @@
+ healthcli overview                             db: test.db
+ ----------------------------------------------------------
+ 1 worse vs your 28-day usual | Steps -33%
+ ACTIVITY 1 !1  (5 not tracked)
+
+   METRIC  LATEST       VS 28-DAY USUAL
+
+ == ACTIVITY == 1 | 1 worse ===============================
+ ! Steps   5,000 steps  v -33% worse      ..*====...
+ + better  ! worse  ~ higher/lower
+
+ == CALENDAR == Steps per day, 12 weeks to 2026-11-08 =====
+     Aug Sep     Oct     Nov
+ Mon _ _ _ _ _ _ _ _ _ _ . #
+ Tue _ _ _ _ _ _ _ _ _ # - @
+ Wed _ _ _ _ _ _ _ _ _ . + .
+ Thu _ _ _ _ _ _ _ _ _ - # -
+ Fri _ _ _ _ _ _ _ _ _ + . +
+ Sat _ _ _ _ _ _ _ _ _ # - #
+ Sun _ _ _ _ _ _ _ _ _ @ + . <
+
+ . <=5,600  - <=6,800  + <=8,000  # <=9,200  @ >9,200
+ _ no data   < today   steps per day
+
+ == DATA == 20 samples ====================================
+ range: 2026-10-20 -> 2026-11-08
+ sources: other 100%
+ not tracked in your data: 29 metrics

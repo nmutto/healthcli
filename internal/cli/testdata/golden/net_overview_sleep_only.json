@@ -1,0 +1,520 @@
+{
+  "today": "2026-11-08",
+  "empty": false,
+  "metrics": [],
+  "categories": [],
+  "not_tracked": [
+    "heart_rate",
+    "resting_heart_rate",
+    "step_count",
+    "hrv_sdnn",
+    "body_mass",
+    "active_energy",
+    "respiratory_rate",
+    "apple_sleeping_wrist_temperature",
+    "oxygen_saturation",
+    "vo2_max",
+    "walking_heart_rate_average",
+    "heart_rate_recovery_one_minute",
+    "blood_pressure_systolic",
+    "blood_pressure_diastolic",
+    "blood_glucose",
+    "basal_energy",
+    "apple_exercise_time",
+    "apple_stand_time",
+    "flights_climbed",
+    "distance_walking_running",
+    "time_in_daylight",
+    "body_fat_percentage",
+    "body_mass_index",
+    "lean_body_mass",
+    "height",
+    "walking_speed",
+    "walking_step_length",
+    "walking_asymmetry",
+    "walking_double_support",
+    "apple_walking_steadiness"
+  ],
+  "sleep": {
+    "state": "ok",
+    "night": "2026-11-08",
+    "age_days": 0,
+    "source": "Test Apple Watch",
+    "asleep_seconds": 25200,
+    "core_seconds": 17400,
+    "deep_seconds": 5400,
+    "rem_seconds": 2400,
+    "unspecified_seconds": 0,
+    "awake_seconds": 0,
+    "in_bed_seconds": 30600
+  },
+  "workouts": {
+    "days": 28,
+    "count": 0,
+    "duration_seconds": 0,
+    "energy_kcal": 0
+  },
+  "data": {
+    "samples": 0,
+    "sleep_nights": 1,
+    "source_samples": {},
+    "gaps": []
+  },
+  "sleep_summary": {
+    "today": "2026-11-08",
+    "empty": false,
+    "age_days": 0,
+    "kind": "stages",
+    "night": {
+      "night": "2026-11-08",
+      "source": "Test Apple Watch",
+      "in_bed_source": "Test iPhone",
+      "asleep_seconds": 25200,
+      "core_seconds": 17400,
+      "deep_seconds": 5400,
+      "rem_seconds": 2400,
+      "unspecified_seconds": 0,
+      "awake_seconds": 0,
+      "in_bed_seconds": 30600,
+      "efficiency_pct": 82.35294117647058,
+      "awakenings": 0,
+      "latency_seconds": 1800,
+      "bedtime": "23:00",
+      "wake": "06:00",
+      "midpoint": "02:30",
+      "stages": [
+        {
+          "stage": "core",
+          "start": "2026-11-07T23:00:00Z",
+          "end": "2026-11-08T03:50:00Z"
+        },
+        {
+          "stage": "rem",
+          "start": "2026-11-08T03:50:00Z",
+          "end": "2026-11-08T04:30:00Z"
+        },
+        {
+          "stage": "deep",
+          "start": "2026-11-08T04:30:00Z",
+          "end": "2026-11-08T06:00:00Z"
+        }
+      ]
+    },
+    "seven_nights": {
+      "nights": 1,
+      "asleep_seconds": 25200,
+      "in_bed_seconds": 30600,
+      "efficiency_pct": 82.35294117647058,
+      "awake_seconds": 0,
+      "awakenings": 0,
+      "latency_seconds": 1800,
+      "deep_seconds": 5400,
+      "rem_seconds": 2400,
+      "core_seconds": 17400,
+      "bedtime_min_since_18h": 300,
+      "wake_min_since_18h": 720,
+      "midpoint_min_since_18h": 510
+    },
+    "fourteen_nights": {
+      "nights": 1,
+      "asleep_seconds": 25200,
+      "in_bed_seconds": 30600,
+      "efficiency_pct": 82.35294117647058,
+      "awake_seconds": 0,
+      "awakenings": 0,
+      "latency_seconds": 1800,
+      "deep_seconds": 5400,
+      "rem_seconds": 2400,
+      "core_seconds": 17400,
+      "bedtime_min_since_18h": 300,
+      "wake_min_since_18h": 720,
+      "midpoint_min_since_18h": 510
+    },
+    "usual": {
+      "nights": 0
+    },
+    "debt": {
+      "target_seconds": 28800,
+      "last_night_seconds": 3600,
+      "nights": 1,
+      "window_seconds": 3600
+    },
+    "heatmap": {
+      "metric": "sleep_asleep",
+      "unit": "",
+      "today": "2026-11-08",
+      "from": "2026-08-17",
+      "thresholds": [
+        420,
+        420,
+        420,
+        420
+      ],
+      "days_with_data": 1,
+      "flat": true,
+      "weeks": [
+        [
+          {
+            "day": "2026-08-17",
+            "level": 0
+          },
+          {
+            "day": "2026-08-18",
+            "level": 0
+          },
+          {
+            "day": "2026-08-19",
+            "level": 0
+          },
+          {
+            "day": "2026-08-20",
+            "level": 0
+          },
+          {
+            "day": "2026-08-21",
+            "level": 0
+          },
+          {
+            "day": "2026-08-22",
+            "level": 0
+          },
+          {
+            "day": "2026-08-23",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-08-24",
+            "level": 0
+          },
+          {
+            "day": "2026-08-25",
+            "level": 0
+          },
+          {
+            "day": "2026-08-26",
+            "level": 0
+          },
+          {
+            "day": "2026-08-27",
+            "level": 0
+          },
+          {
+            "day": "2026-08-28",
+            "level": 0
+          },
+          {
+            "day": "2026-08-29",
+            "level": 0
+          },
+          {
+            "day": "2026-08-30",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-08-31",
+            "level": 0
+          },
+          {
+            "day": "2026-09-01",
+            "level": 0
+          },
+          {
+            "day": "2026-09-02",
+            "level": 0
+          },
+          {
+            "day": "2026-09-03",
+            "level": 0
+          },
+          {
+            "day": "2026-09-04",
+            "level": 0
+          },
+          {
+            "day": "2026-09-05",
+            "level": 0
+          },
+          {
+            "day": "2026-09-06",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-07",
+            "level": 0
+          },
+          {
+            "day": "2026-09-08",
+            "level": 0
+          },
+          {
+            "day": "2026-09-09",
+            "level": 0
+          },
+          {
+            "day": "2026-09-10",
+            "level": 0
+          },
+          {
+            "day": "2026-09-11",
+            "level": 0
+          },
+          {
+            "day": "2026-09-12",
+            "level": 0
+          },
+          {
+            "day": "2026-09-13",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-14",
+            "level": 0
+          },
+          {
+            "day": "2026-09-15",
+            "level": 0
+          },
+          {
+            "day": "2026-09-16",
+            "level": 0
+          },
+          {
+            "day": "2026-09-17",
+            "level": 0
+          },
+          {
+            "day": "2026-09-18",
+            "level": 0
+          },
+          {
+            "day": "2026-09-19",
+            "level": 0
+          },
+          {
+            "day": "2026-09-20",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-21",
+            "level": 0
+          },
+          {
+            "day": "2026-09-22",
+            "level": 0
+          },
+          {
+            "day": "2026-09-23",
+            "level": 0
+          },
+          {
+            "day": "2026-09-24",
+            "level": 0
+          },
+          {
+            "day": "2026-09-25",
+            "level": 0
+          },
+          {
+            "day": "2026-09-26",
+            "level": 0
+          },
+          {
+            "day": "2026-09-27",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-09-28",
+            "level": 0
+          },
+          {
+            "day": "2026-09-29",
+            "level": 0
+          },
+          {
+            "day": "2026-09-30",
+            "level": 0
+          },
+          {
+            "day": "2026-10-01",
+            "level": 0
+          },
+          {
+            "day": "2026-10-02",
+            "level": 0
+          },
+          {
+            "day": "2026-10-03",
+            "level": 0
+          },
+          {
+            "day": "2026-10-04",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-05",
+            "level": 0
+          },
+          {
+            "day": "2026-10-06",
+            "level": 0
+          },
+          {
+            "day": "2026-10-07",
+            "level": 0
+          },
+          {
+            "day": "2026-10-08",
+            "level": 0
+          },
+          {
+            "day": "2026-10-09",
+            "level": 0
+          },
+          {
+            "day": "2026-10-10",
+            "level": 0
+          },
+          {
+            "day": "2026-10-11",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-12",
+            "level": 0
+          },
+          {
+            "day": "2026-10-13",
+            "level": 0
+          },
+          {
+            "day": "2026-10-14",
+            "level": 0
+          },
+          {
+            "day": "2026-10-15",
+            "level": 0
+          },
+          {
+            "day": "2026-10-16",
+            "level": 0
+          },
+          {
+            "day": "2026-10-17",
+            "level": 0
+          },
+          {
+            "day": "2026-10-18",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-19",
+            "level": 0
+          },
+          {
+            "day": "2026-10-20",
+            "level": 0
+          },
+          {
+            "day": "2026-10-21",
+            "level": 0
+          },
+          {
+            "day": "2026-10-22",
+            "level": 0
+          },
+          {
+            "day": "2026-10-23",
+            "level": 0
+          },
+          {
+            "day": "2026-10-24",
+            "level": 0
+          },
+          {
+            "day": "2026-10-25",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-10-26",
+            "level": 0
+          },
+          {
+            "day": "2026-10-27",
+            "level": 0
+          },
+          {
+            "day": "2026-10-28",
+            "level": 0
+          },
+          {
+            "day": "2026-10-29",
+            "level": 0
+          },
+          {
+            "day": "2026-10-30",
+            "level": 0
+          },
+          {
+            "day": "2026-10-31",
+            "level": 0
+          },
+          {
+            "day": "2026-11-01",
+            "level": 0
+          }
+        ],
+        [
+          {
+            "day": "2026-11-02",
+            "level": 0
+          },
+          {
+            "day": "2026-11-03",
+            "level": 0
+          },
+          {
+            "day": "2026-11-04",
+            "level": 0
+          },
+          {
+            "day": "2026-11-05",
+            "level": 0
+          },
+          {
+            "day": "2026-11-06",
+            "level": 0
+          },
+          {
+            "day": "2026-11-07",
+            "level": 0
+          },
+          {
+            "day": "2026-11-08",
+            "value": 420,
+            "level": 3
+          }
+        ]
+      ]
+    }
+  }
+}
