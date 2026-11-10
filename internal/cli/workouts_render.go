@@ -43,7 +43,12 @@ func renderWorkoutsSection(r *stats.WorkoutsReport, ti termInfo, width int, opts
 		if r != nil && r.Last != "" {
 			text = fmt.Sprintf("none in %d d (last: %s)", days, dayText(r.Last, "Jan 02"))
 		}
-		return []string{indent + bandLine("WORKOUTS", text, width-len(indent)-1, g, st)}
+		lines := []string{indent + bandLine("WORKOUTS", text, width-len(indent)-1, g, st)}
+		if r != nil && len(r.Recent) > 0 { // the last 7 days show even when the window is empty
+			lines = append(lines, "")
+			lines = append(lines, wkRecent(r, g, st, width)...)
+		}
+		return lines
 	}
 
 	total := width - len(indent) - 1

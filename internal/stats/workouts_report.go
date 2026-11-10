@@ -119,6 +119,16 @@ func BuildWorkoutsReportWithHeatmap(ctx context.Context, conn *sql.DB, today str
 			window = append(window, w)
 		}
 	}
+	// The heatmap and the recent list do not depend on the window, so they
+	// are filled even when nothing happened inside it.
+	r.fillDays(all)
+	recentFrom, err := AddDays(today, -(recentDays - 1))
+	if err != nil {
+		return nil, err
+	}
+	for i := len(all) - 1; i >= 0 && all[i].Day >= recentFrom; i-- { // newest first
+		r.Recent = append(r.Recent, all[i])
+	}
 	if len(window) == 0 {
 		if len(all) > 0 {
 			r.Last = all[len(all)-1].Day
@@ -127,16 +137,8 @@ func BuildWorkoutsReportWithHeatmap(ctx context.Context, conn *sql.DB, today str
 	}
 
 	r.fillTotals(window)
-	r.fillDays(all)
 	r.Weeks = weeklyVolume(all, today, weeks)
 	r.Bests = bests(all, today, winFrom)
-	recentFrom, err := AddDays(today, -(recentDays - 1))
-	if err != nil {
-		return nil, err
-	}
-	for i := len(all) - 1; i >= 0 && all[i].Day >= recentFrom; i-- { // newest first
-		r.Recent = append(r.Recent, all[i])
-	}
 	return r, nil
 }
 
