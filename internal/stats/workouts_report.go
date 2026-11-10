@@ -66,8 +66,9 @@ type WeekVolume struct {
 	// have happened. A partial week never gets a delta.
 	Partial bool `json:"partial,omitempty"`
 	Days    int  `json:"days"`
-	// DeltaPct compares with the average of the up to 4 full weeks before it;
-	// nil when fewer than 2 such weeks exist or the average is 0.
+	// DeltaPct compares with the average of the up to 4 weeks before it;
+	// nil when fewer than 3 such weeks exist (since the first workout) or the
+	// average is 0.
 	DeltaPct *float64 `json:"delta_pct,omitempty"`
 }
 

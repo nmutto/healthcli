@@ -20,7 +20,7 @@ func newWorkoutsCmd(opts *options) *cobra.Command {
 		Short: "Workouts: type table, weekly volume, bests, recent sessions and a calendar",
 		Long: `Show your workouts over the last --days days (default 28): totals per activity
 type with a share bar, weekly training time (--weeks, default 8) with a change
-against the previous four weeks, personal bests over 90 days (activities with
+against the average of the weeks before it (up to four, at least three), personal bests over 90 days (activities with
 at least 3 sessions), every session of the last 7 days and a calendar heatmap of workout
 minutes per day. Days without a workout in the calendar are rest days (shown
 from your first workout on). --by type draws each day's main activity as a
