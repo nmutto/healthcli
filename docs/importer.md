@@ -9,7 +9,7 @@ Code: `internal/importer` (`importer.go` = parse loop, `convert.go` = record -> 
 2. `parse` calls `xml.Decoder.Token()` in a loop. Only `<Record>` and `<Workout>` start tags matter; everything else (DTD, `Me`, children such as `MetadataEntry`) streams past. Nothing is kept, so memory stays flat.
 3. `convert.go` turns attributes into a row or a skip reason:
    - Apple type -> our metric via `metrics.FromApple` (heart_rate, resting_heart_rate, step_count, hrv_sdnn, body_mass, active_energy).
-   - Units go to the metric's canonical unit (`count/min` -> `bpm`, `lb`/`g` -> `kg`, `kJ` -> `kcal`, `s` -> `ms`); values are rounded to 4 decimals.
+   - Units go to the metric's canonical unit (`count/min` -> `bpm`, `lb`/`g` -> `kg`, `kJ` and `Cal` -> `kcal`, `s` -> `ms`); values are rounded to 4 decimals.
    - Sleep values -> `sleep_stages` (`in_bed`, `core`, `deep`, `rem`, `awake`, `asleep_unspecified`). Old iOS's plain `...SleepAnalysisAsleep` maps to `asleep_unspecified`.
    - `<Workout>` -> `workouts` in seconds, kcal, metres. Energy and distance come from the `totalEnergyBurned`/`totalDistance` attributes; if an attribute is absent, from the `<WorkoutStatistics>` children (`ActiveEnergyBurned`, first `Distance*` with a sum; kJ, km, mi, ft, yd converted). Attributes win. A missing duration, or a duration without `durationUnit`, falls back to end - start; an energy or distance without a unit is stored as NULL and the workout is kept; missing distance/energy are stored as NULL. Activity names are snake_case without Apple's prefix.
    - Dates become UTC unix seconds; `tz_offset` is the `+ZZZZ` written in that record.

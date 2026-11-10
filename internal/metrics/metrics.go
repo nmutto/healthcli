@@ -91,6 +91,10 @@ const poundsToKg = 0.45359237
 // kjToKcal converts kilojoules to (thermochemical) kilocalories.
 const kjToKcal = 1 / 4.184
 
+// energyUnits: kilojoules, plus Apple's "Cal" (the food Calorie), which is a
+// kilocalorie. Matching is case-insensitive, like the workouts' toKcal.
+var energyUnits = map[string]float64{"kj": kjToKcal, "cal": 1, "kcal": 1}
+
 // perMin lets "count/min" (Apple's spelling of a rate per minute) be read as
 // the canonical unit with factor 1.
 var perMin = map[string]float64{"count/min": 1}
@@ -127,7 +131,7 @@ var known = []Metric{
 	{Name: "step_count", Label: "Steps", Category: Activity, Unit: "count", Polarity: HigherBetter, Daily: Sum},
 	{Name: "hrv_sdnn", Label: "Heart rate variability", Category: Vitals, Unit: "ms", Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"s": 1000}},
 	{Name: "body_mass", Label: "Weight", Category: Body, Unit: "kg", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
-	{Name: "active_energy", Label: "Active energy", Category: Activity, Unit: "kcal", Polarity: HigherBetter, Daily: Sum, Conversions: map[string]float64{"kj": kjToKcal}},
+	{Name: "active_energy", Label: "Active energy", Category: Activity, Unit: "kcal", Polarity: HigherBetter, Daily: Sum, Conversions: energyUnits},
 
 	// Newer metrics, grouped by category.
 	// Vitals
@@ -145,7 +149,7 @@ var known = []Metric{
 		Conversions: map[string]float64{"mmol/l": 18.0156, "mmol<180.1558800000541>/l": 18.0156}},
 
 	// Activity
-	{Name: "basal_energy", Label: "Resting energy", Category: Activity, Unit: "kcal", Polarity: Neutral, Daily: Sum, Conversions: map[string]float64{"kj": kjToKcal}},
+	{Name: "basal_energy", Label: "Resting energy", Category: Activity, Unit: "kcal", Polarity: Neutral, Daily: Sum, Conversions: energyUnits},
 	{Name: "apple_exercise_time", Label: "Exercise time", Category: Activity, Unit: "min", Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
 	{Name: "apple_stand_time", Label: "Stand time", Category: Activity, Unit: "min", Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
 	{Name: "flights_climbed", Label: "Flights climbed", Category: Activity, Unit: "count", Polarity: HigherBetter, Daily: Sum},

@@ -101,3 +101,22 @@ func TestRecordsWithoutHealthDataRootAreRejectedEarly(t *testing.T) {
 		t.Errorf("%d rows were committed from a non-Apple file, want 0", n)
 	}
 }
+
+// BUG: Apple's "Cal" is the food Calorie, i.e. a kilocalorie. Energy records
+// written in it were skipped as bad_unit because only "kJ" was known.
+func TestCalIsKilocalorie(t *testing.T) {
+	p := writeFile(t, "export.xml", wrap(`
+<Record type="HKQuantityTypeIdentifierActiveEnergyBurned" sourceName="a" unit="Cal" `+qaWhen+` value="120"/>
+<Record type="HKQuantityTypeIdentifierBasalEnergyBurned" sourceName="a" unit="kcal" `+qaWhen+` value="80"/>`))
+	conn := newDB(t)
+	sum, err := Import(conn, p, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Inserted != 2 || sum.SkippedTotal() != 0 {
+		t.Fatalf("summary = %+v, want both energy records imported", sum)
+	}
+	if n := count(t, conn, "SELECT COUNT(*) FROM samples WHERE metric = 'active_energy' AND value = 120"); n != 1 {
+		t.Errorf("Cal should import unchanged as kcal, got %d rows", n)
+	}
+}
