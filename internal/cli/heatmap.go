@@ -339,7 +339,7 @@ func newHeatmapCmd(opts *options) *cobra.Command {
 per week, newest week on the right. Shades are the metric's own quintiles over
 the window (the legend lists the cut points), so the darkest fifth of days is
 always the highest fifth for that metric. A day without data shows a dot, not
-the lowest shade. Today is marked.
+the lowest shade; for workouts a dot means a rest day. Today is marked.
 
 The metric defaults to step_count; "sleep" (time asleep per day) and
 "workouts" (workout minutes per day, with rest days) work too. --weeks sets the
@@ -349,7 +349,7 @@ narrow (oldest dropped).
 JSON output (--json):
   metric, unit, today, from, thresholds (4 upper bounds of levels 1-4),
   days_with_data, weeks[7 days each]: day, value (left out = no data), level
-  (1-5; 0 = no data), future (true after today)`,
+  (1-5; 0 = no data, or a rest day with value 0 for workouts), future (true after today)`,
 		Example: `  healthcli heatmap
   healthcli heatmap active_energy --weeks 26
   healthcli heatmap sleep
@@ -457,7 +457,11 @@ func runHeatmap(cmd *cobra.Command, opts *options, name string, weeks int, noCol
 		return enc.Encode(h)
 	}
 	if h.Empty() {
-		_, err = fmt.Fprintf(out, "No %s data in the last %s yet.\n", strings.ReplaceAll(name, "_", " "), plural(int64(weeks), "week"))
+		what := strings.ReplaceAll(name, "_", " ") + " data"
+		if name == "workouts" {
+			what = "workouts" // "workouts data" reads wrong
+		}
+		_, err = fmt.Fprintf(out, "No %s in the last %s yet.\n", what, plural(int64(weeks), "week"))
 		return err
 	}
 	_, err = fmt.Fprintln(out, strings.Join(renderHeatmap(h, ti), "\n"))

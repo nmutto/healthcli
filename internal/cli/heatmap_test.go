@@ -156,9 +156,12 @@ func TestHeatmapCommandSleepWorkouts(t *testing.T) {
 	defer func() { nowFunc = old }()
 
 	// No data: friendly line, exit 0.
-	for _, name := range []string{"sleep", "workouts"} {
+	for name, want := range map[string]string{
+		"sleep":    "No sleep data in the last 12 weeks yet.",
+		"workouts": "No workouts in the last 12 weeks yet.",
+	} {
 		out, _, err := run(t, "--db", seedHeat(t, "empty"), "heatmap", name)
-		if err != nil || !strings.HasPrefix(out, "No "+name+" data") {
+		if err != nil || !strings.HasPrefix(out, want) {
 			t.Errorf("%s empty: %q, %v", name, out, err)
 		}
 	}
