@@ -19,7 +19,8 @@ const (
 	bestMinSessions = 3
 	// paceMinMeters: very short GPS tracks give silly paces, so a "fastest" needs this.
 	paceMinMeters = 3000
-	// recentDays is how far back the recent list goes: every session of the
+	// recentDays is the most the recent list goes back (and never further than
+	// the --days window): every session of the
 	// last 7 days, today included.
 	recentDays = 7
 )
@@ -120,10 +121,11 @@ func BuildWorkoutsReportWithHeatmap(ctx context.Context, conn *sql.DB, today str
 			window = append(window, w)
 		}
 	}
-	// The heatmap and the recent list do not depend on the window, so they
-	// are filled even when nothing happened inside it.
+	// The heatmap does not depend on the window, so it is filled even when
+	// nothing happened inside it. The recent list is the last 7 days of the
+	// window, or all of it when --days is shorter than a week.
 	r.fillDays(all)
-	recentFrom, err := AddDays(today, -(recentDays - 1))
+	recentFrom, err := AddDays(today, -(min(days, recentDays) - 1))
 	if err != nil {
 		return nil, err
 	}

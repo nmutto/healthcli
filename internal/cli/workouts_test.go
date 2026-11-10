@@ -243,9 +243,9 @@ func TestWorkoutsSectionHeatmapIsGreen(t *testing.T) {
 	t.Errorf("no green heatmap colour in the section:\n%s", got)
 }
 
-// Recent is every session of the last 7 days whatever --days says, and the
-// RECENT block shows even when the window itself is empty.
-func TestWorkoutsRecentIgnoresShortDays(t *testing.T) {
+// Recent is every session of the last 7 days, but never further back than the
+// --days window: --days 2 shows the last 2 days.
+func TestWorkoutsRecentFollowsDays(t *testing.T) {
 	old := nowFunc
 	nowFunc = func() time.Time { return workoutsNow }
 	defer func() { nowFunc = old }()
@@ -264,7 +264,7 @@ func TestWorkoutsRecentIgnoresShortDays(t *testing.T) {
 	}
 	conn.Close()
 
-	for _, days := range []string{"1", "2", "6"} {
+	for days, want := range map[string]int{"1": 0, "2": 1, "4": 1, "5": 2, "6": 2, "28": 2} {
 		out, _, err := run(t, "--db", path, "workouts", "--days", days, "--json")
 		if err != nil {
 			t.Fatal(err)
@@ -275,12 +275,12 @@ func TestWorkoutsRecentIgnoresShortDays(t *testing.T) {
 		if err := json.Unmarshal([]byte(out), &rep); err != nil {
 			t.Fatal(err)
 		}
-		if len(rep.Recent) != 2 {
-			t.Errorf("--days %s: recent has %d sessions, want 2\n%s", days, len(rep.Recent), out)
+		if len(rep.Recent) != want {
+			t.Errorf("--days %s: recent has %d sessions, want %d\n%s", days, len(rep.Recent), want, out)
 		}
 	}
 	out, _, err := run(t, "--db", path, "workouts", "--days", "1")
-	if err != nil || !strings.Contains(out, "none in 1 d (last: Nov 08)") || !strings.Contains(out, "RECENT") {
-		t.Errorf("text must show the none line and the RECENT block: %v\n%s", err, out)
+	if err != nil || !strings.Contains(out, "none in 1 d (last: Nov 08)") || strings.Contains(out, "RECENT") {
+		t.Errorf("an empty window shows the none line and no RECENT block: %v\n%s", err, out)
 	}
 }
