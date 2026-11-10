@@ -1,0 +1,3 @@
+--- error ---
+unknown category "bogus"
+valid categories: vitals, activity, body, mobility, other, sleep, workouts

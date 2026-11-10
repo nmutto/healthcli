@@ -1,0 +1,36 @@
+ [2m==[0m [1mSLEEP[0m [2m==[0m Wed 4 Nov | Watch stages, iPhone in bed [2m==========================[0m
+[2m       00:05                                                              06:00[0m
+ awake [38;5;208m                                     .                  .               [0m
+ REM   [38;5;117m                                 ++++             ++++++           +++++[0m
+ core  [38;5;33m::::::::::::::         ::::::::::     ::::::::::::       ::::::::::     [0m
+ deep  [38;5;21m              #########                                                 [0m
+[2m                  01          02          03          04          05[0m
+
+[2m STAT         LAST NIGHT          7 NIGHTS            VS 28-NIGHT USUAL[0m
+ Asleep       5h 50m              6h 08m              [1;31mv -11% worse[0m
+ In bed       6h 03m              6h 29m              v -13% shorter
+ Efficiency   96%                 94%                 [2m- typical[0m
+ Awake        5m / 2 awakenings   9m / 2 awakenings   [2m- typical[0m
+ Latency      ~8m                 11m                 [2m- typical[0m
+ Deep         45m 13%             45m                 [2m- typical[0m
+ REM          1h 15m 21%          1h 14m              [2m- typical[0m
+ Core         3h 50m 66%          4h 08m              v -16% shorter
+ Bedtime      00:05               23:58               ^ +50m later
+ Wake         06:00               06:15               [2m- typical[0m
+ Midpoint     03:03               03:07               ^ +26m later
+ Regularity   +/-51m bed +/-34m mid                   [1;31m^ worse (usual +/-38m)[0m
+ Sleep debt   2h 10m short last night, 7 nights: 13h 07m short vs 8h target
+ [32m+[0m[2m better[0m  [1;31m![0m[2m worse[0m  [2m~ higher/lower, no good direction[0m
+
+ [2m==[0m [1mCALENDAR[0m [2m==[0m time asleep per day, 12 weeks to 2026-11-04 [2m===================[0m
+     Aug Sep     Oct     Nov
+ Mon [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;24m#[0m [38;5;33m#[0m [38;5;75m#[0m [38;5;33m#[0m [38;5;75m#[0m [38;5;24m#[0m
+ Tue [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;75m#[0m [38;5;26m#[0m [38;5;75m#[0m [38;5;26m#[0m [38;5;75m#[0m [38;5;24m#[0m
+ Wed [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;33m#[0m [38;5;26m#[0m [38;5;33m#[0m [38;5;24m#[0m [38;5;75m#[0m [38;5;24m#[0m [1m<[0m
+ Thu [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;33m#[0m [38;5;75m#[0m [38;5;33m#[0m [38;5;75m#[0m [38;5;24m#[0m
+ Fri [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;26m#[0m [38;5;75m#[0m [38;5;26m#[0m [38;5;75m#[0m [38;5;24m#[0m
+ Sat [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;33m#[0m [38;5;75m#[0m [38;5;33m#[0m [38;5;75m#[0m [38;5;75m#[0m [38;5;26m#[0m
+ Sun [2m_[0m [2m_[0m [2m_[0m [2m_[0m [2m_[0m [38;5;26m#[0m [38;5;75m#[0m [38;5;26m#[0m [38;5;75m#[0m [38;5;75m#[0m [38;5;24m#[0m
+
+ [38;5;24m#[0m <=6h 36m  [38;5;26m#[0m <=6h 52m  [38;5;33m#[0m <=7h 10m  [38;5;75m#[0m <=7h 20m
+ [2m_[0m no data   < today   per day

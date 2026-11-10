@@ -1,0 +1,159 @@
+{
+  "status": "ok",
+  "requested_date": "2026-11-05",
+  "date": "2026-11-05",
+  "metrics": [
+    {
+      "metric": "heart_rate",
+      "label": "Avg heart rate",
+      "unit": "bpm",
+      "value": 72,
+      "source": "Test Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 28,
+        "days_needed": 7,
+        "from": "2026-10-08",
+        "to": "2026-11-04",
+        "mean": 69,
+        "stddev": 2.0367003088692623
+      },
+      "comparison": {
+        "delta": 3,
+        "delta_pct": 4.3478260869565215,
+        "z": 1.4729707590929484,
+        "label": "above"
+      },
+      "category": "vitals",
+      "polarity": "neutral",
+      "state": "ok",
+      "verdict": "changed",
+      "usual": 69
+    },
+    {
+      "metric": "resting_heart_rate",
+      "label": "Resting HR",
+      "unit": "bpm",
+      "value": 62,
+      "source": "Test Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 28,
+        "days_needed": 7,
+        "from": "2026-10-08",
+        "to": "2026-11-04",
+        "mean": 59.964285714285715,
+        "stddev": 1.4267845968170128
+      },
+      "comparison": {
+        "delta": 2.0357142857142847,
+        "delta_pct": 3.3948779035139944,
+        "z": 1.426784596817012,
+        "label": "above"
+      },
+      "category": "vitals",
+      "polarity": "lower_better",
+      "state": "ok",
+      "verdict": "worse",
+      "usual": 59.964285714285715,
+      "range": {
+        "high": 100,
+        "source": "adult resting heart rate, 60-100 bpm",
+        "position": "within"
+      }
+    },
+    {
+      "metric": "step_count",
+      "label": "Steps",
+      "unit": "count",
+      "value": 9150,
+      "source": "Test Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 28,
+        "days_needed": 7,
+        "from": "2026-10-08",
+        "to": "2026-11-04",
+        "mean": 7735.714285714285,
+        "stddev": 1210.6668764421886
+      },
+      "comparison": {
+        "delta": 1414.2857142857147,
+        "delta_pct": 18.2825484764543,
+        "z": 1.1681873369179017,
+        "label": "above"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "better",
+      "usual": 7735.714285714285
+    },
+    {
+      "metric": "active_energy",
+      "label": "Active energy",
+      "unit": "kcal",
+      "value": 460,
+      "source": "Test Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 28,
+        "days_needed": 7,
+        "from": "2026-10-08",
+        "to": "2026-11-04",
+        "mean": 565.7142857142857,
+        "stddev": 91.87062446838837
+      },
+      "comparison": {
+        "delta": -105.71428571428567,
+        "delta_pct": -18.686868686868678,
+        "z": -1.1506864824964886,
+        "label": "below"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "worse",
+      "usual": 565.7142857142857
+    }
+  ],
+  "sleep": null,
+  "workouts": [
+    {
+      "activity": "running",
+      "start": "2026-11-05T18:00:00Z",
+      "duration_seconds": 1860,
+      "energy_kcal": 410,
+      "distance_m": 5200,
+      "source": "Test Apple Watch"
+    }
+  ],
+  "categories": [
+    {
+      "name": "vitals",
+      "total": 2,
+      "better": 0,
+      "worse": 1,
+      "changed": 1,
+      "typical": 0,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    },
+    {
+      "name": "activity",
+      "total": 2,
+      "better": 1,
+      "worse": 1,
+      "changed": 0,
+      "typical": 0,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    }
+  ],
+  "tracked_without_reading": [
+    "hrv_sdnn",
+    "body_mass"
+  ]
+}

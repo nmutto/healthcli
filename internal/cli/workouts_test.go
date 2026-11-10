@@ -21,7 +21,23 @@ var workoutsNow = time.Date(2026, 11, 9, 20, 0, 0, 0, time.UTC) // a Monday
 //	none    nothing
 func seedWorkouts(t *testing.T, scenario string) *stats.WorkoutsReport {
 	t.Helper()
-	conn, err := db.Open(tempDB(t))
+	conn, err := db.Open(seedWorkoutsDB(t, scenario))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	r, err := stats.BuildWorkoutsReport(t.Context(), conn, "2026-11-09", 28, 8)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return r
+}
+
+// seedWorkoutsDB is the database behind seedWorkouts (same scenarios).
+func seedWorkoutsDB(t *testing.T, scenario string) string {
+	t.Helper()
+	path := tempDB(t)
+	conn, err := db.Open(path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,11 +74,7 @@ func seedWorkouts(t *testing.T, scenario string) *stats.WorkoutsReport {
 	case "old":
 		add(60, "running", 40, 6000, 400)
 	}
-	r, err := stats.BuildWorkoutsReport(t.Context(), conn, "2026-11-09", 28, 8)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return r
+	return path
 }
 
 func TestWorkoutsSectionGoldens(t *testing.T) {

@@ -1,0 +1,13 @@
+== CALENDAR == sleep per day, 12 weeks ==========
+    Aug Sep     Oct     Nov
+Mon - @ _ # - # . + _ + @ +
+Tue . _ . + @ + @ _ @ - # -
+Wed _ - @ - # - _ . # . + . <
+Thu # . # . + _ + @ - @ -
+Fri + @ + @ _ # - # . # _
+Sat - # . _ . + . + @ _ @
+Sun . + _ + @ - # - _ . #
+
+. <=5h 48m  - <=6h 36m  + <=7h 24m  # <=8h 17m
+@ >8h 17m
+_ no data   < today   per day

@@ -1,0 +1,19 @@
+Generate the autocompletion script for powershell.
+
+To load completions in your current shell session:
+
+	healthcli completion powershell | Out-String | Invoke-Expression
+
+To load completions for every new session, add the output of the above command
+to your powershell profile.
+
+Usage:
+  healthcli completion powershell [flags]
+
+Flags:
+  -h, --help              help for powershell
+      --no-descriptions   disable completion descriptions
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text

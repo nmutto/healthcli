@@ -1,0 +1,5 @@
+$ healthcli log hr 61 --at 2025-03-01T07:45:00+01:00
+Logged heart_rate = 61 bpm at 2025-03-01 07:45
+$ healthcli query SELECT metric, round(value, 3) AS value, unit, source, start_ts, end_ts, tz_offset FROM samples ORDER BY metric, start_ts
+metric      value  unit  source  start_ts    end_ts      tz_offset
+heart_rate  61     bpm   manual  1740811500  1740811500  3600

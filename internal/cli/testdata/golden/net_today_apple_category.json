@@ -1,0 +1,230 @@
+{
+  "status": "ok",
+  "requested_date": "2026-11-08",
+  "date": "2026-11-08",
+  "metrics": [
+    {
+      "metric": "heart_rate",
+      "label": "Avg heart rate",
+      "unit": "bpm",
+      "value": 76.33333333333333,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 13,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 74.94978632478632,
+        "stddev": 1.1535659184069902
+      },
+      "comparison": {
+        "delta": 1.383547008547012,
+        "delta_pct": 1.8459652473878572,
+        "z": 1.1993653647965024,
+        "label": "above"
+      },
+      "category": "vitals",
+      "polarity": "neutral",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 74.94978632478632
+    },
+    {
+      "metric": "resting_heart_rate",
+      "label": "Resting HR",
+      "unit": "bpm",
+      "value": 60,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 13,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 56.76923076923077,
+        "stddev": 1.9644272343292228
+      },
+      "comparison": {
+        "delta": 3.2307692307692335,
+        "delta_pct": 5.691056910569111,
+        "z": 1.6446367543221412,
+        "label": "above"
+      },
+      "category": "vitals",
+      "polarity": "lower_better",
+      "state": "ok",
+      "verdict": "worse",
+      "usual": 56.76923076923077,
+      "range": {
+        "high": 100,
+        "source": "adult resting heart rate, 60-100 bpm",
+        "position": "within"
+      }
+    },
+    {
+      "metric": "hrv_sdnn",
+      "label": "HRV",
+      "unit": "ms",
+      "value": 45.84,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 13,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 47.899230769230776,
+        "stddev": 8.948677240742029
+      },
+      "comparison": {
+        "delta": -2.0592307692307728,
+        "delta_pct": -4.299089434550104,
+        "z": -0.23011565998328712,
+        "label": "typical"
+      },
+      "category": "vitals",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 47.899230769230776
+    },
+    {
+      "metric": "respiratory_rate",
+      "label": "Respiratory rate",
+      "unit": "breaths/min",
+      "value": 15.6,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 13,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 14.292307692307691,
+        "stddev": 0.9268778582437732
+      },
+      "comparison": {
+        "delta": 1.3076923076923084,
+        "delta_pct": 9.149623250807325,
+        "z": 1.410857208489254,
+        "label": "above"
+      },
+      "category": "vitals",
+      "polarity": "neutral",
+      "state": "ok",
+      "verdict": "changed",
+      "usual": 14.292307692307691,
+      "range": {
+        "high": 20,
+        "source": "adult resting respiratory rate, 12-20 breaths/min",
+        "position": "within"
+      }
+    },
+    {
+      "metric": "apple_sleeping_wrist_temperature",
+      "label": "Wrist temperature",
+      "unit": "degC",
+      "value": 35.99,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 13,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 35.91692307692308,
+        "stddev": 0.31068163274174515
+      },
+      "comparison": {
+        "delta": 0.07307692307692548,
+        "delta_pct": 0.20346097832605828,
+        "z": 0.23521481599033198,
+        "label": "typical"
+      },
+      "category": "vitals",
+      "polarity": "neutral",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 35.91692307692308
+    },
+    {
+      "metric": "oxygen_saturation",
+      "label": "Blood oxygen",
+      "unit": "percent",
+      "value": 97,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 13,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 96.76923076923077,
+        "stddev": 0.9919548170024476
+      },
+      "comparison": {
+        "delta": 0.2307692307692264,
+        "delta_pct": 0.23847376788552807,
+        "z": 0.23264086913412005,
+        "label": "typical"
+      },
+      "category": "vitals",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 96.76923076923077,
+      "range": {
+        "low": 95,
+        "source": "typical healthy adult reading, 95% and above",
+        "position": "within"
+      }
+    },
+    {
+      "metric": "walking_heart_rate_average",
+      "label": "Walking heart rate",
+      "unit": "bpm",
+      "value": 90,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 13,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 93.92307692307692,
+        "stddev": 3.7072347839851933
+      },
+      "comparison": {
+        "delta": -3.92307692307692,
+        "delta_pct": -4.1769041769041735,
+        "z": -1.0582218693092054,
+        "label": "below"
+      },
+      "category": "vitals",
+      "polarity": "lower_better",
+      "state": "ok",
+      "verdict": "better",
+      "usual": 93.92307692307692
+    }
+  ],
+  "sleep": null,
+  "workouts": [],
+  "categories": [
+    {
+      "name": "vitals",
+      "total": 7,
+      "better": 1,
+      "worse": 1,
+      "changed": 1,
+      "typical": 4,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    }
+  ],
+  "tracked_without_reading": [
+    "vo2_max",
+    "heart_rate_recovery_one_minute"
+  ]
+}

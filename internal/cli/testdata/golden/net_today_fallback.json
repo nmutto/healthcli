@@ -1,0 +1,209 @@
+{
+  "status": "fallback",
+  "requested_date": "2026-11-18",
+  "date": "2026-11-08",
+  "metrics": [
+    {
+      "metric": "heart_rate",
+      "label": "Avg heart rate",
+      "unit": "bpm",
+      "value": 67,
+      "source": "Test Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 28,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 69,
+        "stddev": 2.0367003088692623
+      },
+      "comparison": {
+        "delta": -2,
+        "delta_pct": -2.898550724637681,
+        "z": -0.9819805060619656,
+        "label": "typical"
+      },
+      "category": "vitals",
+      "polarity": "neutral",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 69
+    },
+    {
+      "metric": "step_count",
+      "label": "Steps",
+      "unit": "count",
+      "value": 11800,
+      "source": "Test Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 28,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 7783.928571428572,
+        "stddev": 1165.0030655998905
+      },
+      "comparison": {
+        "delta": 4016.0714285714284,
+        "delta_pct": 51.59440238586832,
+        "z": 3.4472625413251152,
+        "label": "above"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "better",
+      "usual": 7783.928571428572
+    },
+    {
+      "metric": "active_energy",
+      "label": "Active energy",
+      "unit": "kcal",
+      "value": 640,
+      "source": "Test Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 28,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 560,
+        "stddev": 90.75812380738728
+      },
+      "comparison": {
+        "delta": 80,
+        "delta_pct": 14.285714285714285,
+        "z": 0.8814637923739052,
+        "label": "typical"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 560
+    }
+  ],
+  "sleep": {
+    "night": "2026-11-08",
+    "source": "Test Apple Watch",
+    "asleep_seconds": 25200,
+    "core_seconds": 17400,
+    "deep_seconds": 5400,
+    "rem_seconds": 2400,
+    "unspecified_seconds": 0,
+    "awake_seconds": 0,
+    "in_bed_seconds": 30600
+  },
+  "workouts": [],
+  "categories": [
+    {
+      "name": "vitals",
+      "total": 1,
+      "better": 0,
+      "worse": 0,
+      "changed": 0,
+      "typical": 1,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    },
+    {
+      "name": "activity",
+      "total": 2,
+      "better": 1,
+      "worse": 0,
+      "changed": 0,
+      "typical": 1,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    }
+  ],
+  "tracked_without_reading": [
+    "resting_heart_rate",
+    "hrv_sdnn",
+    "body_mass"
+  ],
+  "sleep_summary": {
+    "today": "2026-11-08",
+    "empty": false,
+    "age_days": 0,
+    "kind": "stages",
+    "night": {
+      "night": "2026-11-08",
+      "source": "Test Apple Watch",
+      "in_bed_source": "Test iPhone",
+      "asleep_seconds": 25200,
+      "core_seconds": 17400,
+      "deep_seconds": 5400,
+      "rem_seconds": 2400,
+      "unspecified_seconds": 0,
+      "awake_seconds": 0,
+      "in_bed_seconds": 30600,
+      "efficiency_pct": 82.35294117647058,
+      "awakenings": 0,
+      "latency_seconds": 1800,
+      "bedtime": "23:00",
+      "wake": "06:00",
+      "midpoint": "02:30",
+      "stages": [
+        {
+          "stage": "core",
+          "start": "2026-11-07T23:00:00Z",
+          "end": "2026-11-08T03:50:00Z"
+        },
+        {
+          "stage": "rem",
+          "start": "2026-11-08T03:50:00Z",
+          "end": "2026-11-08T04:30:00Z"
+        },
+        {
+          "stage": "deep",
+          "start": "2026-11-08T04:30:00Z",
+          "end": "2026-11-08T06:00:00Z"
+        }
+      ]
+    },
+    "seven_nights": {
+      "nights": 1,
+      "asleep_seconds": 25200,
+      "in_bed_seconds": 30600,
+      "efficiency_pct": 82.35294117647058,
+      "awake_seconds": 0,
+      "awakenings": 0,
+      "latency_seconds": 1800,
+      "deep_seconds": 5400,
+      "rem_seconds": 2400,
+      "core_seconds": 17400,
+      "bedtime_min_since_18h": 300,
+      "wake_min_since_18h": 720,
+      "midpoint_min_since_18h": 510
+    },
+    "fourteen_nights": {
+      "nights": 1,
+      "asleep_seconds": 25200,
+      "in_bed_seconds": 30600,
+      "efficiency_pct": 82.35294117647058,
+      "awake_seconds": 0,
+      "awakenings": 0,
+      "latency_seconds": 1800,
+      "deep_seconds": 5400,
+      "rem_seconds": 2400,
+      "core_seconds": 17400,
+      "bedtime_min_since_18h": 300,
+      "wake_min_since_18h": 720,
+      "midpoint_min_since_18h": 510
+    },
+    "usual": {
+      "nights": 0
+    },
+    "debt": {
+      "target_seconds": 28800,
+      "last_night_seconds": 3600,
+      "nights": 1,
+      "window_seconds": 3600
+    }
+  }
+}

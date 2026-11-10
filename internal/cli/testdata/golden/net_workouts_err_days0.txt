@@ -1,0 +1,2 @@
+--- error ---
+--days must be between 1 and 365, got 0

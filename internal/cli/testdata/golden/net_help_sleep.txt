@@ -1,0 +1,52 @@
+Show last night's sleep as a hypnogram (awake, REM, core and deep sleep over
+the night), then a table of last night, your last 7 nights and how that
+compares with your usual, the --nights nights before it (default 28): time
+asleep, in bed, efficiency, awake time and awakenings, falling-asleep time,
+deep/REM/core sleep, bedtime, wake time, midpoint, bedtime regularity and
+sleep debt against --sleep-target (default 8h). Below the table is a calendar
+heatmap of the nights (--weeks, default 12; 0 hides it). With fewer than 14
+nights a bar per night is shown instead.
+
+A night is the sleep that ENDS on a local date: 18:00 to 18:00. A nap ending
+before 18:00 counts toward the night that just ended.
+
+Only what your data holds is shown. A device that records only "asleep" gets
+a single bar and no stage rows; in-bed time alone shows no sleep numbers.
+Rows with nothing to show are left out, and one dim line names them.
+
+Colour: green better, red worse, always with a word. Rows with no good
+direction (bedtime, in bed) have no colour and say later/earlier,
+longer/shorter or higher/lower. "vs usual" compares your last 7 nights with the usual; a
+change under 5% (10% for awake time and falling-asleep time, 2 points of
+efficiency, 15 minutes of clock time) is typical.
+
+--by picks the calendar value: asleep (time asleep), bedtime (later is
+darker) or efficiency.
+
+JSON output (--json): today, empty, age_days, kind (stages|unspecified|in_bed),
+night (seconds, local clock times, stage rows), seven_nights, fourteen_nights,
+usual (averages; missing numbers are left out, durations in seconds, clock
+times as minutes since 18:00), regularity, debt (positive seconds = short of
+the target), heatmap.
+
+Usage:
+  healthcli sleep [flags]
+
+Examples:
+  healthcli sleep
+  healthcli sleep --sleep-target 7h30m --nights 14
+  healthcli sleep --by bedtime --weeks 26
+  healthcli sleep --json
+
+Flags:
+      --ascii                 use plain ASCII characters only
+      --by string             calendar value: asleep, bedtime, efficiency (default "asleep")
+  -h, --help                  help for sleep
+      --nights int            nights before the last one in the usual window (7-90) (default 28)
+      --no-color              never use colours
+      --sleep-target string   nightly sleep goal, e.g. 7h30m (default "8h")
+      --weeks int             weeks of calendar (0 hides it) (default 12)
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text

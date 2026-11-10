@@ -1,0 +1,4 @@
+Steps, last 7 days (2026-08-26 to 2026-09-01)
+
+No Steps data in this window. Latest data is from 2026-11-08; try: healthcli
+trend step_count --days 7 --date 2026-11-08

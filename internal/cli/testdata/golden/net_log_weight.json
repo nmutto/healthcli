@@ -1,0 +1,5 @@
+$ healthcli log weight 160 --unit lb --at 2025-03-01T08:30:00Z --json
+{"end_ts":1740817800,"inserted":true,"metric":"body_mass","source":"manual","start_ts":1740817800,"tz_offset":0,"unit":"kg","value":72.5748}
+$ healthcli query SELECT metric, round(value, 3) AS value, unit, source, start_ts, end_ts, tz_offset FROM samples ORDER BY metric, start_ts
+metric     value   unit  source  start_ts    end_ts      tz_offset
+body_mass  72.575  kg    manual  1740817800  1740817800  0

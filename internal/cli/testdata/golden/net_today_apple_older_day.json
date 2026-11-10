@@ -1,0 +1,726 @@
+{
+  "status": "ok",
+  "requested_date": "2026-11-02",
+  "date": "2026-11-02",
+  "metrics": [
+    {
+      "metric": "heart_rate",
+      "label": "Avg heart rate",
+      "unit": "bpm",
+      "value": 74.75,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 74.45833333333333,
+        "stddev": 1.3012636308746346
+      },
+      "comparison": {
+        "delta": 0.2916666666666714,
+        "delta_pct": 0.39171796306659845,
+        "z": 0.2241411038827158,
+        "label": "typical"
+      },
+      "category": "vitals",
+      "polarity": "neutral",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 74.45833333333333
+    },
+    {
+      "metric": "resting_heart_rate",
+      "label": "Resting HR",
+      "unit": "bpm",
+      "value": 54,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 57,
+        "stddev": 2.160246899469287
+      },
+      "comparison": {
+        "delta": -3,
+        "delta_pct": -5.263157894736842,
+        "z": -1.3887301496588271,
+        "label": "below"
+      },
+      "category": "vitals",
+      "polarity": "lower_better",
+      "state": "ok",
+      "verdict": "better",
+      "usual": 57,
+      "range": {
+        "high": 100,
+        "source": "adult resting heart rate, 60-100 bpm",
+        "position": "within"
+      }
+    },
+    {
+      "metric": "hrv_sdnn",
+      "label": "HRV",
+      "unit": "ms",
+      "value": 53.85,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 43.324285714285715,
+        "stddev": 7.0737893125322335
+      },
+      "comparison": {
+        "delta": 10.525714285714287,
+        "delta_pct": 24.29518251063409,
+        "z": 1.4879880953008415,
+        "label": "above"
+      },
+      "category": "vitals",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "better",
+      "usual": 43.324285714285715
+    },
+    {
+      "metric": "respiratory_rate",
+      "label": "Respiratory rate",
+      "unit": "breaths/min",
+      "value": 15.9,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 13.714285714285717,
+        "stddev": 0.5984105932344765
+      },
+      "comparison": {
+        "delta": 2.1857142857142833,
+        "delta_pct": 15.937499999999979,
+        "z": 3.6525327432795796,
+        "label": "above"
+      },
+      "category": "vitals",
+      "polarity": "neutral",
+      "state": "ok",
+      "verdict": "changed",
+      "usual": 13.714285714285717,
+      "range": {
+        "high": 20,
+        "source": "adult resting respiratory rate, 12-20 breaths/min",
+        "position": "within"
+      }
+    },
+    {
+      "metric": "apple_sleeping_wrist_temperature",
+      "label": "Wrist temperature",
+      "unit": "degC",
+      "value": 35.28,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 35.92142857142857,
+        "stddev": 0.29874340000679334
+      },
+      "comparison": {
+        "delta": -0.6414285714285697,
+        "delta_pct": -1.7856432690395656,
+        "z": -2.147088676817576,
+        "label": "below"
+      },
+      "category": "vitals",
+      "polarity": "neutral",
+      "state": "ok",
+      "verdict": "changed",
+      "usual": 35.92142857142857
+    },
+    {
+      "metric": "oxygen_saturation",
+      "label": "Blood oxygen",
+      "unit": "percent",
+      "value": 97.5,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 96.64285714285714,
+        "stddev": 1.2488089563755578
+      },
+      "comparison": {
+        "delta": 0.8571428571428612,
+        "delta_pct": 0.886917960088696,
+        "z": 0.6863682813667219,
+        "label": "typical"
+      },
+      "category": "vitals",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 96.64285714285714,
+      "range": {
+        "low": 95,
+        "source": "typical healthy adult reading, 95% and above",
+        "position": "within"
+      }
+    },
+    {
+      "metric": "vo2_max",
+      "label": "VO2 max",
+      "unit": "mL/kg/min",
+      "value": 41.9,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": false,
+        "days_with_data": 1,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01"
+      },
+      "comparison": null,
+      "category": "vitals",
+      "polarity": "higher_better",
+      "state": "no_baseline",
+      "verdict": ""
+    },
+    {
+      "metric": "walking_heart_rate_average",
+      "label": "Walking heart rate",
+      "unit": "bpm",
+      "value": 95,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 93.57142857142857,
+        "stddev": 4.2370250120079485
+      },
+      "comparison": {
+        "delta": 1.4285714285714306,
+        "delta_pct": 1.5267175572519105,
+        "z": 0.33716379405898833,
+        "label": "typical"
+      },
+      "category": "vitals",
+      "polarity": "lower_better",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 93.57142857142857
+    },
+    {
+      "metric": "step_count",
+      "label": "Steps",
+      "unit": "count",
+      "value": 17731,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 19562.571428571428,
+        "stddev": 2095.945519102923
+      },
+      "comparison": {
+        "delta": -1831.5714285714275,
+        "delta_pct": -9.362631263783605,
+        "z": -0.8738640445937502,
+        "label": "typical"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 19562.571428571428
+    },
+    {
+      "metric": "active_energy",
+      "label": "Active energy",
+      "unit": "kcal",
+      "value": 709.2399999999998,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 782.5028571428572,
+        "stddev": 83.83782076411688
+      },
+      "comparison": {
+        "delta": -73.26285714285746,
+        "delta_pct": -9.36263126378365,
+        "z": -0.8738640445937548,
+        "label": "typical"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 782.5028571428572
+    },
+    {
+      "metric": "basal_energy",
+      "label": "Resting energy",
+      "unit": "kcal",
+      "value": 1677.4,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 1695.8857142857141,
+        "stddev": 27.457083395208432
+      },
+      "comparison": {
+        "delta": -18.48571428571404,
+        "delta_pct": -1.0900330210930511,
+        "z": -0.6732584819602508,
+        "label": "typical"
+      },
+      "category": "activity",
+      "polarity": "neutral",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 1695.8857142857141
+    },
+    {
+      "metric": "apple_exercise_time",
+      "label": "Exercise time",
+      "unit": "min",
+      "value": 28,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 42.714285714285715,
+        "stddev": 11.412190641506793
+      },
+      "comparison": {
+        "delta": -14.714285714285715,
+        "delta_pct": -34.448160535117054,
+        "z": -1.2893480468832172,
+        "label": "below"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "worse",
+      "usual": 42.714285714285715
+    },
+    {
+      "metric": "apple_stand_time",
+      "label": "Stand time",
+      "unit": "min",
+      "value": 529,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 386.85714285714283,
+        "stddev": 71.35691643989055
+      },
+      "comparison": {
+        "delta": 142.14285714285717,
+        "delta_pct": 36.742983751846396,
+        "z": 1.9919983126316154,
+        "label": "above"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "better",
+      "usual": 386.85714285714283
+    },
+    {
+      "metric": "flights_climbed",
+      "label": "Flights climbed",
+      "unit": "count",
+      "value": 14,
+      "source": "Alex’s iPhone",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 12.428571428571429,
+        "stddev": 6.7788185513687385
+      },
+      "comparison": {
+        "delta": 1.5714285714285712,
+        "delta_pct": 12.643678160919539,
+        "z": 0.23181452040950082,
+        "label": "typical"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 12.428571428571429
+    },
+    {
+      "metric": "distance_walking_running",
+      "label": "Walking + running distance",
+      "unit": "km",
+      "value": 5.83,
+      "source": "Alex’s iPhone",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 6.104571428571428,
+        "stddev": 1.6084291360561354
+      },
+      "comparison": {
+        "delta": -0.274571428571428,
+        "delta_pct": -4.49780024337732,
+        "z": -0.1707078182161488,
+        "label": "typical"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 6.104571428571428
+    },
+    {
+      "metric": "time_in_daylight",
+      "label": "Time in daylight",
+      "unit": "min",
+      "value": 28,
+      "source": "Alex’s Apple Watch",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 47.57142857142857,
+        "stddev": 17.280597432353073
+      },
+      "comparison": {
+        "delta": -19.57142857142857,
+        "delta_pct": -41.14114114114114,
+        "z": -1.1325666631633093,
+        "label": "below"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "worse",
+      "usual": 47.57142857142857
+    },
+    {
+      "metric": "walking_speed",
+      "label": "Walking speed",
+      "unit": "km/h",
+      "value": 5.58,
+      "source": "Alex’s iPhone",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 5.425714285714285,
+        "stddev": 0.14842025275740314
+      },
+      "comparison": {
+        "delta": 0.1542857142857148,
+        "delta_pct": 2.843601895734607,
+        "z": 1.0395192800129436,
+        "label": "above"
+      },
+      "category": "mobility",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "better",
+      "usual": 5.425714285714285
+    },
+    {
+      "metric": "walking_step_length",
+      "label": "Step length",
+      "unit": "cm",
+      "value": 73.9,
+      "source": "Alex’s iPhone",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 71.28571428571429,
+        "stddev": 1.8050194564312125
+      },
+      "comparison": {
+        "delta": 2.614285714285714,
+        "delta_pct": 3.667334669338677,
+        "z": 1.4483421244968402,
+        "label": "above"
+      },
+      "category": "mobility",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "better",
+      "usual": 71.28571428571429
+    },
+    {
+      "metric": "walking_asymmetry",
+      "label": "Walking asymmetry",
+      "unit": "percent",
+      "value": 3.1,
+      "source": "Alex’s iPhone",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 3.4428571428571426,
+        "stddev": 1.0244626930854093
+      },
+      "comparison": {
+        "delta": -0.3428571428571425,
+        "delta_pct": -9.958506224066381,
+        "z": -0.3346702082674655,
+        "label": "typical"
+      },
+      "category": "mobility",
+      "polarity": "in_range",
+      "state": "ok",
+      "verdict": "typical",
+      "usual": 3.4428571428571426,
+      "range": {
+        "high": 35,
+        "source": "Apple white paper 'Measuring Walking Quality Through iPhone Mobility Metrics' (2022): 35% is the iPhone value that best separates asymmetric from symmetric walkers; Apple gives no healthy range",
+        "basis": "the level Apple's research uses to tell asymmetric walking apart",
+        "position": "within"
+      }
+    },
+    {
+      "metric": "walking_double_support",
+      "label": "Double support time",
+      "unit": "percent",
+      "value": 26.7,
+      "source": "Alex’s iPhone",
+      "baseline": {
+        "available": true,
+        "days_with_data": 7,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01",
+        "mean": 28.714285714285715,
+        "stddev": 1.103673519703739
+      },
+      "comparison": {
+        "delta": -2.014285714285716,
+        "delta_pct": -7.014925373134334,
+        "z": -1.8250738812927343,
+        "label": "below"
+      },
+      "category": "mobility",
+      "polarity": "in_range",
+      "state": "ok",
+      "verdict": "changed",
+      "usual": 28.714285714285715,
+      "range": {
+        "high": 40,
+        "source": "Apple white paper 'Measuring Walking Quality Through iPhone Mobility Metrics' (2022): typical walking is 20-40%, lower is better",
+        "basis": "the top of Apple's typical walking range",
+        "position": "within"
+      }
+    },
+    {
+      "metric": "apple_walking_steadiness",
+      "label": "Walking steadiness",
+      "unit": "percent",
+      "value": 94,
+      "source": "Alex’s iPhone",
+      "baseline": {
+        "available": false,
+        "days_with_data": 1,
+        "days_needed": 7,
+        "from": "2026-10-05",
+        "to": "2026-11-01"
+      },
+      "comparison": null,
+      "category": "mobility",
+      "polarity": "higher_better",
+      "state": "no_baseline",
+      "verdict": ""
+    }
+  ],
+  "sleep": {
+    "night": "2026-11-02",
+    "source": "Alex’s iPhone",
+    "asleep_seconds": 26640,
+    "core_seconds": 0,
+    "deep_seconds": 0,
+    "rem_seconds": 0,
+    "unspecified_seconds": 26640,
+    "awake_seconds": 0,
+    "in_bed_seconds": 27240
+  },
+  "workouts": [],
+  "categories": [
+    {
+      "name": "vitals",
+      "total": 8,
+      "better": 2,
+      "worse": 0,
+      "changed": 2,
+      "typical": 3,
+      "stale": 0,
+      "no_baseline": 1,
+      "no_data": 0
+    },
+    {
+      "name": "activity",
+      "total": 8,
+      "better": 1,
+      "worse": 2,
+      "changed": 0,
+      "typical": 5,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    },
+    {
+      "name": "mobility",
+      "total": 5,
+      "better": 2,
+      "worse": 0,
+      "changed": 1,
+      "typical": 1,
+      "stale": 0,
+      "no_baseline": 1,
+      "no_data": 0
+    }
+  ],
+  "tracked_without_reading": [
+    "body_mass",
+    "heart_rate_recovery_one_minute",
+    "body_fat_percentage",
+    "body_mass_index",
+    "lean_body_mass"
+  ],
+  "sleep_summary": {
+    "today": "2026-11-02",
+    "empty": false,
+    "age_days": 0,
+    "kind": "unspecified",
+    "night": {
+      "night": "2026-11-02",
+      "source": "Alex’s iPhone",
+      "in_bed_source": "Alex’s iPhone",
+      "asleep_seconds": 26640,
+      "core_seconds": 0,
+      "deep_seconds": 0,
+      "rem_seconds": 0,
+      "unspecified_seconds": 26640,
+      "awake_seconds": 0,
+      "in_bed_seconds": 27240,
+      "efficiency_pct": 97.79735682819384,
+      "awakenings": 0,
+      "latency_seconds": 600,
+      "bedtime": "23:10",
+      "wake": "06:34",
+      "midpoint": "02:52",
+      "stages": [
+        {
+          "stage": "asleep_unspecified",
+          "start": "2026-11-01T23:10:00-05:00",
+          "end": "2026-11-02T06:34:00-05:00"
+        }
+      ]
+    },
+    "seven_nights": {
+      "nights": 7,
+      "asleep_seconds": 25371.428571428572,
+      "in_bed_seconds": 27111.428571428572,
+      "efficiency_pct": 93.57528514048155,
+      "awake_seconds": 1210,
+      "awakenings": 2.1666666666666665,
+      "latency_seconds": 702.8571428571429,
+      "deep_seconds": 5410,
+      "rem_seconds": 4570,
+      "core_seconds": 15180,
+      "bedtime_min_since_18h": 311.7142857142857,
+      "wake_min_since_18h": 751.8571428571429,
+      "midpoint_min_since_18h": 531.7857142857143
+    },
+    "fourteen_nights": {
+      "nights": 7,
+      "asleep_seconds": 25371.428571428572,
+      "in_bed_seconds": 27111.428571428572,
+      "efficiency_pct": 93.57528514048155,
+      "awake_seconds": 1210,
+      "awakenings": 2.1666666666666665,
+      "latency_seconds": 702.8571428571429,
+      "deep_seconds": 5410,
+      "rem_seconds": 4570,
+      "core_seconds": 15180,
+      "bedtime_min_since_18h": 311.7142857142857,
+      "wake_min_since_18h": 751.8571428571429,
+      "midpoint_min_since_18h": 531.7857142857143
+    },
+    "usual": {
+      "nights": 6,
+      "asleep_seconds": 25160,
+      "in_bed_seconds": 27090,
+      "efficiency_pct": 92.87160652586283,
+      "awake_seconds": 1210,
+      "awakenings": 2.1666666666666665,
+      "latency_seconds": 720,
+      "deep_seconds": 5410,
+      "rem_seconds": 4570,
+      "core_seconds": 15180,
+      "bedtime_min_since_18h": 312,
+      "wake_min_since_18h": 751.5,
+      "midpoint_min_since_18h": 531.75
+    },
+    "regularity": {
+      "nights": 7,
+      "bedtime_stddev_min": 0.7559289460184544,
+      "midpoint_stddev_min": 7.857359304377982
+    },
+    "debt": {
+      "target_seconds": 28800,
+      "last_night_seconds": 2160,
+      "nights": 7,
+      "window_seconds": 24000
+    }
+  }
+}

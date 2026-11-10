@@ -1,0 +1,16 @@
+Import health data from an external source into the local database.
+
+Usage:
+  healthcli import [command]
+
+Available Commands:
+  apple       Import an Apple Health export
+
+Flags:
+  -h, --help   help for import
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text
+
+Use "healthcli import [command] --help" for more information about a command.

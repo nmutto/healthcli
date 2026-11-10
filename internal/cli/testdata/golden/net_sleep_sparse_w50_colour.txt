@@ -1,0 +1,25 @@
+ [2m==[0m [1mSLEEP[0m [2m==[0m Wed 4 Nov | Watch stages [2m===========[0m
+[2m       00:05                                06:00[0m
+ awake [38;5;208m                     ..         ..        [0m
+ REM   [38;5;117m                    +        +++       +++[0m
+ core  [38;5;33m::::::::      ::::::   ::::::     :::::   [0m
+ deep  [38;5;21m        ######                            [0m
+[2m             01     02     03     04     05[0m
+
+[2m STAT       LAST NIGHT  3 NIGHTS    VS USUAL[0m
+ Asleep     5h 50m      5h 59m      [2mneeds 7 nights[0m
+ Efficiency 99%         97%         [2mneeds 7 nights[0m
+ Awake      5m 2 wakes  9m 2 wakes  [2mneeds 7 nights[0m
+ Deep       45m 13%     45m         [2mneeds 7 nights[0m
+ REM        1h 15m 21%  1h 15m      [2mneeds 7 nights[0m
+ Core       3h 50m 66%  3h 59m      [2mneeds 7 nights[0m
+ Bedtime    00:05       23:59       [2mneeds 7 nights[0m
+ Wake       06:00       06:07       [2mneeds 7 nights[0m
+ Midpoint   03:03       03:03       [2mneeds 7 nights[0m
+ Sleep debt 2h 10m short, 3 nights: 6h 04m short
+[2m not available: in bed, latency[0m
+
+ [2m==[0m [1mCALENDAR[0m [2m==[0m time asleep per day, last 3 n...
+ Mon Tue Wed
+ 6h  6h  6h
+ [38;5;33m+++ +++ +++[0m

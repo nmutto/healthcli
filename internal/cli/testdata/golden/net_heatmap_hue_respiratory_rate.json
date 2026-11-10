@@ -1,0 +1,88 @@
+{
+  "metric": "respiratory_rate",
+  "unit": "breaths/min",
+  "today": "2026-11-04",
+  "from": "2026-10-26",
+  "thresholds": [
+    52,
+    76,
+    91,
+    103
+  ],
+  "days_with_data": 9,
+  "weeks": [
+    [
+      {
+        "day": "2026-10-26",
+        "value": 94,
+        "level": 4
+      },
+      {
+        "day": "2026-10-27",
+        "value": 52,
+        "level": 1
+      },
+      {
+        "day": "2026-10-28",
+        "value": 79,
+        "level": 3
+      },
+      {
+        "day": "2026-10-29",
+        "value": 106,
+        "level": 5
+      },
+      {
+        "day": "2026-10-30",
+        "value": 64,
+        "level": 2
+      },
+      {
+        "day": "2026-10-31",
+        "value": 91,
+        "level": 3
+      },
+      {
+        "day": "2026-11-01",
+        "value": 49,
+        "level": 1
+      }
+    ],
+    [
+      {
+        "day": "2026-11-02",
+        "value": 76,
+        "level": 2
+      },
+      {
+        "day": "2026-11-03",
+        "value": 103,
+        "level": 4
+      },
+      {
+        "day": "2026-11-04",
+        "level": 0
+      },
+      {
+        "day": "2026-11-05",
+        "level": 0,
+        "future": true
+      },
+      {
+        "day": "2026-11-06",
+        "level": 0,
+        "future": true
+      },
+      {
+        "day": "2026-11-07",
+        "level": 0,
+        "future": true
+      },
+      {
+        "day": "2026-11-08",
+        "level": 0,
+        "future": true
+      }
+    ]
+  ]
+}

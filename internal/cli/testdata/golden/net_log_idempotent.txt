@@ -1,0 +1,9 @@
+$ healthcli log hr 61 --at 2025-03-01T08:30:00Z
+Logged heart_rate = 61 bpm at 2025-03-01 08:30
+$ healthcli log hr 61 --at 2025-03-01T08:30:00Z
+Already logged (no change): heart_rate = 61 bpm at 2025-03-01 08:30
+$ healthcli log hr 61 --at 2025-03-01T08:30:00Z --json
+{"end_ts":1740817800,"inserted":false,"metric":"heart_rate","source":"manual","start_ts":1740817800,"tz_offset":0,"unit":"bpm","value":61}
+$ healthcli query SELECT metric, round(value, 3) AS value, unit, source, start_ts, end_ts, tz_offset FROM samples ORDER BY metric, start_ts
+metric      value  unit  source  start_ts    end_ts      tz_offset
+heart_rate  61     bpm   manual  1740817800  1740817800  0

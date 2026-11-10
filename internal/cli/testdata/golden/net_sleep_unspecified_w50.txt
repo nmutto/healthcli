@@ -1,0 +1,18 @@
+ == SLEEP == Wed 4 Nov | iPhone =================
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ asleep 5h 55m   00:05 -> 06:00       (no stages)
+
+ STAT       LAST NIGHT  6 NIGHTS    VS USUAL
+ Asleep     5h 55m      6h 18m      needs 7 nights
+ Bedtime    00:05       00:00       needs 7 nights
+ Wake       06:00       06:18       needs 7 nights
+ Midpoint   03:03       03:09       needs 7 nights
+ Regularity +/-19m bed +/-13m mid (6 nights)
+ Sleep debt 2h 05m short, 6 nights: 10h 15m short
+ not available: in bed, efficiency, awake,
+   latency, deep, REM, core
+
+ == CALENDAR == time asleep per day, last 6 n...
+ Fri Sat Sun Mon Tue Wed
+ 6h  7h  7h  6h  6h  6h
+ +++ *** *** +++ +++ +++

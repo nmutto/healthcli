@@ -1,0 +1,36 @@
+Draw a GitHub-style calendar: one row per weekday (Mon to Sun), one column
+per week, newest week on the right. Shades are the metric's own quintiles over
+the window (the legend lists the cut points), so the darkest fifth of days is
+always the highest fifth for that metric. A day without data shows a dot, not
+the lowest shade; for workouts a dot means a rest day. Today is marked.
+
+The metric defaults to step_count; "sleep" (time asleep per day) and
+"workouts" (workout minutes per day, with rest days) work too. --weeks sets the
+maximum number of weeks (default 12); fewer are shown if the terminal is too
+narrow (oldest dropped). Pages fit 50 to 100 columns ($COLUMNS or the terminal
+width); a narrower terminal is treated as 50, so lines may wrap there.
+
+JSON output (--json):
+  metric, unit, today, from, thresholds (4 upper bounds of levels 1-4),
+  days_with_data, weeks[7 days each]: day, value (left out = no data), level
+  (1-5; 0 = no data, or a rest day with value 0 for workouts), future (true after today)
+
+Usage:
+  healthcli heatmap [metric] [flags]
+
+Examples:
+  healthcli heatmap
+  healthcli heatmap active_energy --weeks 26
+  healthcli heatmap sleep
+  healthcli heatmap workouts --weeks 26
+  healthcli heatmap steps --json
+
+Flags:
+      --ascii       use plain ASCII characters only
+  -h, --help        help for heatmap
+      --no-color    never use colours
+      --weeks int   maximum number of weeks to show (1-53) (default 12)
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text

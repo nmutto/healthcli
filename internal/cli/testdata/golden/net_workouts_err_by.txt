@@ -1,0 +1,2 @@
+--- error ---
+--by must be "type", got "sport"

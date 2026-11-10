@@ -1,0 +1,2 @@
+--- error ---
+bad --date "2026-11-09": that day is in the future (today is 2026-11-08)

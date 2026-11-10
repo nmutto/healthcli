@@ -1,0 +1,76 @@
+{
+  "status": "ok",
+  "metric": "resting_heart_rate",
+  "unit": "bpm",
+  "from": "2026-10-30",
+  "to": "2026-11-08",
+  "days": 10,
+  "daily": [
+    {
+      "day": "2026-10-30",
+      "value": null
+    },
+    {
+      "day": "2026-10-31",
+      "value": null
+    },
+    {
+      "day": "2026-11-01",
+      "value": null
+    },
+    {
+      "day": "2026-11-02",
+      "value": null
+    },
+    {
+      "day": "2026-11-03",
+      "value": null
+    },
+    {
+      "day": "2026-11-04",
+      "value": null
+    },
+    {
+      "day": "2026-11-05",
+      "value": null
+    },
+    {
+      "day": "2026-11-06",
+      "value": 58,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-07",
+      "value": 58,
+      "source": "Test Apple Watch"
+    },
+    {
+      "day": "2026-11-08",
+      "value": 58,
+      "source": "Test Apple Watch"
+    }
+  ],
+  "summary": {
+    "days_with_data": 3,
+    "min": 58,
+    "min_day": "2026-11-06",
+    "max": 58,
+    "max_day": "2026-11-06",
+    "mean": 58
+  },
+  "change_7d": {
+    "available": false,
+    "last7_mean": 58,
+    "last7_days_with_data": 3,
+    "previous7_mean": null,
+    "previous7_days_with_data": 0,
+    "delta": null,
+    "delta_pct": null
+  },
+  "baseline": {
+    "available": false,
+    "days_with_data": 2,
+    "days_needed": 7,
+    "mean": null
+  }
+}

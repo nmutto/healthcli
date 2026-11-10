@@ -1,0 +1,4 @@
+Sleep, last 5 days (2026-10-30 to 2026-11-03)
+
+No Sleep data in this window. Latest data is from 2026-11-08; try: healthcli
+trend sleep --days 5 --date 2026-11-08

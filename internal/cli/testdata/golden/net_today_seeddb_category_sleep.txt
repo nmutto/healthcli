@@ -1,0 +1,23 @@
+ Sunday 2026-11-08 (yesterday)
+ ------------------------------------------------------------------------------
+ slept 7h 00m
+ SLEEP
+
+ == SLEEP == Sun 8 Nov | Watch stages =========================================
+       23:00                                                              06:00
+ awake                                                                         
+ REM                                                                 ++++++++++
+ core  ::::::::::::::::::::::::::::::::::::::::::::::                          
+ deep                                                ################          
+       23        00        01        02         03        04        05
+
+ STAT         LAST NIGHT          1 NIGHT             VS USUAL
+ Asleep       7h 00m              7h 00m              need 7 nights (have 0)
+ Efficiency   100%                100%                need 7 nights (have 0)
+ Awake        0m / 0 awakenings   0m / 0 awakenings   need 7 nights (have 0)
+ Deep         1h 30m 21%          1h 30m              need 7 nights (have 0)
+ REM          1h 00m 14%          1h 00m              need 7 nights (have 0)
+ Bedtime      23:00               23:00               need 7 nights (have 0)
+ Midpoint     02:30               02:30               need 7 nights (have 0)
+ Sleep debt   1h 00m short last night vs 8h target
+ not available: in bed

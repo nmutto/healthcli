@@ -1,0 +1,19 @@
+Import an Apple Health export file. In the Health app on your iPhone choose
+your profile picture, then "Export All Health Data", and pass the resulting file here.
+
+The file is streamed, so even multi-gigabyte exports use little memory.
+Importing the same file again adds nothing new.
+
+Usage:
+  healthcli import apple <export.zip|export.xml> [flags]
+
+Examples:
+  healthcli import apple export.zip
+  healthcli import apple export.xml --json
+
+Flags:
+  -h, --help   help for apple
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text

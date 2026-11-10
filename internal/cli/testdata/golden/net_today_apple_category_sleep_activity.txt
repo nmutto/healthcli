@@ -1,0 +1,36 @@
+ Sunday 2026-11-08
+ ----------------------------------------------------------
+ 2 better, 6 typical vs your 28-day usual
+ ACTIVITY 8 | SLEEP
+
+   METRIC               LATEST        USUAL   VS USUAL
+
+ == ACTIVITY == 8 | 2 better ==============================
+ + Steps                21,999 steps  19,955  ^ +10% better
+ + Active energy        880 kcal      798     ^ +10% better
+   Resting energy       1,730 kcal    1,701   ^ +2%
+   Exercise time        43 min        37      ^ +16%
+   Stand time           364 min       411     v -12%
+   Flights climbed      8 flights     13      v -39%
+   Walk + run distance  6.5 km        6.5     - 0%
+   Time in daylight     53 min        47      ^ +14%
+ + better  ! worse  ~ higher/lower
+
+ == SLEEP == Sun 8 Nov | Watch stages, iPhone in bed ======
+       23:12                                          06:30
+ awake                 ..                 ..               
+ REM               ++++                +++                +
+ core  ::::::   :::      ::::::    ::::     ::::::   ::::: 
+ deep        ###               ####               ###      
+            00     01     02      03     04     05     06
+
+ STAT       LAST NIGHT  7 NIGHTS    VS 12-NIGHT USUAL
+ Asleep     7h 01m      7h 08m      - typical
+ In bed     7h 30m      7h 37m      - typical
+ Efficiency 94%         94%         - typical
+ Awake      17m 2 wakes 20m 3 wakes - typical
+ Deep       1h 27m 21%  1h 30m      - typical
+ REM        1h 18m 19%  1h 17m      - typical
+ Bedtime    23:12       23:12       - typical
+ Midpoint   02:51       02:54       - typical
+ Sleep debt 59m short, 7 nights: 6h 05m short (8h target)

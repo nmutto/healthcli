@@ -1,0 +1,44 @@
+ == WORKOUTS == 39 sessions  37h 29m  16,360 kcal  443.4 km  active 39 of 90 d ====================
+
+ TYPE      N TIME       KCAL     KM SHARE
+ cycling  14 16h 33m   7,950  294.0 #########...........  44%
+ running  13 12h 00m   6,940  122.3 ######..............  32%
+ walking   7 4h 51m    1,470   27.1 ###.................  13%
+ yoga      5 4h 05m        -      - ##..................  11%
+
+ RECENT
+ Sat Nov 07 cycling  1h 07m 21.0 km 18.8 km/h 550 kcal
+ Fri Nov 06 walking     33m  4.3 km 7:40 /km  210 kcal
+ Wed Nov 04 running  1h 10m 11.0 km 6:22 /km  580 kcal
+
+ WEEK OF TIME                                    N VS AVG
+ Aug 31  #############........... 3h 01m         3
+ Sep 07  ##################...... 4h 07m         4
+ Sep 14  ####################.... 4h 34m         5
+ Sep 21  #############........... 3h 00m         3 v -23%
+ Sep 28  ##############.......... 3h 13m         4 v -12%
+ Oct 05  ############............ 2h 50m         4 v -24%
+ Oct 12  ######################## 5h 31m         5 ^ +62%
+ Oct 19  ##############.......... 3h 17m         3 v -10%
+ Oct 26  #################....... 3h 54m         4 ^ +5%
+ Nov 02  ##################...... 4h 02m         4 ^ +4%
+ Nov 09  ........................ 0m (1 d)       0 - so far
+
+ BESTS (90 d)
+ longest   cycling 1h 32m, Oct 13 *new*
+ fastest   running 3:11 /km, Sep 30 *new*
+ furthest  cycling 21.0 km, Sep 03 *new*
+ biggest   cycling 700 kcal, Sep 23 *new*
+
+ == CALENDAR == workout minutes per day, 12 weeks to 2026-11-09 ===================================
+       Sep     Oct     Nov
+ Mon     . : : + . : : : # : <
+ Tue   - @ + : : : @ + . :
+ Wed   : : - # . . : : @ #
+ Thu   @ + . : - - - : : :
+ Fri   : : # # : : - @ # .
+ Sat   - : : : + . + : - #
+ Sun   : # # - : : @ + : :
+
+ . <=45m  - <=50m  + <=1h 00m  # <=1h 12m  @ >1h 12m
+ : rest day   < today   per day

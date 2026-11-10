@@ -1,0 +1,2 @@
+--- error ---
+--sleep-target must be a duration between 4h and 12h such as 8h or 7h30m, got "2h"

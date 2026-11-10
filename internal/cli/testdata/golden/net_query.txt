@@ -1,0 +1,153 @@
+$ healthcli query SELECT metric, unit, count(*) AS n, count(DISTINCT source) AS sources, round(avg(value), 2) AS avg FROM samples GROUP BY metric ORDER BY metric
+metric                            unit         n    sources  avg
+active_energy                     kcal         224  1        50.25
+apple_exercise_time               min          14   1        37.43
+apple_sleeping_wrist_temperature  degC         14   1        35.92
+apple_stand_time                  min          14   1        407.93
+apple_walking_steadiness          percent      2    1        91.5
+basal_energy                      kcal         14   1        1703.12
+body_fat_percentage               percent      5    1        19.12
+body_mass                         kg           5    1        79.16
+body_mass_index                   kg/m2        5    1        24.2
+distance_walking_running          km           14   1        6.5
+flights_climbed                   count        14   1        12.79
+heart_rate                        bpm          330  1        75.02
+heart_rate_recovery_one_minute    bpm          7    1        28
+hrv_sdnn                          ms           14   1        47.75
+lean_body_mass                    kg           5    1        63.54
+oxygen_saturation                 percent      28   1        96.79
+respiratory_rate                  breaths/min  14   1        14.39
+resting_heart_rate                bpm          14   1        57
+step_count                        count        448  2        1193.3
+time_in_daylight                  min          14   1        47
+vo2_max                           mL/kg/min    2    1        41.45
+walking_asymmetry                 percent      14   1        3.64
+walking_double_support            percent      14   1        28.72
+walking_heart_rate_average        bpm          14   1        93.64
+walking_speed                     km/h         14   1        5.39
+walking_step_length               cm           14   1        71.85
+$ healthcli query SELECT metric, unit, count(*) AS n, round(avg(value), 2) AS avg FROM samples GROUP BY metric ORDER BY metric --json
+[
+  {"metric": "active_energy", "unit": "kcal", "n": 224, "avg": 50.25},
+  {"metric": "apple_exercise_time", "unit": "min", "n": 14, "avg": 37.43},
+  {"metric": "apple_sleeping_wrist_temperature", "unit": "degC", "n": 14, "avg": 35.92},
+  {"metric": "apple_stand_time", "unit": "min", "n": 14, "avg": 407.93},
+  {"metric": "apple_walking_steadiness", "unit": "percent", "n": 2, "avg": 91.5},
+  {"metric": "basal_energy", "unit": "kcal", "n": 14, "avg": 1703.12},
+  {"metric": "body_fat_percentage", "unit": "percent", "n": 5, "avg": 19.12},
+  {"metric": "body_mass", "unit": "kg", "n": 5, "avg": 79.16},
+  {"metric": "body_mass_index", "unit": "kg/m2", "n": 5, "avg": 24.2},
+  {"metric": "distance_walking_running", "unit": "km", "n": 14, "avg": 6.5},
+  {"metric": "flights_climbed", "unit": "count", "n": 14, "avg": 12.79},
+  {"metric": "heart_rate", "unit": "bpm", "n": 330, "avg": 75.02},
+  {"metric": "heart_rate_recovery_one_minute", "unit": "bpm", "n": 7, "avg": 28},
+  {"metric": "hrv_sdnn", "unit": "ms", "n": 14, "avg": 47.75},
+  {"metric": "lean_body_mass", "unit": "kg", "n": 5, "avg": 63.54},
+  {"metric": "oxygen_saturation", "unit": "percent", "n": 28, "avg": 96.79},
+  {"metric": "respiratory_rate", "unit": "breaths/min", "n": 14, "avg": 14.39},
+  {"metric": "resting_heart_rate", "unit": "bpm", "n": 14, "avg": 57},
+  {"metric": "step_count", "unit": "count", "n": 448, "avg": 1193.3},
+  {"metric": "time_in_daylight", "unit": "min", "n": 14, "avg": 47},
+  {"metric": "vo2_max", "unit": "mL/kg/min", "n": 2, "avg": 41.45},
+  {"metric": "walking_asymmetry", "unit": "percent", "n": 14, "avg": 3.64},
+  {"metric": "walking_double_support", "unit": "percent", "n": 14, "avg": 28.72},
+  {"metric": "walking_heart_rate_average", "unit": "bpm", "n": 14, "avg": 93.64},
+  {"metric": "walking_speed", "unit": "km/h", "n": 14, "avg": 5.39},
+  {"metric": "walking_step_length", "unit": "cm", "n": 14, "avg": 71.85}
+]
+$ healthcli query SELECT DISTINCT source FROM samples ORDER BY source
+source
+Alex’s Apple Watch
+Alex’s iPhone
+$ healthcli query SELECT DISTINCT source FROM samples ORDER BY source --json
+[
+  {"source": "Alex’s Apple Watch"},
+  {"source": "Alex’s iPhone"}
+]
+$ healthcli query SELECT 1 AS one, 'two' AS two, NULL AS empty_cell, 2.5 AS three, x'ff' AS bytes
+one  two  empty_cell  three  bytes
+1    two  NULL        2.5    ff
+$ healthcli query SELECT 1 AS one, 'two' AS two, NULL AS empty_cell, 2.5 AS three, x'ff' AS bytes --json
+[
+  {"one": 1, "two": "two", "empty_cell": null, "three": 2.5, "bytes": "ff"}
+]
+$ healthcli query SELECT * FROM samples WHERE 0
+id  metric  start_ts  end_ts  value  unit  tz_offset  source
+$ healthcli query SELECT * FROM samples WHERE 0 --json
+[]
+$ healthcli query SELECT stage, count(*) AS n FROM sleep_stages GROUP BY stage ORDER BY stage
+stage               n
+asleep_unspecified  2
+awake               28
+core                76
+deep                36
+in_bed              14
+rem                 34
+$ healthcli query SELECT activity, count(*) AS n, round(sum(distance_m)) AS metres FROM workouts GROUP BY activity ORDER BY activity --json
+[
+  {"activity": "cycling", "n": 2, "metres": 34649},
+  {"activity": "running", "n": 3, "metres": 28127},
+  {"activity": "walking", "n": 2, "metres": 8344}
+]
+$ healthcli query WITH d AS (SELECT date(start_ts, 'unixepoch') AS day FROM samples WHERE metric = 'step_count') SELECT count(DISTINCT day) AS days FROM d
+days
+14
+$ healthcli query EXPLAIN SELECT 1
+addr  opcode     p1  p2  p3  p4    p5  comment
+0     Init       0   4   0   NULL  0   NULL
+1     Integer    1   1   0   NULL  0   NULL
+2     ResultRow  1   1   0   NULL  0   NULL
+3     Halt       0   0   0   NULL  0   NULL
+4     Goto       0   1   0   NULL  0   NULL
+$ healthcli query SELECT key FROM meta ORDER BY key
+key
+last_import_summary
+last_import_ts
+$ healthcli query SELECT 'a very long text value that goes on and on to see how a wide cell is drawn in the table output' AS wide, 1 AS n
+wide                                                                                            n
+a very long text value that goes on and on to see how a wide cell is drawn in the table output  1
+$ healthcli query SELECT 'héllo ’ wörld' AS accent, 1 AS n
+accent         n
+héllo ’ wörld  1
+$ healthcli query DELETE FROM samples
+--- error ---
+only SELECT queries are allowed
+$ healthcli query SELECT 1; DELETE FROM samples
+--- error ---
+only one statement is allowed per query
+$ healthcli query PRAGMA writable_schema = 1
+--- error ---
+only SELECT queries are allowed
+$ healthcli query ATTACH DATABASE ':memory:' AS x
+--- error ---
+only SELECT queries are allowed
+$ healthcli query SELEC 1
+--- error ---
+only SELECT queries are allowed
+$ healthcli query SELECT * FROM nonexistent
+--- error ---
+SQL logic error: no such table: nonexistent (1)
+$ healthcli query SELECT nope FROM samples
+--- error ---
+SQL logic error: no such column: nope (1)
+$ healthcli query 
+--- error ---
+only SELECT queries are allowed
+$ healthcli query   
+--- error ---
+only SELECT queries are allowed
+$ healthcli query
+--- error ---
+accepts 1 arg(s), received 0
+$ healthcli query SELECT 1 SELECT 2
+--- error ---
+accepts 1 arg(s), received 2
+$ healthcli query DROP TABLE samples --json
+--- error ---
+only SELECT queries are allowed
+$ healthcli query SELEC 1 --json
+--- error ---
+only SELECT queries are allowed
+$ healthcli query SELECT 1
+--- error ---
+database not found: /nonexistent-dir/none.db; run "healthcli import apple <export.zip>" first

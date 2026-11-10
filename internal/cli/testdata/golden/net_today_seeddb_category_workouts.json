@@ -1,0 +1,19 @@
+{
+  "status": "ok",
+  "requested_date": "2026-11-08",
+  "date": "2026-11-08",
+  "metrics": [],
+  "sleep": null,
+  "workouts": [
+    {
+      "activity": "running",
+      "start": "2026-11-08T18:00:00Z",
+      "duration_seconds": 2700,
+      "energy_kcal": 412.4,
+      "distance_m": 6200,
+      "source": "Test Apple Watch"
+    }
+  ],
+  "categories": [],
+  "tracked_without_reading": []
+}

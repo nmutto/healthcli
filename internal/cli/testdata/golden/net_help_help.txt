@@ -1,0 +1,12 @@
+Help provides help for any command in the application.
+Simply type healthcli help [path to command] for full details.
+
+Usage:
+  healthcli help [command] [flags]
+
+Flags:
+  -h, --help   help for help
+
+Global Flags:
+      --db string   SQLite database path (default: per-user data dir)
+      --json        output JSON instead of human-readable text

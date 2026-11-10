@@ -1,0 +1,2 @@
+--- error ---
+unknown command "running" for "healthcli workouts"

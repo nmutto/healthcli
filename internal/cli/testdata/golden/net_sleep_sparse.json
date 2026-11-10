@@ -1,0 +1,201 @@
+{
+  "today": "2026-11-04",
+  "empty": false,
+  "age_days": 0,
+  "kind": "stages",
+  "night": {
+    "night": "2026-11-04",
+    "source": "Test Apple Watch",
+    "asleep_seconds": 21000,
+    "core_seconds": 13800,
+    "deep_seconds": 2700,
+    "rem_seconds": 4500,
+    "unspecified_seconds": 0,
+    "awake_seconds": 300,
+    "in_bed_seconds": 0,
+    "efficiency_pct": 98.59154929577466,
+    "awakenings": 2,
+    "bedtime": "00:05",
+    "wake": "06:00",
+    "midpoint": "03:03",
+    "stages": [
+      {
+        "stage": "core",
+        "start": "2026-11-04T00:05:00Z",
+        "end": "2026-11-04T01:15:00Z"
+      },
+      {
+        "stage": "deep",
+        "start": "2026-11-04T01:15:00Z",
+        "end": "2026-11-04T02:00:00Z"
+      },
+      {
+        "stage": "core",
+        "start": "2026-11-04T02:00:00Z",
+        "end": "2026-11-04T02:50:00Z"
+      },
+      {
+        "stage": "rem",
+        "start": "2026-11-04T02:50:00Z",
+        "end": "2026-11-04T03:10:00Z"
+      },
+      {
+        "stage": "awake",
+        "start": "2026-11-04T03:10:00Z",
+        "end": "2026-11-04T03:12:00Z"
+      },
+      {
+        "stage": "core",
+        "start": "2026-11-04T03:12:00Z",
+        "end": "2026-11-04T04:12:00Z"
+      },
+      {
+        "stage": "rem",
+        "start": "2026-11-04T04:12:00Z",
+        "end": "2026-11-04T04:42:00Z"
+      },
+      {
+        "stage": "awake",
+        "start": "2026-11-04T04:42:00Z",
+        "end": "2026-11-04T04:45:00Z"
+      },
+      {
+        "stage": "core",
+        "start": "2026-11-04T04:45:00Z",
+        "end": "2026-11-04T05:35:00Z"
+      },
+      {
+        "stage": "rem",
+        "start": "2026-11-04T05:35:00Z",
+        "end": "2026-11-04T06:00:00Z"
+      }
+    ]
+  },
+  "seven_nights": {
+    "nights": 3,
+    "asleep_seconds": 21520,
+    "efficiency_pct": 97.48118020764856,
+    "awake_seconds": 560,
+    "awakenings": 2,
+    "deep_seconds": 2700,
+    "rem_seconds": 4500,
+    "core_seconds": 14320,
+    "bedtime_min_since_18h": 359,
+    "wake_min_since_18h": 727,
+    "midpoint_min_since_18h": 543
+  },
+  "fourteen_nights": {
+    "nights": 3,
+    "asleep_seconds": 21520,
+    "efficiency_pct": 97.48118020764856,
+    "awake_seconds": 560,
+    "awakenings": 2,
+    "deep_seconds": 2700,
+    "rem_seconds": 4500,
+    "core_seconds": 14320,
+    "bedtime_min_since_18h": 359,
+    "wake_min_since_18h": 727,
+    "midpoint_min_since_18h": 543
+  },
+  "usual": {
+    "nights": 2,
+    "asleep_seconds": 21780,
+    "efficiency_pct": 96.92599566358552,
+    "awake_seconds": 690,
+    "awakenings": 2,
+    "deep_seconds": 2700,
+    "rem_seconds": 4500,
+    "core_seconds": 14580,
+    "bedtime_min_since_18h": 356,
+    "wake_min_since_18h": 730.5,
+    "midpoint_min_since_18h": 543.25
+  },
+  "debt": {
+    "target_seconds": 28800,
+    "last_night_seconds": 7800,
+    "nights": 3,
+    "window_seconds": 21840
+  },
+  "heatmap": {
+    "metric": "sleep_asleep",
+    "unit": "",
+    "today": "2026-11-04",
+    "from": "2026-10-26",
+    "thresholds": [
+      352.4,
+      354.8,
+      358.8,
+      364.4
+    ],
+    "days_with_data": 3,
+    "weeks": [
+      [
+        {
+          "day": "2026-10-26",
+          "level": 0
+        },
+        {
+          "day": "2026-10-27",
+          "level": 0
+        },
+        {
+          "day": "2026-10-28",
+          "level": 0
+        },
+        {
+          "day": "2026-10-29",
+          "level": 0
+        },
+        {
+          "day": "2026-10-30",
+          "level": 0
+        },
+        {
+          "day": "2026-10-31",
+          "level": 0
+        },
+        {
+          "day": "2026-11-01",
+          "level": 0
+        }
+      ],
+      [
+        {
+          "day": "2026-11-02",
+          "value": 370,
+          "level": 5
+        },
+        {
+          "day": "2026-11-03",
+          "value": 356,
+          "level": 3
+        },
+        {
+          "day": "2026-11-04",
+          "value": 350,
+          "level": 1
+        },
+        {
+          "day": "2026-11-05",
+          "level": 0,
+          "future": true
+        },
+        {
+          "day": "2026-11-06",
+          "level": 0,
+          "future": true
+        },
+        {
+          "day": "2026-11-07",
+          "level": 0,
+          "future": true
+        },
+        {
+          "day": "2026-11-08",
+          "level": 0,
+          "future": true
+        }
+      ]
+    ]
+  }
+}

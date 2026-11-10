@@ -1,0 +1,50 @@
+{
+  "status": "ok",
+  "requested_date": "2026-11-08",
+  "date": "2026-11-08",
+  "metrics": [
+    {
+      "metric": "step_count",
+      "label": "Steps",
+      "unit": "count",
+      "value": 5000,
+      "source": "Test Phone",
+      "baseline": {
+        "available": true,
+        "days_with_data": 19,
+        "days_needed": 7,
+        "from": "2026-10-11",
+        "to": "2026-11-07",
+        "mean": 7494.736842105263,
+        "stddev": 1603.2860991692885
+      },
+      "comparison": {
+        "delta": -2494.7368421052633,
+        "delta_pct": -33.28651685393258,
+        "z": -1.5560147645500468,
+        "label": "below"
+      },
+      "category": "activity",
+      "polarity": "higher_better",
+      "state": "ok",
+      "verdict": "worse",
+      "usual": 7494.736842105263
+    }
+  ],
+  "sleep": null,
+  "workouts": [],
+  "categories": [
+    {
+      "name": "activity",
+      "total": 1,
+      "better": 0,
+      "worse": 1,
+      "changed": 0,
+      "typical": 0,
+      "stale": 0,
+      "no_baseline": 0,
+      "no_data": 0
+    }
+  ],
+  "tracked_without_reading": []
+}

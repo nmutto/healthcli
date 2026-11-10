@@ -1,0 +1,259 @@
+{
+  "today": "2026-11-04",
+  "empty": false,
+  "age_days": 0,
+  "kind": "stages",
+  "night": {
+    "night": "2026-11-04",
+    "source": "Test Apple Watch",
+    "in_bed_source": "Test iPhone",
+    "asleep_seconds": 21000,
+    "core_seconds": 13800,
+    "deep_seconds": 2700,
+    "rem_seconds": 4500,
+    "unspecified_seconds": 0,
+    "awake_seconds": 300,
+    "in_bed_seconds": 21780,
+    "efficiency_pct": 96.41873278236915,
+    "awakenings": 2,
+    "latency_seconds": 480,
+    "bedtime": "00:05",
+    "wake": "06:00",
+    "midpoint": "03:03",
+    "stages": [
+      {
+        "stage": "core",
+        "start": "2026-11-04T00:05:00Z",
+        "end": "2026-11-04T01:15:00Z"
+      },
+      {
+        "stage": "deep",
+        "start": "2026-11-04T01:15:00Z",
+        "end": "2026-11-04T02:00:00Z"
+      },
+      {
+        "stage": "core",
+        "start": "2026-11-04T02:00:00Z",
+        "end": "2026-11-04T02:50:00Z"
+      },
+      {
+        "stage": "rem",
+        "start": "2026-11-04T02:50:00Z",
+        "end": "2026-11-04T03:10:00Z"
+      },
+      {
+        "stage": "awake",
+        "start": "2026-11-04T03:10:00Z",
+        "end": "2026-11-04T03:12:00Z"
+      },
+      {
+        "stage": "core",
+        "start": "2026-11-04T03:12:00Z",
+        "end": "2026-11-04T04:12:00Z"
+      },
+      {
+        "stage": "rem",
+        "start": "2026-11-04T04:12:00Z",
+        "end": "2026-11-04T04:42:00Z"
+      },
+      {
+        "stage": "awake",
+        "start": "2026-11-04T04:42:00Z",
+        "end": "2026-11-04T04:45:00Z"
+      },
+      {
+        "stage": "core",
+        "start": "2026-11-04T04:45:00Z",
+        "end": "2026-11-04T05:35:00Z"
+      },
+      {
+        "stage": "rem",
+        "start": "2026-11-04T05:35:00Z",
+        "end": "2026-11-04T06:00:00Z"
+      }
+    ]
+  },
+  "seven_nights": {
+    "nights": 7,
+    "asleep_seconds": 22054.285714285714,
+    "in_bed_seconds": 23365.714285714286,
+    "efficiency_pct": 94.39626490058986,
+    "awake_seconds": 557.1428571428571,
+    "awakenings": 2,
+    "latency_seconds": 660,
+    "deep_seconds": 2700,
+    "rem_seconds": 4457.142857142857,
+    "core_seconds": 14897.142857142857,
+    "bedtime_min_since_18h": 358.42857142857144,
+    "wake_min_since_18h": 735.2857142857143,
+    "midpoint_min_since_18h": 546.8571428571429
+  },
+  "fourteen_nights": {
+    "nights": 14,
+    "asleep_seconds": 24214.285714285714,
+    "in_bed_seconds": 26215.714285714286,
+    "efficiency_pct": 92.62026750724593,
+    "awake_seconds": 587.1428571428571,
+    "awakenings": 2,
+    "latency_seconds": 677.1428571428571,
+    "deep_seconds": 2700,
+    "rem_seconds": 4478.571428571428,
+    "core_seconds": 17035.714285714286,
+    "bedtime_min_since_18h": 313.14285714285717,
+    "wake_min_since_18h": 726.5,
+    "midpoint_min_since_18h": 519.8214285714286
+  },
+  "usual": {
+    "nights": 28,
+    "asleep_seconds": 24919.285714285714,
+    "in_bed_seconds": 26736.428571428572,
+    "efficiency_pct": 93.30940841141356,
+    "awake_seconds": 600,
+    "awakenings": 2,
+    "latency_seconds": 713.5714285714286,
+    "deep_seconds": 2700,
+    "rem_seconds": 4489.285714285715,
+    "core_seconds": 17730,
+    "bedtime_min_since_18h": 308.35714285714283,
+    "wake_min_since_18h": 733.6785714285714,
+    "midpoint_min_since_18h": 521.0178571428571
+  },
+  "regularity": {
+    "nights": 14,
+    "bedtime_stddev_min": 51.19774205185997,
+    "midpoint_stddev_min": 33.585486301524504,
+    "usual_bedtime_stddev_min": 37.775373406213156
+  },
+  "debt": {
+    "target_seconds": 28800,
+    "last_night_seconds": 7800,
+    "nights": 7,
+    "window_seconds": 47220
+  },
+  "heatmap": {
+    "metric": "sleep_bedtime",
+    "unit": "",
+    "today": "2026-11-04",
+    "from": "2026-10-19",
+    "thresholds": [
+      257,
+      305,
+      341,
+      353
+    ],
+    "days_with_data": 17,
+    "weeks": [
+      [
+        {
+          "day": "2026-10-19",
+          "value": 319,
+          "level": 3
+        },
+        {
+          "day": "2026-10-20",
+          "value": 325,
+          "level": 3
+        },
+        {
+          "day": "2026-10-21",
+          "value": 331,
+          "level": 3
+        },
+        {
+          "day": "2026-10-22",
+          "value": 247,
+          "level": 1
+        },
+        {
+          "day": "2026-10-23",
+          "value": 253,
+          "level": 1
+        },
+        {
+          "day": "2026-10-24",
+          "value": 299,
+          "level": 2
+        },
+        {
+          "day": "2026-10-25",
+          "value": 305,
+          "level": 2
+        }
+      ],
+      [
+        {
+          "day": "2026-10-26",
+          "value": 251,
+          "level": 1
+        },
+        {
+          "day": "2026-10-27",
+          "value": 257,
+          "level": 1
+        },
+        {
+          "day": "2026-10-28",
+          "value": 263,
+          "level": 2
+        },
+        {
+          "day": "2026-10-29",
+          "value": 349,
+          "level": 4
+        },
+        {
+          "day": "2026-10-30",
+          "value": 395,
+          "level": 5
+        },
+        {
+          "day": "2026-10-31",
+          "value": 341,
+          "level": 3
+        },
+        {
+          "day": "2026-11-01",
+          "value": 347,
+          "level": 4
+        }
+      ],
+      [
+        {
+          "day": "2026-11-02",
+          "value": 353,
+          "level": 4
+        },
+        {
+          "day": "2026-11-03",
+          "value": 359,
+          "level": 5
+        },
+        {
+          "day": "2026-11-04",
+          "value": 365,
+          "level": 5
+        },
+        {
+          "day": "2026-11-05",
+          "level": 0,
+          "future": true
+        },
+        {
+          "day": "2026-11-06",
+          "level": 0,
+          "future": true
+        },
+        {
+          "day": "2026-11-07",
+          "level": 0,
+          "future": true
+        },
+        {
+          "day": "2026-11-08",
+          "level": 0,
+          "future": true
+        }
+      ]
+    ]
+  }
+}
