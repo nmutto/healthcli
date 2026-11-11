@@ -224,7 +224,7 @@ func runLogDelete(cmd *cobra.Command, opts *options, metricArg, unit, at string)
 	ts := when.Unix()
 	_, offset := when.Zone()
 
-	conn, err := openDB(opts)
+	conn, err := openExistingWritableDB(opts)
 	if err != nil {
 		return err
 	}

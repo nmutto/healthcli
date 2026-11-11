@@ -49,6 +49,19 @@ func openReadOnlyDB(opts *options) (*sql.DB, error) {
 	return openDB(opts)
 }
 
+// openExistingWritableDB is for a write that must not create the database
+// (log --delete): the file has to exist already, and it can be written.
+func openExistingWritableDB(opts *options) (*sql.DB, error) {
+	path, err := dbPath(opts)
+	if err != nil {
+		return nil, err
+	}
+	if err := requireDB(path); err != nil {
+		return nil, err
+	}
+	return db.Open(path)
+}
+
 // openOrCreateDB is for the commands that write (import, log): the database
 // is created on first use.
 func openOrCreateDB(opts *options) (*sql.DB, error) {

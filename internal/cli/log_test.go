@@ -450,7 +450,7 @@ func TestLogDeleteInputs(t *testing.T) {
 		"needs --at":         {"log", "--delete", "hr"},
 		"cannot be used":     {"log", "--delete", "hr", "--at", logAt, "--unit", "bpm"},
 		"known metrics":      {"log", "--delete", "mood", "--at", logAt},
-		"accepts 1 arg(s)":   {"log", "--delete", "hr", "61", "--at", logAt},
+		"takes one metric":   {"log", "--delete", "hr", "61", "--at", logAt},
 		"database not found": {"--db", filepath.Join(t.TempDir(), "none.db"), "log", "--delete", "hr", "--at", logAt},
 		"cannot read time":   {"log", "--delete", "hr", "--at", "soon"},
 	} {

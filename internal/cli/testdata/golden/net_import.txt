@@ -67,7 +67,7 @@ $ healthcli import apple <tmp>/notes.txt
 not an Apple Health export (no <HealthData> element found)
 $ healthcli import apple
 --- error ---
-accepts 1 arg(s), received 0
+import apple needs the export file, e.g. healthcli import apple export.zip
 $ healthcli import apple ../../testdata/small/export.xml ../../testdata/small/export.xml
 --- error ---
-accepts 1 arg(s), received 2
+import apple got too many arguments (2); run "healthcli import apple --help" for how to use it

@@ -1,2 +1,2 @@
 --- error ---
-unknown command "running" for "healthcli workouts"
+workouts takes no arguments, got "running"; run "healthcli workouts --help" for how to use it
