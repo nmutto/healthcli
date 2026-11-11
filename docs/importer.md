@@ -24,6 +24,13 @@ Code: `internal/importer` (`importer.go` = parse loop, `convert.go` = record -> 
 - **Broken files do abort**, with a clear error (file not found, not a zip, no `<HealthData>`, XML syntax error). Batches already committed stay; re-running the import is safe.
 - Progress (`read N records...`) goes to stderr only when stderr is a terminal. `--json` prints the summary on stdout.
 
+## Added 2026-11-11
+- The reader replaces invalid UTF-8 and XML-forbidden control characters with U+FFFD and counts them (`invalid_bytes`); a single tag or text run is capped at 16 MiB, zip entries at 64 GiB and archives at 128 GiB.
+- The device attribute is kept: `device_model` (text after `model:`) on `samples`, `sleep_stages` and `workouts`. A clash with a stored row that has no model fills it in; the dedupe key and counts are unchanged. The meta key `source_models` maps each source name to its model for the overview.
+- `Duplicates` means identical rows; `Conflicts` means the key matched but the value differs (the stored row stays). `read = inserted + duplicates + conflicts + skipped`.
+- Out-of-range values are skipped as `implausible_value`, using the per-metric limits in the registry (`TestLimitsTable`); `bad_value` is for non-numbers.
+- `ImportContext` stops after the last whole batch when cancelled; `Check(path)` validates the file before any database is opened.
+
 ## Benchmark
 
 Synthetic `--size large` fixture from `tools/genfixtures` (741 MB XML, 2,967,522 records, generated into a scratch dir, never committed). Apple M-series laptop, Go 1.27, release build, fresh database.

@@ -10,6 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 First release (not yet published).
 
+### Changed
+- Import robustness: input checked before the database is opened (a failed import into a new database leaves no file), invalid UTF-8 tolerated, zip-bomb and oversized-token guards, Ctrl-C stops cleanly, `--dry-run`, automatic `<db>.bak` copy (`--no-backup`), value clashes counted as `Conflicts`.
+- Sources are classified by Apple's device model (migration 0003), falling back to the source name for older imports; re-importing backfills the model.
+- One registry-driven plausibility range per metric shared by `import` and `log` (new skip reason `implausible_value`).
+- `log` refuses dates before 1990 or far in the future and ambiguous or non-existent local times; `log --delete` removes a manual reading.
+- `query` streams, with `--limit` (default 1000) and `--timeout` (default 30s); the rejection message names SELECT, WITH and EXPLAIN.
+- Exit codes 0/1/2/3, JSON errors with `--json`, clearer usage errors, metric and flag-value completion, version from build info for `go install`.
+- `--date` on `overview`, `sleep`, `workouts` and `heatmap`; `overview` about 3x faster on millions of samples; "imported N d ago" counts calendar days.
+- Databases from a newer healthcli are refused; upgrades print a notice and rebuilding migrations take a backup; read commands work on read-only copies.
+- Fixed: infinite loop at the end of the calendar range, sleep-source tie depending on map order.
+
 ### Added
 - `healthcli import apple` streams an Apple Health `export.xml` or `export.zip` into a local SQLite database; re-importing the same file adds nothing. About 30 metrics, sleep stages and workouts are read; skipped records are counted by reason and the most common unknown types are listed.
 - `healthcli log` records a manual reading (weight, heart rate, steps, ...), with aliases `hr`, `hrv`, `rhr`, `rr`, `spo2`, `steps`, `temp`, `vo2`, `weight`, `bmi`.

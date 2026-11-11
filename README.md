@@ -388,7 +388,7 @@ The output below is from a synthetic test database (made-up step counts), not re
 
 ```console
 $ healthcli heatmap
-━━ CALENDAR ━━ Steps per day, 12 weeks to 2026-11-04 ━━━━━━━━━━━━━━━━━━━━━
+━━ CALENDAR ━━ Steps per day, 12 weeks to 2026-11-04 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
     Aug Sep     Oct     Nov
 Mon █ ▇ ▅ ▃ ▁ ▇ ▅ ▃ ▁ █ ▅ ▃
 Tue ▇ ▅ ▃ ▁ █ ▅ ▃ ▁ █ ▇ ▅ ▁
@@ -406,7 +406,7 @@ On a pipe or with `--ascii` the same chart uses plain characters:
 
 ```console
 $ healthcli heatmap --ascii
-== CALENDAR == Steps per day, 12 weeks to 2026-11-04 =====================
+== CALENDAR == Steps per day, 12 weeks to 2026-11-04 ===========================
     Aug Sep     Oct     Nov
 Mon @ # + - . # + - . @ + -
 Tue # + - . @ + - . @ # + .
@@ -548,6 +548,16 @@ $ healthcli sleep
  6h  7h  7h  6h  6h  6h
  ▅▅▅ ▆▆▆ ▆▆▆ ▅▅▅ ▅▅▅ ▅▅▅
 ```
+
+## Safety, exit codes and options
+
+- **Import is safe to repeat and to interrupt.** `import apple` checks the file before it touches the database, copies an existing database to `<db>.bak` first (skip with `--no-backup`), and `--dry-run` reads and counts everything without writing. Ctrl-C stops after the last whole batch and says so. A damaged byte in the export (invalid UTF-8) is replaced and counted, not fatal. Records that clash with a stored one are counted as `Duplicates` when identical and as `Conflicts` when the value differs (the stored value is kept).
+- **Sources are told apart by device.** The import keeps Apple's device model, so a renamed Watch is still a Watch. Re-importing an older export fills in the model for rows that lack it.
+- **Plausible values only.** `import` and `log` share one range per metric (for example heart rate above 0 and up to 300 bpm). `log` refuses times before 1990, more than a day ahead, and times that do not exist or happen twice at a daylight-saving change (give an offset such as `+01:00`). `healthcli log --delete hr --at 2025-03-01T08:30` removes a reading you typed; imported rows cannot be deleted this way.
+- **`query` is bounded.** It streams rows, shows 1000 by default (`--limit N`, `0` for all) and stops after 30 s (`--timeout`).
+- **`--date YYYY-MM-DD`** treats that day as today on `today`, `trend`, `overview`, `sleep`, `workouts` and `heatmap`.
+- **Exit codes:** 0 success, 1 runtime error, 2 usage error, 3 database not found. With `--json` an error is printed as `{"error": {"code": ..., "message": ...}}` on stdout.
+- **Read-only copies work.** Read commands open the database without writing when nothing needs upgrading, so a backup copy or a read-only mount can be read. A database written by a newer healthcli is refused with a clear message; upgrading an older one prints `upgrading database to schema N` on stderr.
 
 ## Shell completions
 
