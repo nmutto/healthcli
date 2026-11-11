@@ -11,10 +11,10 @@ $ healthcli log weight -5 --at 2025-03-01T08:30:00Z
 unknown shorthand flag: '5' in -5
 $ healthcli log weight 0 --at 2025-03-01T08:30:00Z
 --- error ---
-value "0" is not a plausible body_mass
+cannot log "0": body_mass must be more than 0 kg
 $ healthcli log weight 1e9 --at 2025-03-01T08:30:00Z
 --- error ---
-cannot log "1e9": value is too large for body_mass
+cannot log "1e9": value is too large for body_mass (the most accepted is 500 kg)
 $ healthcli log weight NaN --at 2025-03-01T08:30:00Z
 --- error ---
 value "NaN" is not a number
@@ -25,7 +25,10 @@ $ healthcli log hr 61 --unit kg --at 2025-03-01T08:30:00Z
 --- error ---
 unit "kg" is not supported for heart_rate (use: bpm, count/min)
 $ healthcli log hr 500 --at 2025-03-01T08:30:00Z
-Logged heart_rate = 500 bpm at 2025-03-01 08:30
+--- error ---
+cannot log "500": value is too large for heart_rate (the most accepted is 300 bpm)
+$ healthcli log hr 300 --at 2025-03-01T08:30:00Z
+Logged heart_rate = 300 bpm at 2025-03-01 08:30
 $ healthcli log spo2 40 --at 2025-03-01T08:30:00Z
 --- error ---
 cannot log "40": oxygen_saturation below 50% is not plausible; type 97 for 97%
@@ -47,6 +50,13 @@ accepts 2 arg(s), received 0
 $ healthcli log weight 72 73
 --- error ---
 accepts 2 arg(s), received 3
+$ healthcli log weight 72 --at 1980-01-01T00:00:00Z
+--- error ---
+--at "1980-01-01T00:00:00Z" is before 1990-01-01
+$ healthcli log --delete hr --at 2025-03-01T08:31:00Z
+--- error ---
+no manual heart_rate reading at 2025-03-01 08:31; only readings typed with `healthcli log` can be deleted
+$ healthcli log --delete hr --at 2025-03-01T08:30:00Z
+Deleted heart_rate = 300 bpm at 2025-03-01 08:30
 $ healthcli query SELECT metric, round(value, 3) AS value, unit, source, start_ts, end_ts, tz_offset FROM samples ORDER BY metric, start_ts
-metric      value  unit  source  start_ts    end_ts      tz_offset
-heart_rate  500    bpm   manual  1740817800  1740817800  0
+metric  value  unit  source  start_ts  end_ts  tz_offset
