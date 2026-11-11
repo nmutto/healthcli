@@ -102,3 +102,20 @@ func TestSleepAwakeOnlyNightIsNoNight(t *testing.T) {
 		t.Errorf("empty %v kind %q, want an empty report", r.Empty, r.Kind)
 	}
 }
+
+// Two sources with exactly the same asleep time in main blocks more than 3 h
+// apart: the pick must not depend on Go's random map order.
+func TestSleepSourceTieIsDeterministic(t *testing.T) {
+	conn := newDB(t)
+	addSleep(t, conn, "core", "2024-12-02 09:00 +0100", "2024-12-02 13:00 +0100", "Zed")
+	addSleep(t, conn, "core", "2024-12-02 01:00 +0100", "2024-12-02 05:00 +0100", "Amy")
+	for i := range 50 {
+		nights, err := SleepNights(context.Background(), conn, "2024-12-02", "2024-12-02")
+		if err != nil || len(nights) != 1 {
+			t.Fatalf("%v %+v", err, nights)
+		}
+		if got := nights[0].Source; got != "Amy" {
+			t.Fatalf("run %d: source %q, want Amy (first by name on a tie)", i, got)
+		}
+	}
+}
