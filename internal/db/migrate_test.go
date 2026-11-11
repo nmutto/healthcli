@@ -253,3 +253,53 @@ func TestOpenReportsUnwritableFile(t *testing.T) {
 		t.Error("Open of a read-only file should fail clearly")
 	}
 }
+
+// A database made before migration 0003 keeps its rows, which get
+// device_model = ” (unknown), and the new column is usable afterwards.
+func TestMigration0003KeepsOldRows(t *testing.T) {
+	migrations, err := loadMigrations()
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(t.TempDir(), "old.db")
+	conn, err := sql.Open("sqlite", "file:"+path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	// Schema as of 0002 only, with one row in each table.
+	if err := migrateWith(conn, migrations[:2]); err != nil {
+		t.Fatal(err)
+	}
+	for _, q := range []string{
+		`INSERT INTO samples (metric, start_ts, end_ts, value, unit, source) VALUES ('heart_rate', 1, 2, 60, 'bpm', 'Old Watch')`,
+		`INSERT INTO sleep_stages (stage, start_ts, end_ts, source) VALUES ('core', 1, 2, 'Old Watch')`,
+		`INSERT INTO workouts (activity, start_ts, end_ts, duration_s, source) VALUES ('running', 1, 2, 1, 'Old Watch')`,
+	} {
+		if _, err := conn.Exec(q); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	notices := captureNotices(t)
+	if err := Migrate(conn); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(notices.String(), "upgrading database to schema 3") {
+		t.Errorf("notice = %q", notices.String())
+	}
+	if strings.Contains(notices.String(), "pre-migration") {
+		t.Errorf("0003 needs no table rebuild, so no backup: %q", notices.String())
+	}
+	for _, table := range []string{"samples", "sleep_stages", "workouts"} {
+		var n int
+		var model string
+		err := conn.QueryRow(`SELECT count(*), max(device_model) FROM `+table+` WHERE source = 'Old Watch'`).Scan(&n, &model)
+		if err != nil || n != 1 || model != "" {
+			t.Errorf("%s: n=%d model=%q err=%v, want the old row kept with an empty model", table, n, model, err)
+		}
+	}
+	if _, err := conn.Exec(`UPDATE samples SET device_model = 'Watch'`); err != nil {
+		t.Errorf("device_model not writable: %v", err)
+	}
+}
