@@ -8,7 +8,7 @@ $ healthcli log weight abc --at 2025-03-01T08:30:00Z
 value "abc" is not a number
 $ healthcli log weight -5 --at 2025-03-01T08:30:00Z
 --- error ---
-unknown shorthand flag: '5' in -5
+unknown shorthand flag: '5' in -5; run "healthcli log --help" to see the flags
 $ healthcli log weight 0 --at 2025-03-01T08:30:00Z
 --- error ---
 value "0" is not a plausible body_mass
@@ -40,13 +40,13 @@ $ healthcli log weight 72 --at 2999-01-01T00:00:00Z
 --at "2999-01-01T00:00:00Z" is more than a day in the future
 $ healthcli log weight
 --- error ---
-accepts 2 arg(s), received 1
+log needs a metric and a value, e.g. healthcli log weight 72.5
 $ healthcli log
 --- error ---
-accepts 2 arg(s), received 0
+log needs a metric and a value, e.g. healthcli log weight 72.5
 $ healthcli log weight 72 73
 --- error ---
-accepts 2 arg(s), received 3
+log got too many arguments (3); run "healthcli log --help" for how to use it
 $ healthcli query SELECT metric, round(value, 3) AS value, unit, source, start_ts, end_ts, tz_offset FROM samples ORDER BY metric, start_ts
 metric      value  unit  source  start_ts    end_ts      tz_offset
 heart_rate  500    bpm   manual  1740817800  1740817800  0

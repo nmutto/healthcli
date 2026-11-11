@@ -111,19 +111,19 @@ accent         n
 héllo ’ wörld  1
 $ healthcli query DELETE FROM samples
 --- error ---
-only SELECT queries are allowed
+only SELECT, WITH or EXPLAIN queries are allowed
 $ healthcli query SELECT 1; DELETE FROM samples
 --- error ---
 only one statement is allowed per query
 $ healthcli query PRAGMA writable_schema = 1
 --- error ---
-only SELECT queries are allowed
+only SELECT, WITH or EXPLAIN queries are allowed
 $ healthcli query ATTACH DATABASE ':memory:' AS x
 --- error ---
-only SELECT queries are allowed
+only SELECT, WITH or EXPLAIN queries are allowed
 $ healthcli query SELEC 1
 --- error ---
-only SELECT queries are allowed
+only SELECT, WITH or EXPLAIN queries are allowed
 $ healthcli query SELECT * FROM nonexistent
 --- error ---
 SQL logic error: no such table: nonexistent (1)
@@ -132,22 +132,22 @@ $ healthcli query SELECT nope FROM samples
 SQL logic error: no such column: nope (1)
 $ healthcli query 
 --- error ---
-only SELECT queries are allowed
+only SELECT, WITH or EXPLAIN queries are allowed
 $ healthcli query   
 --- error ---
-only SELECT queries are allowed
+only SELECT, WITH or EXPLAIN queries are allowed
 $ healthcli query
 --- error ---
-accepts 1 arg(s), received 0
+query needs one SQL statement, e.g. healthcli query "SELECT count(*) FROM samples"
 $ healthcli query SELECT 1 SELECT 2
 --- error ---
-accepts 1 arg(s), received 2
+query got too many arguments (2); run "healthcli query --help" for how to use it
 $ healthcli query DROP TABLE samples --json
 --- error ---
-only SELECT queries are allowed
+only SELECT, WITH or EXPLAIN queries are allowed
 $ healthcli query SELEC 1 --json
 --- error ---
-only SELECT queries are allowed
+only SELECT, WITH or EXPLAIN queries are allowed
 $ healthcli query SELECT 1
 --- error ---
 database not found: /nonexistent-dir/none.db; run "healthcli import apple <export.zip>" first

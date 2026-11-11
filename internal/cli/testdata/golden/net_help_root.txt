@@ -1,6 +1,15 @@
 healthcli imports your Apple Health export into a local SQLite database
 and lets you log, review and query your data. Nothing leaves your machine.
 
+Exit codes:
+  0  ok
+  1  runtime error
+  2  usage error (bad arguments, bad flags, unknown command)
+  3  database not found
+
+With --json an error is printed on stdout as
+{"error": {"code": "...", "message": "..."}} and nothing else.
+
 Usage:
   healthcli [command]
 

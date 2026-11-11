@@ -1,2 +1,2 @@
 --- error ---
-unknown command "tonight" for "healthcli sleep"
+sleep takes no arguments, got "tonight"; run "healthcli sleep --help" for how to use it

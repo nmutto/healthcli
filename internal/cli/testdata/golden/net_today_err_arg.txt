@@ -1,2 +1,2 @@
 --- error ---
-unknown command "monday" for "healthcli today"
+today takes no arguments, got "monday"; run "healthcli today --help" for how to use it

@@ -1,2 +1,2 @@
 --- error ---
-accepts 1 arg(s), received 0
+trend needs a metric, e.g. healthcli trend steps
