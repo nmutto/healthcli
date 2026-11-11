@@ -6,7 +6,6 @@ project_name: healthcli
 
 before:
   hooks:
-    - go mod tidy
     - sh -c 'rm -rf completions && mkdir completions'
     - sh -c 'go run ./cmd/healthcli completion bash > completions/healthcli.bash'
     - sh -c 'go run ./cmd/healthcli completion zsh > completions/_healthcli'

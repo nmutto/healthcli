@@ -59,7 +59,7 @@ func FuzzParse(f *testing.F) {
 	f.Cleanup(func() { conn.Close() })
 
 	f.Fuzz(func(t *testing.T, data []byte) {
-		sum := &Summary{Skipped: map[string]int64{}}
+		sum := &Summary{Skipped: map[string]int64{}, SkippedTypes: map[string]int64{}}
 		w, err := newWriter(conn, sum, false)
 		if err != nil {
 			t.Fatal(err)
