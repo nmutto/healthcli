@@ -218,3 +218,18 @@ func TestHeatmapAllZeroIsLowestShade(t *testing.T) {
 		}
 	}
 }
+
+// Stepping past the last day the calendar can write must end the rest-day
+// fill, not loop for ever.
+func TestLayoutHeatmapStopsAtLastCalendarDay(t *testing.T) {
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		layoutHeatmap("workouts", "min", "9999-12-31", "9999-12-01", 1, map[string]float64{"9999-12-30": 30}, true, "")
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("layoutHeatmap did not return at 9999-12-31")
+	}
+}
