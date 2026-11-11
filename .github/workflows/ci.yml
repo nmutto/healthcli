@@ -21,5 +21,35 @@ jobs:
           if [ -n "$unformatted" ]; then
             echo "gofmt needed on:"; echo "$unformatted"; exit 1
           fi
-      - name: go test -race
-        run: go test -race ./...
+      - name: go build
+        run: go build ./...
+      - name: go mod tidy is a no-op
+        run: go mod tidy -diff
+      # -race is slow (importer about 50 s, cli several minutes on a busy
+      # machine). The cli package is pure renderers and flag plumbing with no
+      # goroutines to race, so it runs plain; the packages that run
+      # concurrent or batched code get the race detector.
+      - name: go test -race (importer, stats, db)
+        run: go test -race ./internal/importer ./internal/stats ./internal/db
+      - name: go test (everything else, no race detector)
+        run: go test ./internal/cli ./internal/metrics ./tools/...
+      # Fuzz targets only run their seed corpus under `go test`. A few
+      # seconds of real fuzzing each (one target per command: Go allows one).
+      - name: fuzz FuzzParse
+        run: go test ./internal/importer -run '^$' -fuzz '^FuzzParse$' -fuzztime 10s
+      - name: fuzz FuzzCompare
+        run: go test ./internal/stats -run '^$' -fuzz '^FuzzCompare$' -fuzztime 10s
+      - name: fuzz FuzzSparkline
+        run: go test ./internal/cli -run '^$' -fuzz '^FuzzSparkline$' -fuzztime 10s
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          install-only: true
+          version: "~> v2"
+      # `goreleaser check` exits 1 when the config is valid but uses the
+      # deprecated `brews` key (kept on purpose, see docs/release.md). Accept
+      # that one message, fail on anything else.
+      - name: goreleaser check
+        run: |
+          if out=$(goreleaser check 2>&1); then echo "$out"; exit 0; fi
+          echo "$out"
+          echo "$out" | grep -q "configuration is valid, but uses deprecated properties"

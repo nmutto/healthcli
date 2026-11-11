@@ -21,7 +21,7 @@ import (
 // sleepMetric is the pseudo-metric name for "asleep hours per night". Sleep
 // is not a row in the metrics registry (it has its own table), so the
 // command handles it as a special case.
-const sleepMetric = "sleep"
+const sleepMetric = stats.SleepMetric
 
 // Field names below are the documented --json contract of "healthcli trend".
 type trendReport struct {
@@ -127,7 +127,7 @@ Sleep values are hours asleep.`,
 
 func runTrend(cmd *cobra.Command, opts *options, name string, days int, date string, verbose, noColor, ascii bool) error {
 	if days < 1 || days > 3650 {
-		return fmt.Errorf("--days must be between 1 and 3650, got %d", days)
+		return usageErrorf("--days must be between 1 and 3650, got %d", days)
 	}
 	if date == "" {
 		date = nowFunc().Format(stats.DayLayout)

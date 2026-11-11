@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -228,7 +229,7 @@ func TestLogAcceptsPlausibleEdges(t *testing.T) {
 	for _, args := range [][]string{
 		{"spo2", "97", "--at", "2025-03-01 08:00"}, {"spo2", "50", "--at", "2025-03-01 09:00"},
 		{"body_fat_percentage", "100"},
-		{"steps", "9999999"}, {"weight", "70", "--at", soon},
+		{"steps", "1000000"}, {"weight", "70", "--at", soon},
 	} {
 		if _, _, err := run(t, append([]string{"--db", db, "log"}, args...)...); err != nil {
 			t.Errorf("log %v: %v", args, err)
@@ -315,6 +316,7 @@ func TestNetLog(t *testing.T) {
 			lg("weight", "72", "--unit", "stone", "--at", logAt),
 			lg("hr", "61", "--unit", "kg", "--at", logAt),
 			lg("hr", "500", "--at", logAt),
+			lg("hr", "300", "--at", logAt),
 			lg("spo2", "40", "--at", logAt),
 			lg("spo2", "101", "--at", logAt),
 			lg("weight", "72", "--at", "next tuesday"),
@@ -322,10 +324,145 @@ func TestNetLog(t *testing.T) {
 			lg("weight"),
 			lg(),
 			lg("weight", "72", "73"),
+			lg("weight", "72", "--at", "1980-01-01T00:00:00Z"),
+			lg("--delete", "hr", "--at", "2025-03-01T08:31:00Z"),
+			lg("--delete", "hr", "--at", logAt),
 			rows}},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			checkViewGolden(t, netGoldenFile(c.name), netSequence(t, tempDB(t), c.cmds...))
 		})
+	}
+}
+
+// One registry rule for log and the importer. BUG: log accepted `hr 9999`
+// (only a generic 1e7 cap existed), refused a wrist temperature below zero
+// (a legitimate delta) and refused 0 flights climbed.
+func TestLogUsesTheRegistryRule(t *testing.T) {
+	db := emptyDB(t)
+	for _, args := range [][]string{
+		{"hr", "9999"}, {"hr", "301"}, {"rhr", "251"}, {"weight", "501"}, {"blood_pressure_systolic", "301"},
+		{"steps", "1000001"}, {"temp", "46"},
+	} {
+		if _, _, err := run(t, append([]string{"--db", db, "log"}, args...)...); err == nil {
+			t.Errorf("log %v should fail", args)
+		}
+	}
+	for _, args := range [][]string{
+		{"hr", "300", "--at", "2025-03-01 08:00"}, {"temp", "--at", "2025-03-01 09:00", "--", "-0.4"},
+		{"flights_climbed", "0", "--at", "2025-03-01 10:00"},
+	} {
+		if _, _, err := run(t, append([]string{"--db", db, "log"}, args...)...); err != nil {
+			t.Errorf("log %v: %v", args, err)
+		}
+	}
+}
+
+func TestLogAtBounds(t *testing.T) {
+	db := emptyDB(t)
+	for _, at := range []string{"1989-12-31 23:59", "1925-03-01T08:30:00Z"} {
+		_, _, err := run(t, "--db", db, "log", "weight", "70", "--at", at)
+		if err == nil || !strings.Contains(err.Error(), "before 1990-01-01") {
+			t.Errorf("--at %s: err = %v, want 'before 1990-01-01'", at, err)
+		}
+	}
+	if _, _, err := run(t, "--db", db, "log", "weight", "70", "--at", "1990-01-01T00:00:00Z"); err != nil {
+		t.Errorf("1990-01-01 should be accepted: %v", err)
+	}
+}
+
+// A local time that does not exist (spring gap) or exists twice (autumn
+// repeat) is refused instead of being filed an hour off.
+func TestLogAtRefusesDSTGapAndRepeat(t *testing.T) {
+	old := time.Local
+	t.Cleanup(func() { time.Local = old })
+	newYork, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		t.Skipf("no tz database: %v", err)
+	}
+	time.Local = newYork
+	db := emptyDB(t)
+	for at, want := range map[string]string{
+		"2025-03-09 02:30": "does not exist",
+		"2025-11-02 01:30": "happens twice",
+	} {
+		_, _, err := run(t, "--db", db, "log", "weight", "70", "--at", at)
+		if err == nil || !strings.Contains(err.Error(), want) || !strings.Contains(err.Error(), "offset") {
+			t.Errorf("--at %s: err = %v, want %q and a hint about an offset", at, err, want)
+		}
+	}
+	// the hours either side, and an explicit offset, are fine
+	for _, at := range []string{"2025-03-09 01:30", "2025-03-09 03:30", "2025-11-02 00:30", "2025-11-02 02:30", "2025-11-02T01:30:00-04:00"} {
+		if _, _, err := run(t, "--db", db, "log", "weight", "70", "--at", at); err != nil {
+			t.Errorf("--at %s: %v", at, err)
+		}
+	}
+}
+
+func TestLogDelete(t *testing.T) {
+	db := tempDB(t)
+	if _, _, err := run(t, "--db", db, "log", "hr", "61", "--at", "2025-03-01 07:45"); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := run(t, "--db", db, "log", "hr", "70", "--at", "2025-03-01 08:45"); err != nil {
+		t.Fatal(err)
+	}
+	out, _, err := run(t, "--db", db, "log", "--delete", "hr", "--at", "2025-03-01 07:45")
+	if err != nil || out != "Deleted heart_rate = 61 bpm at 2025-03-01 07:45\n" {
+		t.Fatalf("delete: %q, %v", out, err)
+	}
+	q, _, _ := run(t, "--db", db, "query", "SELECT value FROM samples WHERE source = 'manual'", "--json")
+	if !strings.Contains(q, "70") || strings.Contains(q, "61") {
+		t.Errorf("only the other reading should stay, got %s", q)
+	}
+	// second time: nothing left to delete
+	_, _, err = run(t, "--db", db, "log", "--delete", "hr", "--at", "2025-03-01 07:45")
+	if err == nil || !strings.Contains(err.Error(), "no manual heart_rate reading") {
+		t.Errorf("want 'no manual heart_rate reading', got %v", err)
+	}
+}
+
+// BUG-class check: --delete must never remove an imported row, even when it
+// sits at exactly the requested instant.
+func TestLogDeleteRefusesImportedRows(t *testing.T) {
+	db := seedDB(t)
+	conn := openTestDB(t, db)
+	ts := int64(1740817800)
+	if _, err := conn.Exec(`INSERT INTO samples (metric, start_ts, end_ts, value, unit, tz_offset, source)
+		VALUES ('heart_rate', ?, ?, 58, 'bpm', 0, 'Apple Watch')`, ts, ts); err != nil {
+		t.Fatal(err)
+	}
+	_, _, err := run(t, "--db", db, "log", "--delete", "hr", "--at", "2025-03-01T08:30:00Z")
+	if err == nil || !strings.Contains(err.Error(), "only readings typed") {
+		t.Fatalf("want a refusal, got %v", err)
+	}
+	var n int
+	conn.QueryRow(`SELECT COUNT(*) FROM samples WHERE source = 'Apple Watch' AND start_ts = ?`, ts).Scan(&n)
+	if n != 1 {
+		t.Errorf("the imported row was deleted (%d left)", n)
+	}
+}
+
+func TestLogDeleteInputs(t *testing.T) {
+	db := tempDB(t)
+	run(t, "--db", db, "log", "hr", "61", "--at", logAt)
+	for want, args := range map[string][]string{
+		"needs --at":         {"log", "--delete", "hr"},
+		"cannot be used":     {"log", "--delete", "hr", "--at", logAt, "--unit", "bpm"},
+		"known metrics":      {"log", "--delete", "mood", "--at", logAt},
+		"takes one metric":   {"log", "--delete", "hr", "61", "--at", logAt},
+		"database not found": {"--db", filepath.Join(t.TempDir(), "none.db"), "log", "--delete", "hr", "--at", logAt},
+		"cannot read time":   {"log", "--delete", "hr", "--at", "soon"},
+	} {
+		if !strings.HasPrefix(args[0], "--db") {
+			args = append([]string{"--db", db}, args...)
+		}
+		if _, _, err := run(t, args...); err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("%v: err = %v, want %q", args, err, want)
+		}
+	}
+	out, _, err := run(t, "--db", db, "log", "--delete", "hr", "--at", logAt, "--json")
+	if err != nil || !strings.Contains(out, `"deleted":true`) || !strings.Contains(out, `"value":61`) {
+		t.Errorf("json delete: %q, %v", out, err)
 	}
 }

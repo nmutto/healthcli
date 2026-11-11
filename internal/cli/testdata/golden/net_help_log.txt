@@ -7,9 +7,15 @@ temp (apple_sleeping_wrist_temperature), vo2 (vo2_max), weight (body_mass),
 bmi (body_mass_index).
 Weight is stored in kg; use --unit lb to enter pounds.
 Percentages are typed as 0-100 (97 for 97%); blood oxygen below 50 is refused.
+Every metric has a plausible range, shared with the importer; a value outside
+it is refused (for example a heart rate above 300).
 
 --at accepts RFC3339 ("2025-03-01T08:30:00Z") or local time ("2025-03-01 08:30"),
-up to one day in the future.
+from 1990-01-01 up to one day in the future. A local time that the clocks skip
+or repeat (daylight saving) is refused: give an offset instead.
+
+--delete removes the reading you logged for <metric> at --at. It never touches
+imported rows.
 
 Usage:
   healthcli log <metric> <value> [flags]
@@ -19,9 +25,11 @@ Examples:
   healthcli log weight 160 --unit lb
   healthcli log hr 58 --at "2025-03-01 07:45"
   healthcli log steps 8000 --json
+  healthcli log --delete hr --at "2025-03-01 07:45"
 
 Flags:
       --at string     when it was measured: RFC3339 or "YYYY-MM-DD HH:MM" local time (default: now)
+      --delete        delete the manual reading of <metric> at --at (imported rows are never deleted)
   -h, --help          help for log
       --unit string   unit of the value (default: the metric's own unit, e.g. kg for weight)
 

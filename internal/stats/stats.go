@@ -22,6 +22,14 @@ import (
 	"time"
 )
 
+// The two pseudo-metrics. They are not rows of the metrics registry (sleep
+// and workouts have their own tables) but the commands treat them like
+// metrics in trend, heatmap and --category.
+const (
+	SleepMetric    = "sleep"
+	WorkoutsMetric = "workouts"
+)
+
 // DayLayout is the Go time layout of a day string, e.g. "2024-12-01".
 const DayLayout = "2006-01-02"
 
@@ -36,10 +44,24 @@ const (
 	ClassWatch  = "watch"
 )
 
-// SourceClass sorts a free-text source name (e.g. "Alex’s Apple Watch") into
-// one of the classes above by looking for a word in it, ignoring case.
-// "manual" is what `healthcli log` writes.
-func SourceClass(source string) string {
+// SourceClass sorts a source into one of the classes above. The device model
+// that Apple writes (model:Watch, model:iPhone) decides when it is known,
+// because source NAMES are free text the user can rename and a third-party
+// "Withings ScanWatch" is not an Apple Watch. A model that is not Watch or
+// iPhone (say "ScanWatch" or "iPad") makes the source "other". When the model
+// is empty (older imports, apps that write no device) the NAME is searched for
+// a word instead, ignoring case. "manual" is what `healthcli log` writes.
+func SourceClass(source, model string) string {
+	if model != "" {
+		switch strings.ToLower(model) {
+		case "watch":
+			return ClassWatch
+		case "iphone":
+			return ClassIPhone
+		default:
+			return ClassOther
+		}
+	}
 	s := strings.ToLower(source)
 	switch {
 	case strings.Contains(s, "watch"):
@@ -53,9 +75,9 @@ func SourceClass(source string) string {
 	}
 }
 
-// SourcePriority turns a source name into a number: higher is preferred.
-func SourcePriority(source string) int {
-	switch SourceClass(source) {
+// sourcePriority turns a source into a number: higher is preferred.
+func sourcePriority(source, model string) int {
+	switch SourceClass(source, model) {
 	case ClassWatch:
 		return 3
 	case ClassIPhone:
@@ -67,13 +89,14 @@ func SourcePriority(source string) int {
 	}
 }
 
-// better reports whether source a should be used instead of source b.
-// Class decides first. Two sources of the same class (say, an old and a new
-// iPhone) are never added together, because that could double-count too:
-// the one with more rows that day wins, and the name breaks a final tie so
-// the answer never depends on the order rows came back in.
-func better(a string, aRows int, b string, bRows int) bool {
-	pa, pb := SourcePriority(a), SourcePriority(b)
+// better reports whether source a should be used instead of source b (each
+// given by name and device model). Class decides first. Two sources of the
+// same class (say, an old and a new iPhone) are never added together, because
+// that could double-count too: the one with more rows that day wins, and the
+// name breaks a final tie so the answer never depends on the order rows came
+// back in.
+func better(a, aModel string, aRows int, b, bModel string, bRows int) bool {
+	pa, pb := sourcePriority(a, aModel), sourcePriority(b, bModel)
 	if pa != pb {
 		return pa > pb
 	}
@@ -81,6 +104,16 @@ func better(a string, aRows int, b string, bRows int) bool {
 		return aRows > bRows
 	}
 	return a < b
+}
+
+// keepModel remembers the first device model seen for a source name. A name
+// can have rows with and without a model (a partly backfilled database); the
+// model, when any row has one, describes the source.
+func keepModel(have, seen string) string {
+	if have == "" {
+		return seen
+	}
+	return have
 }
 
 // parseDay checks a "YYYY-MM-DD" string and returns midnight UTC of it.

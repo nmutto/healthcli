@@ -9,6 +9,9 @@ import (
 	"github.com/nmutto/healthcli/internal/db"
 )
 
+// errDatabaseNotFound is what requireDB wraps; errors.go maps it to exit code 3.
+var errDatabaseNotFound = errors.New("database not found")
+
 // dbPath is the database named by --db, or the default location when the
 // flag was not given.
 func dbPath(opts *options) (string, error) {
@@ -25,13 +28,13 @@ func requireDB(path string) error {
 		return nil
 	}
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf(`database not found: %s; run "healthcli import apple <export.zip>" first`, path)
+		return fmt.Errorf(`%w: %s; run "healthcli import apple <export.zip>" first`, errDatabaseNotFound, path)
 	}
 	return nil
 }
 
 // openDB opens an existing database for the read commands (today, overview,
-// sleep, ...). It never creates one. The caller must Close the result.
+// sleep, ...). It never creates one, and it works on a read-only copy. The caller must Close the result.
 func openDB(opts *options) (*sql.DB, error) {
 	path, err := dbPath(opts)
 	if err != nil {
@@ -40,11 +43,18 @@ func openDB(opts *options) (*sql.DB, error) {
 	if err := requireDB(path); err != nil {
 		return nil, err
 	}
-	return db.Open(path)
+	return db.OpenForRead(path)
 }
 
-// openReadOnlyDB is openDB for `query`: the connection cannot write at all.
+// openReadOnlyDB is openDB for `query`. Both hand back a connection that
+// cannot write; this name is kept so `query` reads as what it promises.
 func openReadOnlyDB(opts *options) (*sql.DB, error) {
+	return openDB(opts)
+}
+
+// openExistingWritableDB is for a write that must not create the database
+// (log --delete): the file has to exist already, and it can be written.
+func openExistingWritableDB(opts *options) (*sql.DB, error) {
 	path, err := dbPath(opts)
 	if err != nil {
 		return nil, err
@@ -52,7 +62,7 @@ func openReadOnlyDB(opts *options) (*sql.DB, error) {
 	if err := requireDB(path); err != nil {
 		return nil, err
 	}
-	return db.OpenReadOnly(path)
+	return db.Open(path)
 }
 
 // openOrCreateDB is for the commands that write (import, log): the database

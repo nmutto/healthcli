@@ -2,6 +2,15 @@ $ healthcli
 healthcli imports your Apple Health export into a local SQLite database
 and lets you log, review and query your data. Nothing leaves your machine.
 
+Exit codes:
+  0  ok
+  1  runtime error
+  2  usage error (bad arguments, bad flags, unknown command)
+  3  database not found
+
+With --json an error is printed on stdout as
+{"error": {"code": "...", "message": "..."}} and nothing else.
+
 Usage:
   healthcli [command]
 
@@ -37,6 +46,15 @@ $ healthcli -h
 healthcli imports your Apple Health export into a local SQLite database
 and lets you log, review and query your data. Nothing leaves your machine.
 
+Exit codes:
+  0  ok
+  1  runtime error
+  2  usage error (bad arguments, bad flags, unknown command)
+  3  database not found
+
+With --json an error is printed on stdout as
+{"error": {"code": "...", "message": "..."}} and nothing else.
+
 Usage:
   healthcli [command]
 
@@ -71,6 +89,15 @@ Use "healthcli [command] --help" for more information about a command.
 $ healthcli help
 healthcli imports your Apple Health export into a local SQLite database
 and lets you log, review and query your data. Nothing leaves your machine.
+
+Exit codes:
+  0  ok
+  1  runtime error
+  2  usage error (bad arguments, bad flags, unknown command)
+  3  database not found
+
+With --json an error is printed on stdout as
+{"error": {"code": "...", "message": "..."}} and nothing else.
 
 Usage:
   healthcli [command]
@@ -157,17 +184,34 @@ Import an Apple Health export file. In the Health app on your iPhone choose
 your profile picture, then "Export All Health Data", and pass the resulting file here.
 
 The file is streamed, so even multi-gigabyte exports use little memory.
-Importing the same file again adds nothing new.
+Importing the same file again adds nothing new. A record whose key (type,
+times, source) is already stored is not imported again; if its value differs
+from the stored one it is counted as a conflict, and the stored value stays.
+
+Before the first write into a database that already holds data, a safety copy
+is made next to it (<database>.bak, readable only by you, replaced on every
+import). Use --no-backup to skip it, for example when the database is huge
+and you have your own backups.
+
+--dry-run reads the whole file and prints the counts a real import would give,
+but writes nothing (and makes no backup).
+
+Press Ctrl-C to stop an import: the rows read so far stay saved, and running
+the same import again finishes it. A byte that is not valid UTF-8 is replaced
+with U+FFFD and counted instead of stopping the import.
 
 Usage:
   healthcli import apple <export.zip|export.xml> [flags]
 
 Examples:
   healthcli import apple export.zip
+  healthcli import apple export.zip --dry-run
   healthcli import apple export.xml --json
 
 Flags:
-  -h, --help   help for apple
+      --dry-run     read and count everything, write nothing
+  -h, --help        help for apple
+      --no-backup   do not copy the database to <database>.bak before importing
 
 Global Flags:
       --db string   SQLite database path (default: per-user data dir)
@@ -209,20 +253,20 @@ $ healthcli bogus
 unknown command "bogus" for "healthcli"
 $ healthcli --bogus
 --- error ---
-unknown flag: --bogus
+unknown flag: --bogus; run "healthcli --help" to see the flags
 $ healthcli trend --bogus
 --- error ---
-unknown flag: --bogus
+unknown flag: --bogus; run "healthcli trend --help" to see the flags
 $ healthcli log -x
 --- error ---
-unknown shorthand flag: 'x' in -x
+unknown shorthand flag: 'x' in -x; run "healthcli log --help" to see the flags
 $ healthcli version
 healthcli 0.1.0-dev (commit none, built unknown)
 $ healthcli version --json
 {"commit":"none","date":"unknown","version":"0.1.0-dev"}
 $ healthcli version extra
 --- error ---
-unknown command "extra" for "healthcli version"
+version takes no arguments, got "extra"; run "healthcli version --help" for how to use it
 $ healthcli completion
 Generate the autocompletion script for healthcli for the specified shell.
 See each sub-command's help for details on how to use the generated script.
@@ -303,13 +347,73 @@ Global Flags:
 
 Use "healthcli import [command] --help" for more information about a command.
 $ healthcli __complete trend 
-:0
+heart_rate
+resting_heart_rate
+step_count
+hrv_sdnn
+body_mass
+active_energy
+respiratory_rate
+apple_sleeping_wrist_temperature
+oxygen_saturation
+vo2_max
+walking_heart_rate_average
+heart_rate_recovery_one_minute
+blood_pressure_systolic
+blood_pressure_diastolic
+blood_glucose
+basal_energy
+apple_exercise_time
+apple_stand_time
+flights_climbed
+distance_walking_running
+time_in_daylight
+body_fat_percentage
+body_mass_index
+lean_body_mass
+height
+walking_speed
+walking_step_length
+walking_asymmetry
+walking_double_support
+apple_walking_steadiness
+:4
 --- stderr ---
-Completion ended with directive: ShellCompDirectiveDefault
+Completion ended with directive: ShellCompDirectiveNoFileComp
 $ healthcli __complete heatmap 
-:0
+heart_rate
+resting_heart_rate
+step_count
+hrv_sdnn
+body_mass
+active_energy
+respiratory_rate
+apple_sleeping_wrist_temperature
+oxygen_saturation
+vo2_max
+walking_heart_rate_average
+heart_rate_recovery_one_minute
+blood_pressure_systolic
+blood_pressure_diastolic
+blood_glucose
+basal_energy
+apple_exercise_time
+apple_stand_time
+flights_climbed
+distance_walking_running
+time_in_daylight
+body_fat_percentage
+body_mass_index
+lean_body_mass
+height
+walking_speed
+walking_step_length
+walking_asymmetry
+walking_double_support
+apple_walking_steadiness
+:4
 --- stderr ---
-Completion ended with directive: ShellCompDirectiveDefault
+Completion ended with directive: ShellCompDirectiveNoFileComp
 $ healthcli __complete 
 completion	Generate the autocompletion script for the specified shell
 heatmap	Calendar heatmap of one metric, one cell per day
@@ -331,6 +435,7 @@ $ healthcli __complete sleep --
 --json	output JSON instead of human-readable text
 --ascii	use plain ASCII characters only
 --by	calendar value: asleep, bedtime, efficiency
+--date	treat this local day, YYYY-MM-DD, as today (default: today)
 --help	help for sleep
 --nights	nights before the last one in the usual window (7-90)
 --no-color	never use colours

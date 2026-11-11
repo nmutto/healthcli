@@ -94,16 +94,16 @@ func overviewSections(o *stats.Overview, ti termInfo, g glyphSet, st style, v ov
 		}},
 	}
 	// A single section picked with --category gets its full version.
-	alone := len(v.categories) == 1 && (v.wants("sleep") != v.wants("workouts"))
+	alone := len(v.categories) == 1 && (v.wants(sleepName) != v.wants(workoutsName))
 	full := v.full || alone
-	if v.wants("sleep") {
-		secs = append(secs, section{"sleep", func() string {
+	if v.wants(sleepName) {
+		secs = append(secs, section{sleepName, func() string {
 			opts := sleepOpts{Full: full, NoHeatmap: v.ownHeatmapsHidden()}
 			return linesBlock(renderSleepSection(o.SleepSummary, ti, ti.width, opts))
 		}})
 	}
-	if v.wants("workouts") {
-		secs = append(secs, section{"workouts", func() string {
+	if v.wants(workoutsName) {
+		secs = append(secs, section{workoutsName, func() string {
 			opts := workoutsOpts{Full: full, Weeks: v.weeks(ti), NoHeatmap: v.ownHeatmapsHidden()}
 			if o.WorkoutsReport == nil { // no workouts: no section, not even a "none" line
 				return ""
@@ -200,7 +200,11 @@ func titleLine(o *stats.Overview, ti termInfo, v overviewView, st style) string 
 
 // agoText says how long ago `then` was in whole days: "today" or "3 d ago".
 func agoText(now, then time.Time) string {
-	days := int(now.Sub(then).Hours() / 24)
+	// Calendar days, not 24 h blocks: 23:00 yesterday seen at 08:00 is 1 d ago.
+	then = then.In(now.Location())
+	thenDay := time.Date(then.Year(), then.Month(), then.Day(), 0, 0, 0, 0, time.UTC)
+	nowDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	days := int(nowDay.Sub(thenDay) / (24 * time.Hour))
 	if days <= 0 {
 		return "today"
 	}

@@ -414,24 +414,6 @@ func minutesText(mins float64) string {
 	return fmt.Sprintf("%dh %02dm", m/60, m%60)
 }
 
-// BuildSleepHeatmap is the sleep calendar alone: the last `weeks` weeks, one
-// cell per night. by is asleep, bedtime or efficiency.
-func BuildSleepHeatmap(ctx context.Context, conn *sql.DB, weeks int, now time.Time, by string) (*Heatmap, error) {
-	if weeks < 1 || weeks > MaxHeatmapWeeks {
-		return nil, fmt.Errorf("stats: weeks must be between 1 and %d, got %d", MaxHeatmapWeeks, weeks)
-	}
-	today := now.Format(DayLayout)
-	from, err := AddDays(today, -(7*weeks + 6))
-	if err != nil {
-		return nil, err
-	}
-	nights, err := SleepNights(ctx, conn, from, today)
-	if err != nil {
-		return nil, err
-	}
-	return sleepHeatmap(nights, now, weeks, by)
-}
-
 // BuildSleepReport reads the sleep rows once and builds the SLEEP section.
 // With no sleep rows it returns a report with Empty set (no error).
 func BuildSleepReport(ctx context.Context, conn *sql.DB, now time.Time, opts SleepOptions) (*SleepReport, error) {

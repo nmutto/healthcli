@@ -13,7 +13,7 @@ import (
 
 func newWorkoutsCmd(opts *options) *cobra.Command {
 	var days, weeks int
-	var by string
+	var by, date string
 	var noColor, ascii bool
 	cmd := &cobra.Command{
 		Use:   "workouts",
@@ -25,6 +25,9 @@ at least 3 sessions), every session of the last 7 days (or of --days when that i
 minutes per day. Days without a workout in the calendar are rest days (shown
 from your first workout on). --by type draws each day's main activity as a
 letter.
+
+--date YYYY-MM-DD treats that local day as today (not a future day): the
+windows end on it.
 
 Columns with no data (no calories or distance recorded) are left out, and parts
 that need more sessions simply do not appear. The weekly deltas are not
@@ -39,24 +42,29 @@ JSON output (--json):
 All durations are seconds and absent values are left out, never null.`,
 		Example: `  healthcli workouts
   healthcli workouts --days 90 --weeks 12
-  healthcli workouts --by type`,
+  healthcli workouts --by type
+  healthcli workouts --date 2026-11-01`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if days < 1 || days > 365 {
-				return fmt.Errorf("--days must be between 1 and 365, got %d", days)
+				return usageErrorf("--days must be between 1 and 365, got %d", days)
 			}
 			if weeks < 1 || weeks > stats.MaxHeatmapWeeks {
-				return fmt.Errorf("--weeks must be between 1 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
+				return usageErrorf("--weeks must be between 1 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
 			}
 			if by != "" && strings.ToLower(by) != "type" {
-				return fmt.Errorf("--by must be \"type\", got %q", by)
+				return usageErrorf("--by must be \"type\", got %q", by)
+			}
+			now, err := clockFor(date)
+			if err != nil {
+				return err
 			}
 			conn, err := openDB(opts)
 			if err != nil {
 				return err
 			}
 			defer conn.Close()
-			today := nowFunc().Format(stats.DayLayout)
+			today := now.Format(stats.DayLayout)
 			report, err := stats.BuildWorkoutsReport(cmdContext(cmd), conn, today, days, weeks)
 			if err != nil {
 				return err
@@ -76,6 +84,7 @@ All durations are seconds and absent values are left out, never null.`,
 	cmd.Flags().IntVar(&days, "days", 28, "window for totals, types and the recent list (1-365); the recent list is at most the last 7 days")
 	cmd.Flags().IntVar(&weeks, "weeks", 8, "weeks of volume bars and calendar (1-53)")
 	cmd.Flags().StringVar(&by, "by", "", `"type": draw the calendar with one letter per activity`)
+	cmd.Flags().StringVar(&date, "date", "", dateFlagHelp)
 	cmd.Flags().BoolVar(&noColor, "no-color", false, "never use colours")
 	cmd.Flags().BoolVar(&ascii, "ascii", false, "use plain ASCII characters only")
 	return cmd

@@ -19,7 +19,10 @@ type SleepNight struct {
 
 	// Source is the one source the stage totals below come from.
 	Source string
-	Rows   int // how many stage rows of Source were used
+	// SourceClass is the class (ClassWatch, ...) of Source, from its device
+	// model when known, so a renamed source is still labelled correctly.
+	SourceClass string
+	Rows        int // how many stage rows of Source were used
 
 	// Start and End are the first and last moment of the MAIN sleep block
 	// (Unix seconds), 0 when the night has no asleep time. Naps are not part
@@ -67,6 +70,7 @@ type SleepNight struct {
 	// nobody recorded it.
 	InBed       time.Duration
 	InBedSource string
+	InBedClass  string // class of InBedSource, like SourceClass
 
 	// hadAwakeRows is true when the source wrote any awake row that night,
 	// also outside the main block. Efficiency without in_bed rows needs it:
@@ -133,7 +137,8 @@ func length(merged []interval) time.Duration {
 // sleepTotals collects the stage rows of one source for one night.
 type sleepTotals struct {
 	rows    int
-	tz      int // tz_offset of the first row read
+	model   string // device model of the source ("" = unknown)
+	tz      int    // tz_offset of the first row read
 	byStage map[string][]interval
 }
 
@@ -210,7 +215,7 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 	// (migration 0002). tz_offset is the one the row STARTED in, which is
 	// all the database stores.
 	rows, err := conn.QueryContext(ctx, `
-		SELECT date(end_ts + tz_offset + ?, 'unixepoch') AS night, stage, source, start_ts, end_ts, tz_offset
+		SELECT date(end_ts + tz_offset + ?, 'unixepoch') AS night, stage, source, device_model, start_ts, end_ts, tz_offset
 		FROM sleep_stages
 		WHERE end_ts >= ? AND end_ts < ?
 		  AND date(end_ts + tz_offset + ?, 'unixepoch') BETWEEN ? AND ?`,
@@ -224,10 +229,10 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 	stages := map[string]map[string]*sleepTotals{}
 	inBed := map[string]map[string]*sleepTotals{}
 	for rows.Next() {
-		var night, stage, source string
+		var night, stage, source, model string
 		var start, end int64
 		var tz int
-		if err := rows.Scan(&night, &stage, &source, &start, &end, &tz); err != nil {
+		if err := rows.Scan(&night, &stage, &source, &model, &start, &end, &tz); err != nil {
 			return nil, fmt.Errorf("stats: read sleep: %w", err)
 		}
 		group := stages
@@ -243,6 +248,7 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 			group[night][source] = t
 		}
 		t.rows++
+		t.model = keepModel(t.model, model)
 		t.byStage[stage] = append(t.byStage[stage], interval{start, end, tz, tz})
 	}
 	if err := rows.Err(); err != nil {
@@ -266,6 +272,7 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 		n := SleepNight{Night: night}
 		if source, t := bestSleepSource(stages[night]); t != nil {
 			n.Source = source
+			n.SourceClass = SourceClass(source, t.model)
 			n.Rows = t.rows
 			n.TZ, n.StartTZ, n.EndTZ = t.tz, t.tz, t.tz
 			n.Core = t.total("core")
@@ -277,6 +284,7 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 		}
 		if source, t := bestSleepSource(inBed[night]); t != nil {
 			n.InBedSource = source
+			n.InBedClass = SourceClass(source, t.model)
 			n.InBed = t.total("in_bed")
 			if m := merge(t.byStage["in_bed"]); len(m) > 0 {
 				n.InBedStart, n.InBedEnd = m[0].start, m[len(m)-1].end
@@ -312,16 +320,25 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 // applies to all of them.
 func bestSleepSource(bySource map[string]*sleepTotals) (string, *sleepTotals) {
 	// The longest main block of any source is "the night".
+	// Go visits a map in random order, so go through the names sorted: on an
+	// exact tie the source that sorts first gives the night.
+	sources := make([]string, 0, len(bySource))
+	for source := range bySource {
+		sources = append(sources, source)
+	}
+	sort.Strings(sources)
+
 	var night block
-	for _, t := range bySource {
-		if m, ok := t.mainSleepBlock(); ok && m.asleep > night.asleep {
+	for _, source := range sources {
+		if m, ok := bySource[source].mainSleepBlock(); ok && m.asleep > night.asleep {
 			night = m
 		}
 	}
 
 	best := ""
 	var bt *sleepTotals
-	for source, t := range bySource {
+	for _, source := range sources {
+		t := bySource[source]
 		if bt == nil || preferSleepSource(source, t, best, bt, night) {
 			best, bt = source, t
 		}
@@ -336,12 +353,12 @@ func preferSleepSource(a string, ta *sleepTotals, b string, tb *sleepTotals, nig
 	if seesA != seesB {
 		return seesA
 	}
-	if SourcePriority(a) == SourcePriority(b) {
+	if sourcePriority(a, ta.model) == sourcePriority(b, tb.model) {
 		if da, db := length(ta.asleepUnion()), length(tb.asleepUnion()); da != db {
 			return da > db
 		}
 	}
-	return better(a, ta.rows, b, tb.rows)
+	return better(a, ta.model, ta.rows, b, tb.model, tb.rows)
 }
 
 // mainSleepBlock is the main block of the source's own asleep time; ok is

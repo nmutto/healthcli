@@ -21,6 +21,7 @@ type Workout struct {
 	EnergyKcal *float64
 	DistanceM  *float64
 	Source     string
+	model      string // device model of the source; only used to choose between sources
 }
 
 // MarshalJSON writes a workout with snake_case keys and the duration in
@@ -87,7 +88,7 @@ func dropDuplicateWorkouts(all []Workout) []Workout {
 		if x.Source == y.Source {
 			return false
 		}
-		return better(x.Source, 1, y.Source, 1)
+		return better(x.Source, x.model, 1, y.Source, y.model, 1)
 	})
 	keep := make([]bool, len(all))
 	var kept []int
@@ -121,7 +122,7 @@ func readWorkouts(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]W
 	}
 	// start_ts uses the workouts_start_ts index (migration 0002).
 	rows, err := conn.QueryContext(ctx, `
-		SELECT activity, start_ts, end_ts, duration_s, energy_kcal, distance_m, tz_offset, source
+		SELECT activity, start_ts, end_ts, duration_s, energy_kcal, distance_m, tz_offset, source, device_model
 		FROM workouts
 		WHERE start_ts >= ? AND start_ts < ?
 		  AND date(start_ts + tz_offset, 'unixepoch') BETWEEN ? AND ?
@@ -139,7 +140,7 @@ func readWorkouts(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]W
 		var seconds float64
 		var energy, distance sql.NullFloat64 // the columns may be NULL
 		var tz int
-		if err := rows.Scan(&w.Activity, &start, &end, &seconds, &energy, &distance, &tz, &w.Source); err != nil {
+		if err := rows.Scan(&w.Activity, &start, &end, &seconds, &energy, &distance, &tz, &w.Source, &w.model); err != nil {
 			return nil, fmt.Errorf("stats: read workouts: %w", err)
 		}
 		if seconds <= 0 { // a session with no duration is noise: ignored everywhere

@@ -1,35 +1,60 @@
 package cli
 
 import (
+	"context"
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/spf13/cobra"
 )
 
 func newQueryCmd(opts *options) *cobra.Command {
-	return &cobra.Command{
+	var limit int
+	var timeout time.Duration
+	cmd := &cobra.Command{
 		Use:   "query <sql>",
 		Short: "Run a read-only SQL query",
 		Long: `Run one read-only SQL query (SELECT, WITH or EXPLAIN) against the local database and print the rows.
 The database is opened read-only; a second statement, PRAGMA and ATTACH are refused.
+Rows are printed as they are read, so a big result does not fill the memory.
+At most --limit rows are printed (default 1000); a note on stderr says when more exist.
 Main table: samples(metric, start_ts, end_ts, value, unit, tz_offset, source).`,
 		Example: `  healthcli query "SELECT count(*) FROM samples"
-  healthcli query "SELECT * FROM samples LIMIT 5" --json`,
+  healthcli query "SELECT * FROM samples LIMIT 5" --json
+  healthcli query "SELECT * FROM samples" --limit 0`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runQuery(cmd, opts, args[0])
+			if limit < 0 {
+				return usageErrorf("--limit must be 0 or more, got %d", limit)
+			}
+			if timeout < 0 {
+				return usageErrorf("--timeout must be 0 or more, got %s", timeout)
+			}
+			return runQuery(cmd, opts, args[0], limit, timeout)
 		},
 	}
+	cmd.Flags().IntVar(&limit, "limit", defaultQueryLimit, "most rows to print (0 = no limit)")
+	cmd.Flags().DurationVar(&timeout, "timeout", defaultQueryTimeout, "stop the query after this long (0 = no timeout)")
+	return cmd
 }
 
-func runQuery(cmd *cobra.Command, opts *options, query string) error {
+const (
+	defaultQueryLimit   = 1000
+	defaultQueryTimeout = 30 * time.Second
+	// tableBlock is how many table rows are aligned together. A tabwriter
+	// keeps its rows in memory until it is flushed, so we flush every block.
+	tableBlock = 1000
+)
+
+func runQuery(cmd *cobra.Command, opts *options, query string, limit int, timeout time.Duration) error {
 	// First line of defence: a friendly error for anything that is not a
 	// single read.
 	if err := checkReadOnlySQL(query); err != nil {
@@ -44,20 +69,64 @@ func runQuery(cmd *cobra.Command, opts *options, query string) error {
 	}
 	defer conn.Close()
 
-	rows, err := conn.Query(query)
+	// The context ends the query on Ctrl-C and when the timeout runs out.
+	ctx := cmdContext(cmd)
+	if timeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, timeout)
+		defer cancel()
+	}
+	rows, err := conn.QueryContext(ctx, query)
 	if err != nil {
-		return err
+		return queryError(ctx, err, timeout)
 	}
 	defer rows.Close()
 
-	cols, data, err := readRows(rows)
+	cols, err := rows.Columns()
 	if err != nil {
+		return queryError(ctx, err, timeout)
+	}
+	var out rowWriter
+	if opts.jsonOutput {
+		out = newJSONRows(cmd.OutOrStdout(), cols)
+	} else {
+		out = newTableRows(cmd.OutOrStdout(), cols)
+	}
+
+	shown := 0
+	more := false
+	for rows.Next() {
+		if limit > 0 && shown == limit {
+			more = true // one row past the limit: there is more to see
+			break
+		}
+		row, err := scanRow(rows, len(cols))
+		if err != nil {
+			return queryError(ctx, err, timeout)
+		}
+		if err := out.Write(row); err != nil {
+			return err
+		}
+		shown++
+	}
+	if err := rows.Err(); err != nil {
+		return queryError(ctx, err, timeout)
+	}
+	if err := out.Close(); err != nil {
 		return err
 	}
-	if opts.jsonOutput {
-		return writeJSON(cmd.OutOrStdout(), cols, data)
+	if more {
+		fmt.Fprintf(cmd.ErrOrStderr(), "%d rows shown, more exist; use --limit to see more (0 = all)\n", shown)
 	}
-	return writeTable(cmd.OutOrStdout(), cols, data)
+	return nil
+}
+
+// queryError says so when the timeout (not the SQL) stopped the query.
+func queryError(ctx context.Context, err error, timeout time.Duration) error {
+	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		return fmt.Errorf("query stopped after %s; use --timeout to allow longer (0 = no timeout)", timeout)
+	}
+	return err
 }
 
 // checkReadOnlySQL accepts exactly one statement that starts with SELECT,
@@ -66,7 +135,7 @@ func runQuery(cmd *cobra.Command, opts *options, query string) error {
 func checkReadOnlySQL(query string) error {
 	words, semicolonAt := scanSQL(query)
 	if len(words) == 0 {
-		return fmt.Errorf("only SELECT queries are allowed")
+		return fmt.Errorf("only SELECT, WITH or EXPLAIN queries are allowed")
 	}
 	first := words[0]
 	if first == "explain" {
@@ -76,12 +145,12 @@ func checkReadOnlySQL(query string) error {
 			words = words[2:]
 		}
 		if len(words) == 0 {
-			return fmt.Errorf("only SELECT queries are allowed")
+			return fmt.Errorf("only SELECT, WITH or EXPLAIN queries are allowed")
 		}
 		first = words[0]
 	}
 	if first != "select" && first != "with" {
-		return fmt.Errorf("only SELECT queries are allowed")
+		return fmt.Errorf("only SELECT, WITH or EXPLAIN queries are allowed")
 	}
 	if semicolonAt >= 0 {
 		return fmt.Errorf("only one statement is allowed per query")
@@ -160,71 +229,80 @@ func isWordByte(c byte) bool {
 	return c == '_' || c >= '0' && c <= '9' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'
 }
 
-// readRows loads every row into memory. Fine for a personal CLI; users can
-// add LIMIT for big tables.
-func readRows(rows *sql.Rows) ([]string, [][]any, error) {
-	cols, err := rows.Columns()
-	if err != nil {
-		return nil, nil, err
+// scanRow reads the current row. BLOBs become hex text.
+func scanRow(rows *sql.Rows, n int) ([]any, error) {
+	// Scan needs pointers; each *any receives whatever type SQLite returns.
+	vals := make([]any, n)
+	ptrs := make([]any, n)
+	for i := range vals {
+		ptrs[i] = &vals[i]
 	}
-	var data [][]any
-	for rows.Next() {
-		// Scan needs pointers; each *any receives whatever type SQLite returns.
-		vals := make([]any, len(cols))
-		ptrs := make([]any, len(cols))
-		for i := range vals {
-			ptrs[i] = &vals[i]
-		}
-		if err := rows.Scan(ptrs...); err != nil {
-			return nil, nil, err
-		}
-		for i, v := range vals {
-			if b, ok := v.([]byte); ok { // a BLOB: show it as hex, not as broken text
-				vals[i] = hex.EncodeToString(b)
-			}
-		}
-		data = append(data, vals)
+	if err := rows.Scan(ptrs...); err != nil {
+		return nil, err
 	}
-	return cols, data, rows.Err()
+	for i, v := range vals {
+		if b, ok := v.([]byte); ok { // a BLOB: show it as hex, not as broken text
+			vals[i] = hex.EncodeToString(b)
+		}
+	}
+	return vals, nil
 }
 
-// writeJSON prints an array of objects whose keys follow the SELECT column
+// rowWriter prints rows one at a time. Close finishes the output.
+type rowWriter interface {
+	Write(row []any) error
+	Close() error
+}
+
+// jsonRows prints an array of objects whose keys follow the SELECT column
 // order. A map[string]any would sort keys alphabetically, so we write the
 // brackets and commas ourselves and let encoding/json format each piece.
-func writeJSON(w io.Writer, cols []string, data [][]any) error {
-	if len(data) == 0 {
-		_, err := io.WriteString(w, "[]\n")
+type jsonRows struct {
+	w     io.Writer
+	keys  []string
+	count int
+}
+
+func newJSONRows(w io.Writer, cols []string) *jsonRows {
+	return &jsonRows{w: w, keys: uniqueKeys(cols)}
+}
+
+func (j *jsonRows) Write(row []any) error {
+	var sb strings.Builder
+	if j.count == 0 {
+		sb.WriteString("[\n")
+	} else {
+		sb.WriteString(",\n")
+	}
+	sb.WriteString("  {")
+	for i, c := range j.keys {
+		if i > 0 {
+			sb.WriteString(", ")
+		}
+		key, err := json.Marshal(c)
+		if err != nil {
+			return err
+		}
+		val, err := json.Marshal(jsonValue(row[i]))
+		if err != nil {
+			return err
+		}
+		sb.Write(key)
+		sb.WriteString(": ")
+		sb.Write(val)
+	}
+	sb.WriteString("}")
+	j.count++
+	_, err := io.WriteString(j.w, sb.String())
+	return err
+}
+
+func (j *jsonRows) Close() error {
+	if j.count == 0 {
+		_, err := io.WriteString(j.w, "[]\n")
 		return err
 	}
-	keys := uniqueKeys(cols)
-	var sb strings.Builder
-	sb.WriteString("[\n")
-	for r, row := range data {
-		sb.WriteString("  {")
-		for i, c := range keys {
-			if i > 0 {
-				sb.WriteString(", ")
-			}
-			key, err := json.Marshal(c)
-			if err != nil {
-				return err
-			}
-			val, err := json.Marshal(jsonValue(row[i]))
-			if err != nil {
-				return err
-			}
-			sb.Write(key)
-			sb.WriteString(": ")
-			sb.Write(val)
-		}
-		sb.WriteString("}")
-		if r < len(data)-1 {
-			sb.WriteString(",")
-		}
-		sb.WriteString("\n")
-	}
-	sb.WriteString("]\n")
-	_, err := io.WriteString(w, sb.String())
+	_, err := io.WriteString(j.w, "\n]\n")
 	return err
 }
 
@@ -252,19 +330,34 @@ func uniqueKeys(cols []string) []string {
 	return keys
 }
 
-func writeTable(w io.Writer, cols []string, data [][]any) error {
+// tableRows prints an aligned text table. Columns are aligned within each
+// block of tableBlock rows, so memory stays small for a long result.
+type tableRows struct {
+	tw    *tabwriter.Writer
+	count int
+}
+
+func newTableRows(w io.Writer, cols []string) *tableRows {
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 	fmt.Fprintln(tw, strings.Join(cols, "\t"))
-	for _, row := range data {
-		cells := make([]string, len(row))
-		for i, v := range row {
-			if v == nil {
-				cells[i] = "NULL"
-			} else {
-				cells[i] = fmt.Sprint(v)
-			}
-		}
-		fmt.Fprintln(tw, strings.Join(cells, "\t"))
-	}
-	return tw.Flush()
+	return &tableRows{tw: tw}
 }
+
+func (t *tableRows) Write(row []any) error {
+	cells := make([]string, len(row))
+	for i, v := range row {
+		if v == nil {
+			cells[i] = "NULL"
+		} else {
+			cells[i] = fmt.Sprint(v)
+		}
+	}
+	fmt.Fprintln(t.tw, strings.Join(cells, "\t"))
+	t.count++
+	if t.count%tableBlock == 0 {
+		return t.tw.Flush()
+	}
+	return nil
+}
+
+func (t *tableRows) Close() error { return t.tw.Flush() }

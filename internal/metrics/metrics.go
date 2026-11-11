@@ -84,6 +84,10 @@ type Metric struct {
 	// of the Hue constants). "" means orange.
 	Hue  string
 	Unit string // canonical unit, stored in samples.unit
+	// Limits is the plausibility rule for one stored value (canonical unit).
+	// `log` and the Apple importer both call Plausible, so this is the only
+	// place that decides what a real reading looks like.
+	Limits Limits
 	// Decimals is how many digits after the point the CLI prints for this
 	// metric (0 for most; 1 for weight, temperature, rates like 16.2/min).
 	// It is display only: stored values keep full precision.
@@ -111,6 +115,24 @@ type Metric struct {
 	// fractions (unit "%", value 0.97), but `log spo2 97 %` means 97 percent.
 	AppleConversions map[string]float64
 }
+
+// Limits bounds the values one metric may hold. Min and Max are both allowed,
+// except that ExcludeMin makes Min itself an impossible reading (a heart rate
+// of 0). A Min below zero means negative values are allowed. Every metric
+// sets both bounds, so there is no hidden default cap.
+type Limits struct {
+	Min, Max   float64
+	ExcludeMin bool
+}
+
+// upTo: 0 is a real reading (zero steps), negative is not.
+func upTo(max float64) Limits { return Limits{Min: 0, Max: max} }
+
+// above: 0 is not a real reading (a weight, a heart rate), only more than 0.
+func above(min, max float64) Limits { return Limits{Min: min, Max: max, ExcludeMin: true} }
+
+// between: both ends are real readings, and Min may be negative.
+func between(min, max float64) Limits { return Limits{Min: min, Max: max} }
 
 // Range is a general-population reference limit for the level of a metric, in
 // the metric's unit. It judges a level against a population, where a verdict
@@ -168,55 +190,55 @@ var toMinutes = map[string]float64{"s": 1.0 / 60, "hr": 60, "h": 60}
 // resting rate is usually fine, but a rise matters more than the direction.
 var known = []Metric{
 	// The original six, in their original order (the overview lists them first).
-	{Name: "heart_rate", Label: "Heart rate", Category: Vitals, Hue: HueRed, Unit: "bpm", Polarity: Neutral, Daily: Avg, Conversions: perMin},
-	{Name: "resting_heart_rate", Label: "Resting heart rate", Category: Vitals, Hue: HueRed, Unit: "bpm", Polarity: LowerBetter, Range: &Range{High: 100, Source: "adult resting heart rate, 60-100 bpm"}, Daily: Avg, Conversions: perMin},
-	{Name: "step_count", Label: "Steps", Category: Activity, Unit: "count", Polarity: HigherBetter, Daily: Sum},
-	{Name: "hrv_sdnn", Label: "Heart rate variability", Category: Vitals, Hue: HueRed, Unit: "ms", Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"s": 1000}},
-	{Name: "body_mass", Label: "Weight", Category: Body, Hue: HueViolet, Unit: "kg", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
-	{Name: "active_energy", Label: "Active energy", Category: Activity, Unit: "kcal", Polarity: HigherBetter, Daily: Sum, Conversions: energyUnits},
+	{Name: "heart_rate", Label: "Heart rate", Short: "Avg heart rate", Category: Vitals, Hue: HueRed, Unit: "bpm", Limits: above(0, 300), Polarity: Neutral, Daily: Avg, Conversions: perMin},
+	{Name: "resting_heart_rate", Label: "Resting heart rate", Short: "Resting HR", Category: Vitals, Hue: HueRed, Unit: "bpm", Limits: above(0, 250), Polarity: LowerBetter, Range: &Range{High: 100, Source: "adult resting heart rate, 60-100 bpm"}, Daily: Avg, Conversions: perMin},
+	{Name: "step_count", Label: "Steps", Category: Activity, Unit: "count", Limits: upTo(1e6), Polarity: HigherBetter, Daily: Sum},
+	{Name: "hrv_sdnn", Label: "Heart rate variability", Short: "HRV", Category: Vitals, Hue: HueRed, Unit: "ms", Limits: above(0, 2000), Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"s": 1000}},
+	{Name: "body_mass", Label: "Weight", Category: Body, Hue: HueViolet, Unit: "kg", Limits: above(0, 500), Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
+	{Name: "active_energy", Label: "Active energy", Category: Activity, Unit: "kcal", Limits: upTo(20000), Polarity: HigherBetter, Daily: Sum, Conversions: energyUnits},
 
 	// Newer metrics, grouped by category.
 	// Vitals
-	{Name: "respiratory_rate", Label: "Respiratory rate", Category: Vitals, Hue: HueCyan, Unit: "breaths/min", Decimals: 1, MinDelta: 0.5, Polarity: Neutral, Range: &Range{High: 20, Source: "adult resting respiratory rate, 12-20 breaths/min"}, Daily: Avg, Conversions: perMin},
-	{Name: "apple_sleeping_wrist_temperature", Label: "Wrist temperature", Category: Vitals, Hue: HuePurple, Unit: "degC", Decimals: 1, MinDelta: 0.2, Polarity: Neutral, Daily: Avg, Conversions: map[string]float64{"c": 1, "°c": 1}},
-	{Name: "oxygen_saturation", Label: "Blood oxygen", Category: Vitals, Hue: HueCyan, Unit: "percent", MinDelta: 1, Polarity: HigherBetter, Range: &Range{Low: 95, Source: "typical healthy adult reading, 95% and above"}, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
-	{Name: "vo2_max", Label: "VO2 max", Category: Vitals, Hue: HueRed, Unit: "mL/kg/min", Decimals: 1, Polarity: HigherBetter, Daily: Latest, Conversions: vo2Spellings},
-	{Name: "walking_heart_rate_average", Label: "Walking heart rate", Category: Vitals, Hue: HueRed, Unit: "bpm", Polarity: LowerBetter, Daily: Avg, Conversions: perMin},
-	{Name: "heart_rate_recovery_one_minute", Label: "Heart rate recovery", Category: Vitals, Hue: HueRed, Unit: "bpm", Polarity: HigherBetter, Daily: Avg, Conversions: perMin},
-	{Name: "blood_pressure_systolic", Label: "Systolic blood pressure", Category: Vitals, Hue: HueRed, Unit: "mmHg", Polarity: LowerBetter, Daily: Avg},
-	{Name: "blood_pressure_diastolic", Label: "Diastolic blood pressure", Category: Vitals, Hue: HueRed, Unit: "mmHg", Polarity: LowerBetter, Daily: Avg},
+	{Name: "respiratory_rate", Label: "Respiratory rate", Category: Vitals, Hue: HueCyan, Unit: "breaths/min", Limits: above(0, 100), Decimals: 1, MinDelta: 0.5, Polarity: Neutral, Range: &Range{High: 20, Source: "adult resting respiratory rate, 12-20 breaths/min"}, Daily: Avg, Conversions: perMin},
+	{Name: "apple_sleeping_wrist_temperature", Label: "Wrist temperature", Category: Vitals, Hue: HuePurple, Unit: "degC", Limits: between(-15, 45), Decimals: 1, MinDelta: 0.2, Polarity: Neutral, Daily: Avg, Conversions: map[string]float64{"c": 1, "°c": 1}},
+	{Name: "oxygen_saturation", Label: "Blood oxygen", Category: Vitals, Hue: HueCyan, Unit: "percent", Limits: between(50, 100), MinDelta: 1, Polarity: HigherBetter, Range: &Range{Low: 95, Source: "typical healthy adult reading, 95% and above"}, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "vo2_max", Label: "VO2 max", Category: Vitals, Hue: HueRed, Unit: "mL/kg/min", Limits: above(0, 100), Decimals: 1, Polarity: HigherBetter, Daily: Latest, Conversions: vo2Spellings},
+	{Name: "walking_heart_rate_average", Label: "Walking heart rate", Category: Vitals, Hue: HueRed, Unit: "bpm", Limits: above(0, 250), Polarity: LowerBetter, Daily: Avg, Conversions: perMin},
+	{Name: "heart_rate_recovery_one_minute", Label: "Heart rate recovery", Category: Vitals, Hue: HueRed, Unit: "bpm", Limits: upTo(200), Polarity: HigherBetter, Daily: Avg, Conversions: perMin},
+	{Name: "blood_pressure_systolic", Label: "Systolic blood pressure", Category: Vitals, Hue: HueRed, Unit: "mmHg", Limits: above(0, 300), Polarity: LowerBetter, Daily: Avg},
+	{Name: "blood_pressure_diastolic", Label: "Diastolic blood pressure", Category: Vitals, Hue: HueRed, Unit: "mmHg", Limits: above(0, 200), Polarity: LowerBetter, Daily: Avg},
 	// Glucose has a healthy range, not a direction, hence Neutral. Apple's
 	// mmol/L unit carries a molar-mass suffix, "mmol<180.15...>/L".
-	{Name: "blood_glucose", Label: "Blood glucose", Category: Vitals, Unit: "mg/dL", Polarity: Neutral, Daily: Avg,
+	{Name: "blood_glucose", Label: "Blood glucose", Category: Vitals, Unit: "mg/dL", Limits: above(0, 1000), Polarity: Neutral, Daily: Avg,
 		Conversions: map[string]float64{"mmol/l": 18.0156, "mmol<180.1558800000541>/l": 18.0156}},
 
 	// Activity
-	{Name: "basal_energy", Label: "Resting energy", Category: Activity, Unit: "kcal", Polarity: Neutral, Daily: Sum, Conversions: energyUnits},
-	{Name: "apple_exercise_time", Label: "Exercise time", Category: Activity, Unit: "min", Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
-	{Name: "apple_stand_time", Label: "Stand time", Category: Activity, Unit: "min", Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
-	{Name: "flights_climbed", Label: "Flights climbed", Category: Activity, Unit: "count", Polarity: HigherBetter, Daily: Sum},
-	{Name: "distance_walking_running", Label: "Walking + running distance", Short: "Walk + run distance", Category: Activity, Unit: "km", Decimals: 1, Polarity: HigherBetter, Daily: Sum,
+	{Name: "basal_energy", Label: "Resting energy", Category: Activity, Unit: "kcal", Limits: upTo(20000), Polarity: Neutral, Daily: Sum, Conversions: energyUnits},
+	{Name: "apple_exercise_time", Label: "Exercise time", Category: Activity, Unit: "min", Limits: upTo(1440), Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
+	{Name: "apple_stand_time", Label: "Stand time", Category: Activity, Unit: "min", Limits: upTo(1440), Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
+	{Name: "flights_climbed", Label: "Flights climbed", Category: Activity, Unit: "count", Limits: upTo(10000), Polarity: HigherBetter, Daily: Sum},
+	{Name: "distance_walking_running", Label: "Walking + running distance", Short: "Walk + run distance", Category: Activity, Unit: "km", Limits: upTo(500), Decimals: 1, Polarity: HigherBetter, Daily: Sum,
 		Conversions: map[string]float64{"m": 0.001, "mi": 1.609344}},
-	{Name: "time_in_daylight", Label: "Time in daylight", Category: Activity, Unit: "min", Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
+	{Name: "time_in_daylight", Label: "Time in daylight", Category: Activity, Unit: "min", Limits: upTo(1440), Polarity: HigherBetter, Daily: Sum, Conversions: toMinutes},
 
 	// Body
-	{Name: "body_fat_percentage", Label: "Body fat", Category: Body, Hue: HuePurple, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "body_fat_percentage", Label: "Body fat", Category: Body, Hue: HuePurple, Unit: "percent", Limits: upTo(100), MinDelta: 1, Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
 	// Apple's BMI unit is the dimensionless "count".
-	{Name: "body_mass_index", Label: "BMI", Category: Body, Hue: HuePurple, Unit: "kg/m2", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"count": 1}},
-	{Name: "lean_body_mass", Label: "Lean body mass", Category: Body, Hue: HuePurple, Unit: "kg", Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
-	{Name: "height", Label: "Height", Category: Body, Hue: HuePurple, Unit: "cm", Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"m": 100, "in": 2.54, "ft": 30.48}},
+	{Name: "body_mass_index", Label: "BMI", Category: Body, Hue: HuePurple, Unit: "kg/m2", Limits: above(0, 100), Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"count": 1}},
+	{Name: "lean_body_mass", Label: "Lean body mass", Category: Body, Hue: HuePurple, Unit: "kg", Limits: above(0, 500), Decimals: 1, Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"lb": poundsToKg, "lbs": poundsToKg, "g": 0.001}},
+	{Name: "height", Label: "Height", Category: Body, Hue: HuePurple, Unit: "cm", Limits: above(0, 300), Polarity: Neutral, Daily: Latest, Conversions: map[string]float64{"m": 100, "in": 2.54, "ft": 30.48}},
 
 	// Mobility
-	{Name: "walking_speed", Label: "Walking speed", Category: Mobility, Unit: "km/h", Decimals: 1, Polarity: HigherBetter, Daily: Avg,
+	{Name: "walking_speed", Label: "Walking speed", Category: Mobility, Unit: "km/h", Limits: above(0, 30), Decimals: 1, Polarity: HigherBetter, Daily: Avg,
 		Conversions: map[string]float64{"km/hr": 1, "mi/hr": 1.609344, "mph": 1.609344, "m/s": 3.6}},
-	{Name: "walking_step_length", Label: "Step length", Category: Mobility, Unit: "cm", Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"m": 100, "in": 2.54, "ft": 30.48}},
-	{Name: "walking_asymmetry", Label: "Walking asymmetry", Category: Mobility, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: InRange,
+	{Name: "walking_step_length", Label: "Step length", Category: Mobility, Unit: "cm", Limits: above(0, 200), Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"m": 100, "in": 2.54, "ft": 30.48}},
+	{Name: "walking_asymmetry", Label: "Walking asymmetry", Category: Mobility, Unit: "percent", Limits: upTo(100), MinDelta: 1, Decimals: 1, Polarity: InRange,
 		Range: &Range{High: 35, Source: "Apple white paper 'Measuring Walking Quality Through iPhone Mobility Metrics' (2022): 35% is the iPhone value that best separates asymmetric from symmetric walkers; Apple gives no healthy range", Basis: "the level Apple's research uses to tell asymmetric walking apart"},
 		Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
-	{Name: "walking_double_support", Label: "Double support time", Category: Mobility, Unit: "percent", MinDelta: 1, Decimals: 1, Polarity: InRange,
+	{Name: "walking_double_support", Label: "Double support time", Category: Mobility, Unit: "percent", Limits: upTo(100), MinDelta: 1, Decimals: 1, Polarity: InRange,
 		Range: &Range{High: 40, Source: "Apple white paper 'Measuring Walking Quality Through iPhone Mobility Metrics' (2022): typical walking is 20-40%, lower is better", Basis: "the top of Apple's typical walking range"},
 		Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
-	{Name: "apple_walking_steadiness", Label: "Walking steadiness", Category: Mobility, Unit: "percent", MinDelta: 1, Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
+	{Name: "apple_walking_steadiness", Label: "Walking steadiness", Category: Mobility, Unit: "percent", Limits: upTo(100), MinDelta: 1, Polarity: HigherBetter, Daily: Avg, Conversions: map[string]float64{"%": 1}, AppleConversions: appleFraction},
 }
 
 // appleTypes maps Apple's HealthKit identifiers to our metric names. Anything

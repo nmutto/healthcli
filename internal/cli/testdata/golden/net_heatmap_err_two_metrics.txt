@@ -1,2 +1,2 @@
 --- error ---
-accepts at most 1 arg(s), received 2
+heatmap got too many arguments (2); run "healthcli heatmap --help" for how to use it

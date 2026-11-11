@@ -22,16 +22,17 @@ func TestImportSmallFixture(t *testing.T) {
 	if total != sum.Inserted {
 		t.Errorf("rows in db = %d, summary says inserted %d", total, sum.Inserted)
 	}
-	if sum.Read != sum.Inserted+sum.Duplicates+sum.SkippedTotal() {
-		t.Errorf("read %d != inserted %d + duplicates %d + skipped %d",
-			sum.Read, sum.Inserted, sum.Duplicates, sum.SkippedTotal())
+	if sum.Read != sum.Inserted+sum.Duplicates+sum.Conflicts+sum.SkippedTotal() {
+		t.Errorf("read %d != inserted %d + duplicates %d + conflicts %d + skipped %d",
+			sum.Read, sum.Inserted, sum.Duplicates, sum.Conflicts, sum.SkippedTotal())
 	}
-	// The fixture documents three malformed records and nine exact repeats.
+	// The fixture documents three malformed records, three exact repeats and
+	// six records that reuse an earlier key with another value.
 	if got := sum.SkippedTotal(); got != 3 {
 		t.Errorf("skipped = %d (%v), want 3", got, sum.Skipped)
 	}
-	if sum.Duplicates != 9 {
-		t.Errorf("duplicates = %d, want 9", sum.Duplicates)
+	if sum.Duplicates != 3 || sum.Conflicts != 6 {
+		t.Errorf("duplicates = %d, conflicts = %d, want 3 and 6", sum.Duplicates, sum.Conflicts)
 	}
 	for _, table := range []string{"samples", "sleep_stages", "workouts"} {
 		if count(t, conn, "SELECT COUNT(*) FROM "+table) == 0 {

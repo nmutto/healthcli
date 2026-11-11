@@ -2,9 +2,6 @@
 package cli
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/spf13/cobra"
 )
 
@@ -25,17 +22,6 @@ type options struct {
 	dbPath     string // --db: path to the SQLite file
 }
 
-// Execute runs the CLI and returns the process exit code.
-// We print errors ourselves (to stderr) so main has nothing to do but exit.
-func Execute() int {
-	root := NewRootCmd()
-	if err := root.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, "Error:", err)
-		return 1
-	}
-	return 0
-}
-
 // NewRootCmd builds a fresh command tree. Building it in a function (rather
 // than a global variable) lets each test start from a clean state.
 func NewRootCmd() *cobra.Command {
@@ -45,7 +31,16 @@ func NewRootCmd() *cobra.Command {
 		Use:   "healthcli",
 		Short: "Local-first Apple Health data in SQLite",
 		Long: `healthcli imports your Apple Health export into a local SQLite database
-and lets you log, review and query your data. Nothing leaves your machine.`,
+and lets you log, review and query your data. Nothing leaves your machine.
+
+Exit codes:
+  0  ok
+  1  runtime error
+  2  usage error (bad arguments, bad flags, unknown command)
+  3  database not found
+
+With --json an error is printed on stdout as
+{"error": {"code": "...", "message": "..."}} and nothing else.`,
 		Example: `  healthcli import apple export.zip
   healthcli log weight 72.5
   healthcli today
@@ -74,5 +69,7 @@ and lets you log, review and query your data. Nothing leaves your machine.`,
 		newVersionCmd(opts),
 	)
 	// The "completion" command is added automatically by cobra.
+	wireUsage(root)
+	wireCompletion(root)
 	return root
 }

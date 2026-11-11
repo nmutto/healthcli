@@ -48,6 +48,14 @@ var labels = map[string]string{
 	"body_mass":          "Weight",
 }
 
+// The json struct tags on the report types in this package (Overview,
+// MetricRow, SleepReport, WorkoutsReport, Heatmap and the types inside them)
+// are a PUBLIC CONTRACT: they are what "overview --json", "sleep --json" and
+// "workouts --json" print, and people script against them. Renaming a tag,
+// changing its type or dropping a field breaks those scripts. Add fields
+// rather than change them, and update the --help text of the command (its
+// golden file shows the change) in the same commit.
+
 // Overview is the whole report. The json tags are the documented --json shape.
 type Overview struct {
 	Today   string      `json:"today"`   // the local day the report is relative to
@@ -743,23 +751,18 @@ func buildDataHealth(ctx context.Context, conn *sql.DB, rows []MetricRow, now ti
 	d := DataHealth{SourceCount: map[string]int64{}, Gaps: []Gap{}}
 
 	// Rows per source, grouped into classes (a user can have several iPhones).
-	res, err := conn.QueryContext(ctx, `SELECT source, count(*) FROM samples GROUP BY source`)
+	bySource, total, err := countBySource(ctx, conn)
 	if err != nil {
-		return d, fmt.Errorf("stats: count samples: %w", err)
-	}
-	defer res.Close()
-	for res.Next() {
-		var source string
-		var n int64
-		if err := res.Scan(&source, &n); err != nil {
-			return d, fmt.Errorf("stats: count samples: %w", err)
-		}
-		d.SourceCount[SourceClass(source)] += n
-		d.Samples += n
-	}
-	if err := res.Err(); err != nil {
 		return d, err
 	}
+	models, err := sourceModels(ctx, conn)
+	if err != nil {
+		return d, err
+	}
+	for source, n := range bySource {
+		d.SourceCount[SourceClass(source, models[source])] += n
+	}
+	d.Samples = total
 
 	err = conn.QueryRowContext(ctx, `
 		SELECT count(DISTINCT date(end_ts + tz_offset + ?, 'unixepoch')) FROM sleep_stages
@@ -768,14 +771,10 @@ func buildDataHealth(ctx context.Context, conn *sql.DB, rows []MetricRow, now ti
 		return d, fmt.Errorf("stats: count sleep nights: %w", err)
 	}
 
-	var first, last sql.NullString // NULL when the table is empty
-	err = conn.QueryRowContext(ctx, `
-		SELECT min(date(start_ts + tz_offset, 'unixepoch')), max(date(start_ts + tz_offset, 'unixepoch'))
-		FROM samples WHERE start_ts <= ?`, now.Add(futureSlack).Unix()).Scan(&first, &last)
+	d.FirstDay, d.LastDay, _, err = sampleSpan(ctx, conn, now.Add(futureSlack).Unix())
 	if err != nil {
-		return d, fmt.Errorf("stats: sample range: %w", err)
+		return d, err
 	}
-	d.FirstDay, d.LastDay = first.String, last.String
 
 	if d.LastImport, err = readLastImport(ctx, conn); err != nil {
 		return d, err

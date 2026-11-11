@@ -218,19 +218,47 @@ func runToday(cmd *cobra.Command, opts *options, date string, noColor, ascii boo
 func checkDateFlag(date string) error {
 	t, err := time.Parse(stats.DayLayout, date)
 	if err != nil {
-		return fmt.Errorf("bad --date %q: want YYYY-MM-DD, e.g. 2026-11-08", date)
+		return usageErrorf("bad --date %q: want YYYY-MM-DD, e.g. 2026-11-08", date)
 	}
 	if y := t.Year(); y < 1900 || y > 2999 {
-		return fmt.Errorf("bad --date %q: year must be between 1900 and 2999", date)
+		return usageErrorf("bad --date %q: year must be between 1900 and 2999", date)
 	}
 	return nil
 }
+
+// clockFor is "now" for a command with --date. Without the flag it is the
+// clock. With it, the day must be valid and not in the future (the same checks
+// as "today"); today itself keeps the real time, and an earlier day is treated
+// as if the command ran at the end of that day.
+func clockFor(date string) (time.Time, error) {
+	now := nowFunc()
+	if date == "" {
+		return now, nil
+	}
+	if err := checkDateFlag(date); err != nil {
+		return now, err
+	}
+	if err := checkNotFuture(date, now); err != nil {
+		return now, err
+	}
+	if date == now.Format(stats.DayLayout) {
+		return now, nil
+	}
+	day, err := time.ParseInLocation(stats.DayLayout, date, now.Location())
+	if err != nil {
+		return now, err
+	}
+	return day.AddDate(0, 0, 1).Add(-time.Second), nil
+}
+
+// dateFlagHelp is the --date help line of the commands that treat a day as today.
+const dateFlagHelp = "treat this local day, YYYY-MM-DD, as today (default: today)"
 
 // checkNotFuture rejects a day after now's local day. "healthcli today" has
 // nothing to say about the future; "trend" can still end there.
 func checkNotFuture(date string, now time.Time) error {
 	if today := now.Format(stats.DayLayout); date > today { // "YYYY-MM-DD" strings sort like dates
-		return fmt.Errorf("bad --date %q: that day is in the future (today is %s)", date, today)
+		return usageErrorf("bad --date %q: that day is in the future (today is %s)", date, today)
 	}
 	return nil
 }

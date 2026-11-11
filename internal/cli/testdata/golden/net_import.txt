@@ -2,7 +2,8 @@
 $ healthcli import apple ../../testdata/small/export.xml
 Read:       1480 records
 Inserted:   1468
-Duplicates: 9 (already in the database)
+Duplicates: 3 (same key and value as a row already stored or earlier in the file)
+Conflicts:  6 (same key, different value: the stored one was kept)
 Skipped:    3
   bad_date             1
   missing_value        1
@@ -13,18 +14,21 @@ Elapsed:    <time>
 $ healthcli import apple ../../testdata/small/export.xml
 Read:       1480 records
 Inserted:   0
-Duplicates: 1477 (already in the database)
+Duplicates: 1471 (same key and value as a row already stored or earlier in the file)
+Conflicts:  6 (same key, different value: the stored one was kept)
 Skipped:    3
   bad_date             1
   missing_value        1
   unknown_type         1
 Most common types not imported:
   HKQuantityTypeIdentifierSomethingFromTheFuture     1
+Backup:     <dbdir>/test.db.bak
 Elapsed:    <time>
 # small, json, again
 $ healthcli import apple ../../testdata/small/export.xml --json
 {
-  "duplicates": 9,
+  "conflicts": 6,
+  "duplicates": 3,
   "inserted": 1468,
   "read": 1480,
   "skipped": {
@@ -40,11 +44,12 @@ $ healthcli import apple ../../testdata/small/export.xml --json
 $ healthcli import apple ../../testdata/sparse/export.xml
 Read:       1802 records
 Inserted:   1802
-Duplicates: 0 (already in the database)
+Duplicates: 0 (same key and value as a row already stored or earlier in the file)
 Skipped:    0
 Elapsed:    <time>
 $ healthcli import apple ../../testdata/sparse/export.xml --json
 {
+  "conflicts": 0,
   "duplicates": 0,
   "inserted": 1802,
   "read": 1802,
@@ -62,7 +67,7 @@ $ healthcli import apple <tmp>/notes.txt
 not an Apple Health export (no <HealthData> element found)
 $ healthcli import apple
 --- error ---
-accepts 1 arg(s), received 0
+import apple needs the export file, e.g. healthcli import apple export.zip
 $ healthcli import apple ../../testdata/small/export.xml ../../testdata/small/export.xml
 --- error ---
-accepts 1 arg(s), received 2
+import apple got too many arguments (2); run "healthcli import apple --help" for how to use it

@@ -50,3 +50,44 @@ func TestImportStillCreatesDatabase(t *testing.T) {
 		t.Errorf("import should create the database: %v", err)
 	}
 }
+
+// A read-only copy (file 0400 in a 0500 folder, like a Time Machine copy)
+// must work for every read command, and reading must leave nothing behind.
+func TestReadCommandsWorkOnReadOnlyCopy(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root ignores file modes")
+	}
+	src := seedDB(t)
+	data, err := os.ReadFile(src)
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := t.TempDir()
+	path := filepath.Join(dir, "copy.db")
+	if err := os.WriteFile(path, data, 0o400); err != nil {
+		t.Fatal(err)
+	}
+	os.Chmod(dir, 0o500)
+	t.Cleanup(func() { os.Chmod(dir, 0o700) })
+	fixClock(t, at(2026, 11, 9, 12))
+
+	for _, args := range [][]string{
+		{"today"},
+		{"overview"},
+		{"sleep"},
+		{"workouts"},
+		{"heatmap"},
+		{"trend", "steps"},
+		{"query", "select count(*) from samples"},
+	} {
+		if _, _, err := run(t, append([]string{"--db", path}, args...)...); err != nil {
+			t.Errorf("%v on a read-only copy: %v", args, err)
+		}
+	}
+	if entries, _ := os.ReadDir(dir); len(entries) != 1 {
+		t.Errorf("reading left files behind: %v", entries)
+	}
+	if st, _ := os.Stat(path); st.Mode().Perm() != 0o400 {
+		t.Errorf("mode changed to %v", st.Mode().Perm())
+	}
+}

@@ -68,7 +68,7 @@ func LatestDataDay(ctx context.Context, conn *sql.DB, now time.Time) (day string
 // is not empty. found is false when there is no data at all. It does not
 // skip future-dated rows.
 func LatestDayFor(ctx context.Context, conn *sql.DB, metric string) (day string, found bool, err error) {
-	if metric == "sleep" {
+	if metric == SleepMetric {
 		var d sql.NullString
 		err := conn.QueryRowContext(ctx,
 			`SELECT max(date(end_ts + tz_offset + ?, 'unixepoch')) FROM sleep_stages WHERE stage != 'in_bed'`,

@@ -885,3 +885,23 @@ func TestNotEnoughHistoryHeadlineIsNotCut(t *testing.T) {
 		}
 	}
 }
+
+// "imported ... ago" counts calendar days: 23:00 yesterday seen at 08:00 is
+// 1 d ago, although fewer than 24 hours have passed.
+func TestAgoTextCountsCalendarDays(t *testing.T) {
+	now := time.Date(2026, 11, 9, 8, 0, 0, 0, time.UTC)
+	cases := []struct {
+		then time.Time
+		want string
+	}{
+		{time.Date(2026, 11, 9, 7, 0, 0, 0, time.UTC), "today"},
+		{time.Date(2026, 11, 8, 23, 0, 0, 0, time.UTC), "1 d ago"},
+		{time.Date(2026, 11, 6, 23, 0, 0, 0, time.UTC), "3 d ago"},
+		{time.Date(2026, 11, 10, 1, 0, 0, 0, time.UTC), "today"}, // the future counts as today
+	}
+	for _, c := range cases {
+		if got := agoText(now, c.then); got != c.want {
+			t.Errorf("agoText(%s, %s) = %q, want %q", now, c.then, got, c.want)
+		}
+	}
+}

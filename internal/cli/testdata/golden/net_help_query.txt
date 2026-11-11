@@ -1,5 +1,7 @@
 Run one read-only SQL query (SELECT, WITH or EXPLAIN) against the local database and print the rows.
 The database is opened read-only; a second statement, PRAGMA and ATTACH are refused.
+Rows are printed as they are read, so a big result does not fill the memory.
+At most --limit rows are printed (default 1000); a note on stderr says when more exist.
 Main table: samples(metric, start_ts, end_ts, value, unit, tz_offset, source).
 
 Usage:
@@ -8,9 +10,12 @@ Usage:
 Examples:
   healthcli query "SELECT count(*) FROM samples"
   healthcli query "SELECT * FROM samples LIMIT 5" --json
+  healthcli query "SELECT * FROM samples" --limit 0
 
 Flags:
-  -h, --help   help for query
+  -h, --help               help for query
+      --limit int          most rows to print (0 = no limit) (default 1000)
+      --timeout duration   stop the query after this long (0 = no timeout) (default 30s)
 
 Global Flags:
       --db string   SQLite database path (default: per-user data dir)

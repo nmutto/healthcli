@@ -50,7 +50,7 @@ func TestWorkoutRecordedByTwoSourcesAppearsOnce(t *testing.T) {
 	}
 	var got []string
 	for _, w := range ws {
-		got = append(got, w.Activity+"@"+w.Start.Format("15:04")+"/"+SourceClass(w.Source))
+		got = append(got, w.Activity+"@"+w.Start.Format("15:04")+"/"+SourceClass(w.Source, w.model))
 	}
 	want := []string{"running@07:00/watch", "yoga@07:05/iphone", "cycling@17:00/iphone", "cycling@17:30/iphone", "running@19:00/iphone"}
 	if len(got) != len(want) {

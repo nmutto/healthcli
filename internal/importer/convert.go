@@ -26,6 +26,7 @@ var sleepStages = map[string]string{
 // Row types: exactly the columns we insert.
 type sampleData struct {
 	metric, unit, source string
+	deviceModel          string // the model: part of Apple's device attribute, or ""
 	start, end           int64
 	value                float64
 	tz                   int
@@ -33,16 +34,36 @@ type sampleData struct {
 
 type sleepData struct {
 	stage, source string
+	deviceModel   string
 	start, end    int64
 	tz            int
 }
 
 type workoutData struct {
 	activity, source string
+	deviceModel      string
 	start, end       int64
 	duration         float64
 	energy, distance *float64 // nil = not recorded (stored as NULL)
 	tz               int
+}
+
+// deviceModel pulls the model out of Apple's device attribute, which looks like
+//
+//	<<HKDevice: 0x600003b44a00>, name:Apple Watch, manufacturer:Apple Inc., model:Watch, hardware:Watch6,1, software:9.0>
+//
+// and returns "Watch". It returns "" when there is no attribute or no model
+// part (many third-party apps write none), which means "unknown".
+func deviceModel(device string) string {
+	_, rest, found := strings.Cut(device, "model:")
+	if !found {
+		return ""
+	}
+	// The value runs to the next ", " (the next field) or the closing ">".
+	if end := strings.IndexAny(rest, ",>"); end >= 0 {
+		rest = rest[:end]
+	}
+	return strings.TrimSpace(rest)
 }
 
 // appleTime parses "2024-12-01 18:00:00 +0100" into UTC unix seconds plus the
@@ -74,29 +95,13 @@ func round4(v float64) float64 { return math.Round(v*10000) / 10000 }
 // cannot be read back as JSON when it holds Inf.
 func finite(v float64) bool { return !math.IsNaN(v) && !math.IsInf(v, 0) }
 
-// positiveOnly lists the heart-rate metrics where 0 or less is not a reading.
-var positiveOnly = map[string]bool{
-	"heart_rate": true, "resting_heart_rate": true, "walking_heart_rate_average": true,
-}
-
-// sensible reports whether value can be a real reading of m. Amounts that add
-// up over a day cannot be negative and a heart rate cannot be 0. Other
-// metrics are left alone: wrist temperature, for one, is a delta below zero.
-// A percentage above 100 is a unit mix-up: Apple writes 0.97 as a fraction
-// (converted to 97), but another source may write 97 with unit "%", which
-// would become 9700.
-func sensible(m metrics.Metric, value float64) bool {
-	if m.IsPercent() && value > 100 {
-		return false
-	}
-	if positiveOnly[m.Name] {
-		return value > 0
-	}
-	if m.Daily == metrics.Sum {
-		return value >= 0
-	}
-	return true
-}
+// reasonImplausible counts records whose number is finite but cannot be a
+// real reading (a negative step count, a weight of 0, a heart rate of 9999).
+// The rule is the registry's (metrics.Metric.Plausible), the same one `log`
+// uses. A percentage above 100 is the common case: Apple writes 0.97 as a
+// fraction (converted to 97), but another source may write 97 with unit "%",
+// which would become 9700.
+const reasonImplausible = "implausible_value"
 
 // sampleRow converts a numeric <Record>. A non-empty reason means "skip it".
 func sampleRow(a map[string]string) (sampleData, string) {
@@ -116,15 +121,18 @@ func sampleRow(a map[string]string) (sampleData, string) {
 		return sampleData{}, reasonBadUnit
 	}
 	// Conversion and rounding can overflow a huge but finite number to Inf.
-	if value = round4(value); !finite(value) || !sensible(m, value) {
+	if value = round4(value); !finite(value) {
 		return sampleData{}, reasonBadValue
+	}
+	if m.Plausible(value) != nil {
+		return sampleData{}, reasonImplausible
 	}
 	start, end, tz, ok := interval(a)
 	if !ok {
 		return sampleData{}, reasonBadDate
 	}
 	return sampleData{
-		metric: m.Name, unit: m.Unit, source: a["sourceName"],
+		metric: m.Name, unit: m.Unit, source: a["sourceName"], deviceModel: deviceModel(a["device"]),
 		start: start, end: end, value: value, tz: tz,
 	}, ""
 }
@@ -142,7 +150,7 @@ func sleepRow(a map[string]string) (sleepData, string) {
 	if !ok {
 		return sleepData{}, reasonBadDate
 	}
-	return sleepData{stage: stage, source: a["sourceName"], start: start, end: end, tz: tz}, ""
+	return sleepData{stage: stage, source: a["sourceName"], deviceModel: deviceModel(a["device"]), start: start, end: end, tz: tz}, ""
 }
 
 // Factors that turn a workout unit into our fixed units (s, kcal, m).
@@ -224,8 +232,12 @@ func workoutRow(a map[string]string, stats []map[string]string) (workoutData, st
 	if !ok1 || !ok2 {
 		return workoutData{}, reasonBadWorkout
 	}
+	// A workout cannot last, burn or cover a negative amount.
+	if duration < 0 || (energy != nil && *energy < 0) || (distance != nil && *distance < 0) {
+		return workoutData{}, reasonImplausible
+	}
 	return workoutData{
-		activity: snake(activity), source: a["sourceName"],
+		activity: snake(activity), source: a["sourceName"], deviceModel: deviceModel(a["device"]),
 		start: start, end: end, duration: duration,
 		energy: energy, distance: distance, tz: tz,
 	}, ""
