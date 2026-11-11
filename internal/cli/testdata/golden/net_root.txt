@@ -157,17 +157,34 @@ Import an Apple Health export file. In the Health app on your iPhone choose
 your profile picture, then "Export All Health Data", and pass the resulting file here.
 
 The file is streamed, so even multi-gigabyte exports use little memory.
-Importing the same file again adds nothing new.
+Importing the same file again adds nothing new. A record whose key (type,
+times, source) is already stored is not imported again; if its value differs
+from the stored one it is counted as a conflict, and the stored value stays.
+
+Before the first write into a database that already holds data, a safety copy
+is made next to it (<database>.bak, readable only by you, replaced on every
+import). Use --no-backup to skip it, for example when the database is huge
+and you have your own backups.
+
+--dry-run reads the whole file and prints the counts a real import would give,
+but writes nothing (and makes no backup).
+
+Press Ctrl-C to stop an import: the rows read so far stay saved, and running
+the same import again finishes it. A byte that is not valid UTF-8 is replaced
+with U+FFFD and counted instead of stopping the import.
 
 Usage:
   healthcli import apple <export.zip|export.xml> [flags]
 
 Examples:
   healthcli import apple export.zip
+  healthcli import apple export.zip --dry-run
   healthcli import apple export.xml --json
 
 Flags:
-  -h, --help   help for apple
+      --dry-run     read and count everything, write nothing
+  -h, --help        help for apple
+      --no-backup   do not copy the database to <database>.bak before importing
 
 Global Flags:
       --db string   SQLite database path (default: per-user data dir)
