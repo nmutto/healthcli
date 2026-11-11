@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -29,6 +30,19 @@ const (
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`
 )
 
+// When an insert is dropped because the key exists, these ask whether the
+// stored row holds a different value from the incoming one. They return 1 row
+// if it does. "IS NOT" treats NULL as a value, so a missing energy equals a
+// missing energy. Sleep rows have no value outside their key, so they have no
+// such check.
+const (
+	sampleDiffers = `SELECT 1 FROM samples
+		WHERE metric = ? AND start_ts = ? AND end_ts = ? AND source = ? AND value IS NOT ?`
+	workoutDiffers = `SELECT 1 FROM workouts
+		WHERE activity = ? AND start_ts = ? AND end_ts = ? AND source = ?
+		AND (duration_s IS NOT ? OR energy_kcal IS NOT ? OR distance_m IS NOT ?)`
+)
+
 // writer collects rows into batches and writes them through prepared statements.
 type writer struct {
 	conn    *sql.DB
@@ -37,13 +51,16 @@ type writer struct {
 	sample  *sql.Stmt
 	sleep   *sql.Stmt
 	workout *sql.Stmt
-	pending int // rows in the current transaction
+	sampleDiff,
+	workoutDiff *sql.Stmt
+	dryRun  bool // never commit: everything is rolled back at the end
+	pending int  // rows in the current transaction
 
 	committed int64 // rows in batches already committed; they stay saved if the import fails
 }
 
-func newWriter(conn *sql.DB, sum *Summary) (*writer, error) {
-	w := &writer{conn: conn, sum: sum}
+func newWriter(conn *sql.DB, sum *Summary, dryRun bool) (*writer, error) {
+	w := &writer{conn: conn, sum: sum, dryRun: dryRun}
 	if err := w.begin(); err != nil {
 		return nil, err
 	}
@@ -61,7 +78,10 @@ func (w *writer) begin() error {
 	for _, p := range []struct {
 		dst **sql.Stmt
 		sql string
-	}{{&w.sample, insertSample}, {&w.sleep, insertSleep}, {&w.workout, insertWorkout}} {
+	}{
+		{&w.sample, insertSample}, {&w.sleep, insertSleep}, {&w.workout, insertWorkout},
+		{&w.sampleDiff, sampleDiffers}, {&w.workoutDiff, workoutDiffers},
+	} {
 		if *p.dst, err = tx.Prepare(p.sql); err != nil {
 			tx.Rollback()
 			return err
@@ -71,11 +91,14 @@ func (w *writer) begin() error {
 }
 
 func (w *writer) addSample(r sampleData) error {
-	return w.exec(w.sample, r.metric, r.start, r.end, r.value, r.unit, r.tz, r.source)
+	differs := func() (bool, error) {
+		return w.rowExists(w.sampleDiff, r.metric, r.start, r.end, r.source, r.value)
+	}
+	return w.exec(w.sample, differs, r.metric, r.start, r.end, r.value, r.unit, r.tz, r.source)
 }
 
 func (w *writer) addSleep(r sleepData) error {
-	return w.exec(w.sleep, r.stage, r.start, r.end, r.tz, r.source)
+	return w.exec(w.sleep, nil, r.stage, r.start, r.end, r.tz, r.source)
 }
 
 func (w *writer) addWorkout(r workoutData) error {
@@ -87,43 +110,89 @@ func (w *writer) addWorkout(r workoutData) error {
 	if r.distance != nil {
 		distance = *r.distance
 	}
-	return w.exec(w.workout, r.activity, r.start, r.end, r.duration, energy, distance, r.tz, r.source)
+	differs := func() (bool, error) {
+		return w.rowExists(w.workoutDiff, r.activity, r.start, r.end, r.source, r.duration, energy, distance)
+	}
+	return w.exec(w.workout, differs, r.activity, r.start, r.end, r.duration, energy, distance, r.tz, r.source)
 }
 
-// exec runs one insert and counts it as new or duplicate. When the batch is
-// full it commits and starts the next one.
-func (w *writer) exec(st *sql.Stmt, args ...any) error {
+// rowExists runs one of the "differs" queries and reports whether it found a row.
+func (w *writer) rowExists(st *sql.Stmt, args ...any) (bool, error) {
+	var one int
+	err := st.QueryRow(args...).Scan(&one)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("checking an existing row: %w", err)
+	}
+	return true, nil
+}
+
+// exec runs one insert and counts it as new, duplicate or conflict. differs
+// (nil for sleep rows) says whether the row already stored under the same key
+// holds another value. When the batch is full it commits and starts the next.
+func (w *writer) exec(st *sql.Stmt, differs func() (bool, error), args ...any) error {
 	res, err := st.Exec(args...)
 	if err != nil {
 		return fmt.Errorf("writing to database: %w", err)
 	}
-	if n, _ := res.RowsAffected(); n > 0 {
+	n, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("writing to database: %w", err)
+	}
+	switch {
+	case n > 0:
 		w.sum.Inserted++
-	} else {
+	case differs != nil:
+		conflict, err := differs()
+		if err != nil {
+			return err
+		}
+		if conflict {
+			w.sum.Conflicts++
+		} else {
+			w.sum.Duplicates++
+		}
+	default:
 		w.sum.Duplicates++
 	}
 	w.pending++
-	if w.pending >= batchSize {
-		if err := w.tx.Commit(); err != nil {
-			return err
-		}
-		w.committed += int64(w.pending)
-		return w.begin()
+	// A dry run keeps one transaction open to the end, so rows of the file
+	// that repeat earlier rows of the same file are still seen as duplicates.
+	if w.pending >= batchSize && !w.dryRun {
+		return w.flush()
 	}
 	return nil
+}
+
+// flush commits the current batch and opens the next one.
+func (w *writer) flush() error {
+	if err := w.tx.Commit(); err != nil {
+		return err
+	}
+	w.committed += int64(w.pending)
+	return w.begin()
 }
 
 // finish records last_import_ts and a JSON summary of this import (read by
 // "healthcli overview"), then commits the final batch.
 func (w *writer) finish(started time.Time) error {
+	if w.dryRun {
+		return nil // the deferred rollback throws everything away
+	}
 	if err := w.setMeta("last_import_ts", strconv.FormatInt(started.Unix(), 10)); err != nil {
 		return err
 	}
 	summary, err := json.Marshal(map[string]any{
-		"at":         started.Unix(),
-		"read":       w.sum.Read,
-		"inserted":   w.sum.Inserted,
-		"duplicates": w.sum.Duplicates,
+		"at":       started.Unix(),
+		"read":     w.sum.Read,
+		"inserted": w.sum.Inserted,
+		// "duplicates" keeps its old meaning here (every row dropped because
+		// its key existed, so it includes the conflicts); "overview" reads it.
+		// "conflicts" is the part of those whose value differed.
+		"duplicates": w.sum.Duplicates + w.sum.Conflicts,
+		"conflicts":  w.sum.Conflicts,
 		"skipped":    w.sum.Skipped,
 	})
 	if err != nil {
@@ -143,6 +212,53 @@ func (w *writer) setMeta(key, value string) error {
 }
 
 func (w *writer) rollback() { w.tx.Rollback() }
+
+// Zip bomb guards. A real export is a few gigabytes of XML; these limits are
+// far above that, and exist only so a hostile or corrupt archive cannot fill
+// the disk or run for days. They are variables so a test can lower them.
+var (
+	maxEntryBytes   int64 = 64 << 30  // one entry, uncompressed
+	maxArchiveBytes int64 = 128 << 30 // all entries together, as declared in the zip
+)
+
+// errTooBig is returned while reading an entry that grows past maxEntryBytes.
+var errTooBig = errors.New("the zip entry is larger than the safety limit when unpacked (zip bomb?)")
+
+// limitedReader is io.LimitReader, but running past the limit is an error
+// instead of a quiet end of file (which would look like a truncated export).
+type limitedReader struct {
+	r    io.Reader
+	left int64
+}
+
+func (l *limitedReader) Read(p []byte) (int, error) {
+	if l.left < 0 {
+		return 0, errTooBig
+	}
+	if int64(len(p)) > l.left+1 {
+		p = p[:l.left+1] // read one byte more than allowed, to notice
+	}
+	n, err := l.r.Read(p)
+	l.left -= int64(n)
+	if l.left < 0 {
+		return 0, errTooBig
+	}
+	return n, err
+}
+
+// gib formats a byte count for an error message.
+func gib(n int64) string { return fmt.Sprintf("%d GiB", n>>30) }
+
+// Check opens the export just far enough to know it can be read (file exists,
+// is a file, a zip has an export.xml within the size limits) and closes it.
+// Callers run it before they touch the database.
+func Check(p string) error {
+	src, err := openExport(p)
+	if err != nil {
+		return err
+	}
+	return src.Close()
+}
 
 // openExport returns a reader for the XML inside path. For a zip it streams
 // the export.xml entry straight out of the archive (no temp file).
@@ -168,16 +284,29 @@ func openExport(p string) (io.ReadCloser, error) {
 			f.Close()
 			return nil, fmt.Errorf("%s is not a valid zip file: %w", p, err)
 		}
+		var declared int64
+		for _, zf := range zr.File {
+			declared += int64(zf.UncompressedSize64)
+			if declared < 0 || declared > maxArchiveBytes {
+				f.Close()
+				return nil, fmt.Errorf("%s unpacks to more than %s, which is over the safety limit", p, gib(maxArchiveBytes))
+			}
+		}
 		for _, zf := range zr.File {
 			// Real exports use apple_health_export/export.xml; there is also
 			// export_cda.xml, which we do not want.
 			if path.Base(zf.Name) == "export.xml" {
+				if zf.UncompressedSize64 > uint64(maxEntryBytes) {
+					f.Close()
+					return nil, fmt.Errorf("%s: export.xml unpacks to more than %s, which is over the safety limit", p, gib(maxEntryBytes))
+				}
 				rc, err := zf.Open()
 				if err != nil {
 					f.Close()
 					return nil, err
 				}
-				return &multiCloser{Reader: rc, closers: []io.Closer{rc, f}}, nil
+				// The sizes in a zip header can lie: count the real bytes too.
+				return &multiCloser{Reader: &limitedReader{r: rc, left: maxEntryBytes}, closers: []io.Closer{rc, f}}, nil
 			}
 		}
 		f.Close()

@@ -1,6 +1,7 @@
 # import summary
 {
-  "duplicates": 9,
+  "conflicts": 6,
+  "duplicates": 3,
   "inserted": 1468,
   "read": 1480,
   "skipped": {

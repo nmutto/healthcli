@@ -26,6 +26,17 @@ func newDB(t testing.TB) *sql.DB {
 	return conn
 }
 
+// newDBAt is newDB with a path the test chooses.
+func newDBAt(t testing.TB, path string) *sql.DB {
+	t.Helper()
+	conn, err := db.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { conn.Close() })
+	return conn
+}
+
 func count(t *testing.T, conn *sql.DB, query string, args ...any) int64 {
 	t.Helper()
 	var n int64

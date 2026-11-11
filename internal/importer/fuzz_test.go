@@ -2,6 +2,7 @@ package importer
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"regexp"
 	"strings"
@@ -59,16 +60,16 @@ func FuzzParse(f *testing.F) {
 
 	f.Fuzz(func(t *testing.T, data []byte) {
 		sum := &Summary{Skipped: map[string]int64{}}
-		w, err := newWriter(conn, sum)
+		w, err := newWriter(conn, sum, false)
 		if err != nil {
 			t.Fatal(err)
 		}
 		defer w.rollback()
 
-		if err := parse(bytes.NewReader(data), sum, w, Options{}); err != nil {
+		if err := parse(context.Background(), bytes.NewReader(data), sum, w, Options{}); err != nil {
 			return // rejecting bad input is fine
 		}
-		if got := sum.Inserted + sum.Duplicates + sum.SkippedTotal(); got != sum.Read {
+		if got := sum.Inserted + sum.Duplicates + sum.Conflicts + sum.SkippedTotal(); got != sum.Read {
 			t.Fatalf("read %d records but accounted for %d: %+v", sum.Read, got, sum)
 		}
 	})
