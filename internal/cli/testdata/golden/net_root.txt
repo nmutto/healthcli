@@ -348,6 +348,7 @@ $ healthcli __complete sleep --
 --json	output JSON instead of human-readable text
 --ascii	use plain ASCII characters only
 --by	calendar value: asleep, bedtime, efficiency
+--date	treat this local day, YYYY-MM-DD, as today (default: today)
 --help	help for sleep
 --nights	nights before the last one in the usual window (7-90)
 --no-color	never use colours

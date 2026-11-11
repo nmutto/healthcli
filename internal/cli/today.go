@@ -226,6 +226,34 @@ func checkDateFlag(date string) error {
 	return nil
 }
 
+// clockFor is "now" for a command with --date. Without the flag it is the
+// clock. With it, the day must be valid and not in the future (the same checks
+// as "today"); today itself keeps the real time, and an earlier day is treated
+// as if the command ran at the end of that day.
+func clockFor(date string) (time.Time, error) {
+	now := nowFunc()
+	if date == "" {
+		return now, nil
+	}
+	if err := checkDateFlag(date); err != nil {
+		return now, err
+	}
+	if err := checkNotFuture(date, now); err != nil {
+		return now, err
+	}
+	if date == now.Format(stats.DayLayout) {
+		return now, nil
+	}
+	day, err := time.ParseInLocation(stats.DayLayout, date, now.Location())
+	if err != nil {
+		return now, err
+	}
+	return day.AddDate(0, 0, 1).Add(-time.Second), nil
+}
+
+// dateFlagHelp is the --date help line of the commands that treat a day as today.
+const dateFlagHelp = "treat this local day, YYYY-MM-DD, as today (default: today)"
+
 // checkNotFuture rejects a day after now's local day. "healthcli today" has
 // nothing to say about the future; "trend" can still end there.
 func checkNotFuture(date string, now time.Time) error {

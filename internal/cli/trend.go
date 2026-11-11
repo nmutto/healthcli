@@ -21,7 +21,7 @@ import (
 // sleepMetric is the pseudo-metric name for "asleep hours per night". Sleep
 // is not a row in the metrics registry (it has its own table), so the
 // command handles it as a special case.
-const sleepMetric = "sleep"
+const sleepMetric = stats.SleepMetric
 
 // Field names below are the documented --json contract of "healthcli trend".
 type trendReport struct {

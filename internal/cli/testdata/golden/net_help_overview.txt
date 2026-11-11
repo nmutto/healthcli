@@ -64,6 +64,10 @@ or with --ascii, only plain ASCII characters are used. NO_COLOR and --no-color
 switch colours off; FORCE_COLOR switches them on even for a pipe. Samples dated
 more than a day in the future are ignored.
 
+--date YYYY-MM-DD treats that local day as today (not a future day): everything
+is relative to it, and samples after it are ignored. In --json only "today"
+changes.
+
 JSON output (--json) is the same report:
   today, empty (true when the database has no data)
   categories[]  name, total, better, worse, changed, typical, stale,
@@ -100,6 +104,7 @@ Examples:
   healthcli overview --heatmap steps,sleep,workouts --weeks 26
   healthcli overview --category sleep
   healthcli overview --ascii --no-color
+  healthcli overview --date 2026-11-01
   healthcli overview --json
 
 Flags:
@@ -109,6 +114,7 @@ Flags:
                            other, sleep, workouts
       --compact            no blank lines between sections;
                            gutter is one flag (! + ~)
+      --date string        treat this local day, YYYY-MM-DD, as today (default: today)
       --full               show every section and heatmap
       --heatmap strings    heatmaps to show, comma list of
                            steps|sleep|workouts|<metric> (default: steps,

@@ -10,6 +10,8 @@ maximum number of weeks (default 12); fewer are shown if the terminal is too
 narrow (oldest dropped). Pages fit 50 to 100 columns ($COLUMNS or the terminal
 width); a narrower terminal is treated as 50, so lines may wrap there.
 
+--date YYYY-MM-DD treats that local day as today (not a future day).
+
 JSON output (--json):
   metric, unit, today, from, thresholds (4 upper bounds of levels 1-4),
   days_with_data, weeks[7 days each]: day, value (left out = no data), level
@@ -23,13 +25,15 @@ Examples:
   healthcli heatmap active_energy --weeks 26
   healthcli heatmap sleep
   healthcli heatmap workouts --weeks 26
+  healthcli heatmap steps --date 2026-10-15
   healthcli heatmap steps --json
 
 Flags:
-      --ascii       use plain ASCII characters only
-  -h, --help        help for heatmap
-      --no-color    never use colours
-      --weeks int   maximum number of weeks to show (1-53) (default 12)
+      --ascii         use plain ASCII characters only
+      --date string   treat this local day, YYYY-MM-DD, as today (default: today)
+  -h, --help          help for heatmap
+      --no-color      never use colours
+      --weeks int     maximum number of weeks to show (1-53) (default 12)
 
 Global Flags:
       --db string   SQLite database path (default: per-user data dir)

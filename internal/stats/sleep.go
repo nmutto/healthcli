@@ -312,16 +312,25 @@ func SleepNights(ctx context.Context, conn *sql.DB, fromDay, toDay string) ([]Sl
 // applies to all of them.
 func bestSleepSource(bySource map[string]*sleepTotals) (string, *sleepTotals) {
 	// The longest main block of any source is "the night".
+	// Go visits a map in random order, so go through the names sorted: on an
+	// exact tie the source that sorts first gives the night.
+	sources := make([]string, 0, len(bySource))
+	for source := range bySource {
+		sources = append(sources, source)
+	}
+	sort.Strings(sources)
+
 	var night block
-	for _, t := range bySource {
-		if m, ok := t.mainSleepBlock(); ok && m.asleep > night.asleep {
+	for _, source := range sources {
+		if m, ok := bySource[source].mainSleepBlock(); ok && m.asleep > night.asleep {
 			night = m
 		}
 	}
 
 	best := ""
 	var bt *sleepTotals
-	for source, t := range bySource {
+	for _, source := range sources {
+		t := bySource[source]
 		if bt == nil || preferSleepSource(source, t, best, bt, night) {
 			best, bt = source, t
 		}

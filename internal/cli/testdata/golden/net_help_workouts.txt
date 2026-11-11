@@ -6,6 +6,9 @@ minutes per day. Days without a workout in the calendar are rest days (shown
 from your first workout on). --by type draws each day's main activity as a
 letter.
 
+--date YYYY-MM-DD treats that local day as today (not a future day): the
+windows end on it.
+
 Columns with no data (no calories or distance recorded) are left out, and parts
 that need more sessions simply do not appear. The weekly deltas are not
 coloured green or red: more training is not automatically better.
@@ -25,14 +28,16 @@ Examples:
   healthcli workouts
   healthcli workouts --days 90 --weeks 12
   healthcli workouts --by type
+  healthcli workouts --date 2026-11-01
 
 Flags:
-      --ascii       use plain ASCII characters only
-      --by string   "type": draw the calendar with one letter per activity
-      --days int    window for totals, types and the recent list (1-365); the recent list is at most the last 7 days (default 28)
-  -h, --help        help for workouts
-      --no-color    never use colours
-      --weeks int   weeks of volume bars and calendar (1-53) (default 8)
+      --ascii         use plain ASCII characters only
+      --by string     "type": draw the calendar with one letter per activity
+      --date string   treat this local day, YYYY-MM-DD, as today (default: today)
+      --days int      window for totals, types and the recent list (1-365); the recent list is at most the last 7 days (default 28)
+  -h, --help          help for workouts
+      --no-color      never use colours
+      --weeks int     weeks of volume bars and calendar (1-53) (default 8)
 
 Global Flags:
       --db string   SQLite database path (default: per-user data dir)

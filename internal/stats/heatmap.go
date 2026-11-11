@@ -99,7 +99,7 @@ const (
 // without one. "sleep" (the trend of hours asleep) is blue. Only canonical
 // names count, not aliases.
 func HueFor(metric string) string {
-	if metric == "sleep" {
+	if metric == SleepMetric {
 		return HueBlue
 	}
 	m, err := metrics.Lookup(metric)
@@ -187,7 +187,11 @@ func layoutHeatmap(metric, unit, today, from string, weeks int, byDay map[string
 		filled := map[string]float64{}
 		for day := first; first != "" && day <= today; {
 			filled[day] = byDay[day]
-			day, _ = AddDays(day, 1)
+			next, err := AddDays(day, 1)
+			if err != nil {
+				break // cannot step past the last day the calendar can write
+			}
+			day = next
 		}
 		byDay = filled
 		for _, v := range byDay {

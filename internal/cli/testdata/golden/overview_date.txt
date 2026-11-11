@@ -1,0 +1,48 @@
+ healthcli overview                                db: test.db | imported today
+ ------------------------------------------------------------------------------
+ 5 typical vs your 28-day usual
+ VITALS 3 | ACTIVITY 2 | BODY 1 | WORKOUTS  (not tracked: MOBILITY, SLEEP)
+
+   METRIC          LATEST       VS 28-DAY USUAL               AGE
+
+ == VITALS == 3 metrics | all typical =========================================
+   Avg heart rate  70 bpm       ^ +1%             ...==*=...
+   Resting HR      61 bpm       ^ +2%             ...===*...
+   HRV             57 ms        - 0%              ...==*=...
+
+ == ACTIVITY == 2 metrics | all typical =======================================
+   Steps           7,800 steps  - 0%              ...=*==...
+   Active energy   500 kcal     v -11%            ...=*==...
+
+ == BODY == 1 metric | not enough data ========================================
+   Weight          72.4 kg      need 7d (have 3)              2 d
+ + better  ! worse  ~ higher/lower, no good direction
+
+ == WORKOUTS == 1 session  52m  630 kcal  8.0 km  active 1 of 28 d ============
+
+ TYPE      N TIME       KCAL     KM SHARE
+ running   1 52m         630    8.0 #################### 100%
+
+ RECENT
+ Fri Oct 30 running     52m  8.0 km 6:30 /km  630 kcal
+
+ == CALENDAR == Steps per day, 12 weeks to 2026-11-01 =========================
+     Aug   Sep     Oct     Nov
+ Mon _ _ _ _ _ _ _ _ # . + .
+ Tue _ _ _ _ _ _ _ _ + @ - #
+ Wed _ _ _ _ _ _ _ # - # . +
+ Thu _ _ _ _ _ _ _ + . + @ -
+ Fri _ _ _ _ _ _ _ - # - # .
+ Sat _ _ _ _ _ _ _ . + . + @
+ Sun _ _ _ _ _ _ _ @ - # - # <
+
+ . <=6,450  - <=7,350  + <=8,250  # <=9,150  @ >9,150
+ _ no data   < today   steps per day
+
+ == DATA == 232 samples, 1 sleep night ========================================
+ range: 2026-09-30 -> 2026-11-02
+ sources: Watch 81%, iPhone 17%, manual 2%
+ last import: 1,230 added | 40 duplicates
+ skipped: 5 (unknown_type 3, bad_date 1, bad_value 1)
+ days missing: Weight 9 of 13, HRV 7 of 28
+ not tracked in your data: 24 metrics

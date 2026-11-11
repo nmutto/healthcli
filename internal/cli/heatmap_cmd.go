@@ -17,6 +17,7 @@ import (
 
 func newHeatmapCmd(opts *options) *cobra.Command {
 	var weeks int
+	var date string
 	var noColor, ascii bool
 	cmd := &cobra.Command{
 		Use:   "heatmap [metric]",
@@ -33,6 +34,8 @@ maximum number of weeks (default 12); fewer are shown if the terminal is too
 narrow (oldest dropped). Pages fit 50 to 100 columns ($COLUMNS or the terminal
 width); a narrower terminal is treated as 50, so lines may wrap there.
 
+--date YYYY-MM-DD treats that local day as today (not a future day).
+
 JSON output (--json):
   metric, unit, today, from, thresholds (4 upper bounds of levels 1-4),
   days_with_data, weeks[7 days each]: day, value (left out = no data), level
@@ -41,6 +44,7 @@ JSON output (--json):
   healthcli heatmap active_energy --weeks 26
   healthcli heatmap sleep
   healthcli heatmap workouts --weeks 26
+  healthcli heatmap steps --date 2026-10-15
   healthcli heatmap steps --json`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -48,10 +52,11 @@ JSON output (--json):
 			if len(args) == 1 {
 				name = args[0]
 			}
-			return runHeatmap(cmd, opts, name, weeks, noColor, ascii)
+			return runHeatmap(cmd, opts, name, date, weeks, noColor, ascii)
 		},
 	}
 	cmd.Flags().IntVar(&weeks, "weeks", defaultHeatWeeks, "maximum number of weeks to show (1-53)")
+	cmd.Flags().StringVar(&date, "date", "", dateFlagHelp)
 	cmd.Flags().BoolVar(&noColor, "no-color", false, "never use colours")
 	cmd.Flags().BoolVar(&ascii, "ascii", false, "use plain ASCII characters only")
 	return cmd
@@ -61,10 +66,10 @@ JSON output (--json):
 // (aliases allowed). The error for a typo also lists sleep and workouts.
 func heatmapName(arg string) (string, error) {
 	switch strings.ToLower(strings.TrimSpace(arg)) {
-	case "sleep":
-		return "sleep", nil
-	case "workouts", "workout":
-		return "workouts", nil
+	case stats.SleepMetric:
+		return stats.SleepMetric, nil
+	case stats.WorkoutsMetric, "workout":
+		return stats.WorkoutsMetric, nil
 	}
 	m, err := metrics.Lookup(arg)
 	if err != nil {
@@ -77,7 +82,7 @@ func heatmapName(arg string) (string, error) {
 // and workouts feed the same engine as steps, just with a different source
 // of "one number per day".
 func buildNamedHeatmap(ctx context.Context, conn *sql.DB, name string, weeks int, now time.Time) (*stats.Heatmap, error) {
-	if name != "sleep" && name != "workouts" {
+	if name != stats.SleepMetric && name != stats.WorkoutsMetric {
 		return stats.BuildHeatmap(ctx, conn, name, weeks, now)
 	}
 	if weeks < 1 || weeks > stats.MaxHeatmapWeeks {
@@ -92,7 +97,7 @@ func buildNamedHeatmap(ctx context.Context, conn *sql.DB, name string, weeks int
 	}
 	var byDay map[string]float64
 	spec := stats.HeatSpec{Title: name, Format: minutesText}
-	if name == "sleep" {
+	if name == stats.SleepMetric {
 		spec.Hue = stats.HueBlue
 		byDay, err = stats.SleepAsleepByDay(ctx, conn, from, today)
 	} else {
@@ -108,12 +113,16 @@ func buildNamedHeatmap(ctx context.Context, conn *sql.DB, name string, weeks int
 	return stats.HeatmapFromDays(spec, now, weeks, byDay)
 }
 
-func runHeatmap(cmd *cobra.Command, opts *options, name string, weeks int, noColor, ascii bool) error {
+func runHeatmap(cmd *cobra.Command, opts *options, name, date string, weeks int, noColor, ascii bool) error {
 	if weeks < 1 || weeks > stats.MaxHeatmapWeeks {
 		return fmt.Errorf("--weeks must be between 1 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
 	}
 	// Check the name before opening the database (friendly list on a typo).
 	name, err := heatmapName(name)
+	if err != nil {
+		return err
+	}
+	now, err := clockFor(date)
 	if err != nil {
 		return err
 	}
@@ -128,7 +137,7 @@ func runHeatmap(cmd *cobra.Command, opts *options, name string, weeks int, noCol
 		return err
 	}
 	defer conn.Close()
-	h, err := buildNamedHeatmap(cmdContext(cmd), conn, name, weeks, nowFunc())
+	h, err := buildNamedHeatmap(cmdContext(cmd), conn, name, weeks, now)
 	if err != nil {
 		return err
 	}
@@ -140,7 +149,7 @@ func runHeatmap(cmd *cobra.Command, opts *options, name string, weeks int, noCol
 	}
 	if h.Empty() {
 		what := strings.ReplaceAll(name, "_", " ") + " data"
-		if name == "workouts" {
+		if name == stats.WorkoutsMetric {
 			what = "workouts" // "workouts data" reads wrong
 		}
 		_, err = fmt.Fprintf(out, "No %s in the last %s yet.\n", what, plural(int64(weeks), "week"))
