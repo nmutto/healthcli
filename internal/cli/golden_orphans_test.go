@@ -22,6 +22,9 @@ func TestNoOrphanGoldens(t *testing.T) {
 	if testing.Short() {
 		t.Skip("re-runs the whole package; skipped with -short")
 	}
+	if raceEnabled {
+		t.Skip("re-running the whole package under -race would double its time")
+	}
 	exe, err := os.Executable()
 	if err != nil {
 		t.Fatal(err)
