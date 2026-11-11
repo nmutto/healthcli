@@ -31,7 +31,7 @@ func requireDB(path string) error {
 }
 
 // openDB opens an existing database for the read commands (today, overview,
-// sleep, ...). It never creates one. The caller must Close the result.
+// sleep, ...). It never creates one, and it works on a read-only copy. The caller must Close the result.
 func openDB(opts *options) (*sql.DB, error) {
 	path, err := dbPath(opts)
 	if err != nil {
@@ -40,19 +40,13 @@ func openDB(opts *options) (*sql.DB, error) {
 	if err := requireDB(path); err != nil {
 		return nil, err
 	}
-	return db.Open(path)
+	return db.OpenForRead(path)
 }
 
-// openReadOnlyDB is openDB for `query`: the connection cannot write at all.
+// openReadOnlyDB is openDB for `query`. Both hand back a connection that
+// cannot write; this name is kept so `query` reads as what it promises.
 func openReadOnlyDB(opts *options) (*sql.DB, error) {
-	path, err := dbPath(opts)
-	if err != nil {
-		return nil, err
-	}
-	if err := requireDB(path); err != nil {
-		return nil, err
-	}
-	return db.OpenReadOnly(path)
+	return openDB(opts)
 }
 
 // openOrCreateDB is for the commands that write (import, log): the database

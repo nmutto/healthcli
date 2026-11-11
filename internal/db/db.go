@@ -46,9 +46,11 @@ func Open(path string) (*sql.DB, error) {
 	// Create the file ourselves, private from the start. SQLite gives the
 	// -wal and -shm files the same permissions as the database file.
 	if path != ":memory:" {
-		if f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600); err == nil {
-			f.Close()
+		f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600)
+		if err != nil {
+			return nil, fmt.Errorf("db: open %s for writing: %w", path, err)
 		}
+		f.Close()
 	}
 
 	// _pragma options in the connection string are applied by the driver to
@@ -98,21 +100,101 @@ func escapePath(path string) string {
 // OpenReadOnly opens an existing database for reading only. SQLite itself
 // refuses every write on this handle (mode=ro), so no SQL text, not even a
 // PRAGMA, can switch that off. Migrations are not applied: they write.
+//
+// If SQLite cannot open the file this way (a read-only copy of a WAL
+// database in a read-only folder cannot get its -shm file), it retries with
+// immutable=1, which promises SQLite that nothing changes the file. That is
+// right for a copy, and it ignores a -wal file that was not checkpointed.
 func OpenReadOnly(path string) (*sql.DB, error) {
 	if path == "" {
 		return nil, errors.New("db: empty database path")
 	}
-	dsn := "file:" + escapePath(path) +
-		"?mode=ro" +
-		"&_pragma=busy_timeout(5000)" +
-		"&_pragma=query_only(1)"
+	conn, err := openRO(path, false)
+	if err == nil {
+		return conn, nil
+	}
+	if conn, err2 := openRO(path, true); err2 == nil {
+		return conn, nil
+	}
+	return nil, err
+}
+
+// openRO opens the file read-only and proves it can be read.
+func openRO(path string, immutable bool) (*sql.DB, error) {
+	dsn := "file:" + escapePath(path) + "?mode=ro"
+	if immutable {
+		dsn += "&immutable=1"
+	}
+	dsn += "&_pragma=busy_timeout(5000)&_pragma=query_only(1)"
 
 	conn, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("db: open %s: %w", path, err)
 	}
 	conn.SetMaxOpenConns(1)
+	// sql.Open does not touch the file; this does.
+	var n int
+	if err := conn.QueryRow(`SELECT count(*) FROM sqlite_master`).Scan(&n); err != nil {
+		conn.Close()
+		return nil, fmt.Errorf("db: open %s: %w", path, err)
+	}
 	return conn, nil
+}
+
+// OpenForRead opens an existing database for the commands that only read.
+// The returned handle cannot write.
+//
+// When nothing needs migrating it writes nothing at all (no WAL switch, no
+// chmod, no schema_migrations table), so a read-only copy works. When the
+// schema is behind, it upgrades the database first, exactly as Open does; if
+// the file cannot be written it fails and says so rather than reading an old
+// schema. A database from a newer healthcli is refused.
+func OpenForRead(path string) (*sql.DB, error) {
+	conn, err := OpenReadOnly(path)
+	if err != nil {
+		return nil, err
+	}
+	migrations, err := loadMigrations()
+	if err != nil {
+		conn.Close()
+		return nil, err
+	}
+	applied, err := readApplied(conn)
+	if err != nil {
+		conn.Close()
+		return nil, err
+	}
+	if err := checkNotNewer(applied, migrations); err != nil {
+		conn.Close()
+		return nil, err
+	}
+	pending := pendingMigrations(applied, migrations)
+	if len(pending) == 0 {
+		return conn, nil
+	}
+	conn.Close()
+
+	writable, err := Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("db: the database needs upgrading to schema %d but cannot be written (read-only copy?): %w",
+			pending[len(pending)-1].version, err)
+	}
+	writable.Close()
+	return OpenReadOnly(path)
+}
+
+// readApplied is appliedVersions for a database that may not have the
+// schema_migrations table yet (it is then "nothing applied").
+func readApplied(conn *sql.DB) (map[int]bool, error) {
+	var n int
+	err := conn.QueryRow(`SELECT count(*) FROM sqlite_master WHERE name = 'schema_migrations'`).Scan(&n)
+	if err != nil {
+		return nil, fmt.Errorf("db: read schema_migrations: %w", err)
+	}
+	if n == 0 {
+		return map[int]bool{}, nil
+	}
+	return appliedVersions(conn)
 }
 
 // DefaultPath returns where the database lives when the user does not say.

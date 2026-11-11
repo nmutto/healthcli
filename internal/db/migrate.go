@@ -4,7 +4,9 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
+	"io"
 	"io/fs"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -22,7 +24,16 @@ type migration struct {
 	version int
 	name    string
 	sql     string
+	// Rebuild marks a migration that rebuilds a table (copy the rows into a
+	// new table, drop the old one). It can take long on a big database and
+	// cannot be undone, so Migrate saves a copy of the file first. A SQL
+	// file asks for this with the line "-- healthcli:rebuild".
+	Rebuild bool
 }
+
+// NoticeWriter is where Migrate prints its one-line progress notices. It is
+// a variable so tests can capture the text.
+var NoticeWriter io.Writer = os.Stderr
 
 // Migrate brings the database schema up to date.
 //
@@ -37,6 +48,16 @@ type migration struct {
 // migration that has already been committed, because existing databases
 // have already run the old version and will not run it again.
 func Migrate(conn *sql.DB) error {
+	migrations, err := loadMigrations()
+	if err != nil {
+		return err
+	}
+	return migrateWith(conn, migrations)
+}
+
+// migrateWith is Migrate with the list of migrations given, so a test can
+// pass its own.
+func migrateWith(conn *sql.DB, migrations []migration) error {
 	_, err := conn.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
 		version    INTEGER PRIMARY KEY,
 		applied_at INTEGER NOT NULL -- UTC unix seconds
@@ -45,24 +66,103 @@ func Migrate(conn *sql.DB) error {
 		return fmt.Errorf("db: create schema_migrations: %w", err)
 	}
 
-	migrations, err := loadMigrations()
-	if err != nil {
-		return err
-	}
-
 	applied, err := appliedVersions(conn)
 	if err != nil {
 		return err
 	}
+	if err := checkNotNewer(applied, migrations); err != nil {
+		return err
+	}
 
-	for _, m := range migrations {
-		if applied[m.version] {
-			continue
+	pending := pendingMigrations(applied, migrations)
+	if len(pending) == 0 {
+		return nil
+	}
+
+	// A brand-new database has nothing to lose and nobody to tell. An
+	// existing one gets a notice, so a slow upgrade is not a silent pause.
+	if len(applied) > 0 {
+		fmt.Fprintf(NoticeWriter, "upgrading database to schema %d\n", pending[len(pending)-1].version)
+	}
+
+	for _, m := range pending {
+		if m.Rebuild && len(applied) > 0 {
+			if err := backupBefore(conn, m); err != nil {
+				return err
+			}
 		}
 		if err := apply(conn, m); err != nil {
 			return err
 		}
 	}
+	return nil
+}
+
+// checkNotNewer refuses a database whose newest applied migration is one this
+// binary does not know: it was made by a newer healthcli, and running on it
+// could misread or damage data.
+func checkNotNewer(applied map[int]bool, migrations []migration) error {
+	known := 0
+	for _, m := range migrations {
+		if m.version > known {
+			known = m.version
+		}
+	}
+	newest := 0
+	for v := range applied {
+		if v > newest {
+			newest = v
+		}
+	}
+	if newest > known {
+		return fmt.Errorf("db: this database was created by a newer healthcli (schema %d, this one knows %d); upgrade healthcli", newest, known)
+	}
+	return nil
+}
+
+// pendingMigrations returns the migrations not yet applied, in order.
+func pendingMigrations(applied map[int]bool, migrations []migration) []migration {
+	var pending []migration
+	for _, m := range migrations {
+		if !applied[m.version] {
+			pending = append(pending, m)
+		}
+	}
+	return pending
+}
+
+// backupBefore saves a copy of the database next to it, as
+// "<db>.pre-migration-N.bak" with mode 0600, using VACUUM INTO (a
+// consistent copy even in WAL mode). An in-memory database has no file, so
+// there is nothing to save.
+func backupBefore(conn *sql.DB, m migration) error {
+	var file string
+	row := conn.QueryRow(`SELECT file FROM pragma_database_list WHERE name = 'main'`)
+	if err := row.Scan(&file); err != nil {
+		return fmt.Errorf("db: find database file for backup: %w", err)
+	}
+	if file == "" {
+		return nil
+	}
+
+	backup := fmt.Sprintf("%s.pre-migration-%d.bak", file, m.version)
+	// VACUUM INTO needs a missing or empty target. Create it ourselves
+	// first so it is private from the start; drop a leftover from an
+	// earlier failed attempt, which no longer matches the database.
+	if err := os.Remove(backup); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("db: replace old backup: %w", err)
+	}
+	f, err := os.OpenFile(backup, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
+	if err != nil {
+		return fmt.Errorf("db: create backup: %w", err)
+	}
+	f.Close()
+
+	if _, err := conn.Exec(`VACUUM INTO ?`, backup); err != nil {
+		os.Remove(backup)
+		return fmt.Errorf("db: back up before migration %s: %w", m.name, err)
+	}
+	fmt.Fprintf(NoticeWriter, "saved a copy of the database to %s\n", backup)
 	return nil
 }
 
@@ -140,7 +240,12 @@ func loadMigrations() ([]migration, error) {
 		if err != nil {
 			return nil, fmt.Errorf("db: read migration %s: %w", name, err)
 		}
-		migrations = append(migrations, migration{version: version, name: name, sql: string(body)})
+		migrations = append(migrations, migration{
+			version: version,
+			name:    name,
+			sql:     string(body),
+			Rebuild: strings.Contains(string(body), "-- healthcli:rebuild"),
+		})
 	}
 
 	sort.Slice(migrations, func(i, j int) bool {
