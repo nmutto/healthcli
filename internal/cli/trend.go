@@ -127,7 +127,7 @@ Sleep values are hours asleep.`,
 
 func runTrend(cmd *cobra.Command, opts *options, name string, days int, date string, verbose, noColor, ascii bool) error {
 	if days < 1 || days > 3650 {
-		return fmt.Errorf("--days must be between 1 and 3650, got %d", days)
+		return usageErrorf("--days must be between 1 and 3650, got %d", days)
 	}
 	if date == "" {
 		date = nowFunc().Format(stats.DayLayout)

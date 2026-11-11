@@ -9,6 +9,9 @@ import (
 	"github.com/nmutto/healthcli/internal/db"
 )
 
+// errDatabaseNotFound is what requireDB wraps; errors.go maps it to exit code 3.
+var errDatabaseNotFound = errors.New("database not found")
+
 // dbPath is the database named by --db, or the default location when the
 // flag was not given.
 func dbPath(opts *options) (string, error) {
@@ -25,7 +28,7 @@ func requireDB(path string) error {
 		return nil
 	}
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf(`database not found: %s; run "healthcli import apple <export.zip>" first`, path)
+		return fmt.Errorf(`%w: %s; run "healthcli import apple <export.zip>" first`, errDatabaseNotFound, path)
 	}
 	return nil
 }

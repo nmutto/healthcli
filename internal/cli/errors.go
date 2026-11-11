@@ -38,7 +38,7 @@ func exitCodeFor(err error) (int, string) {
 	switch {
 	case errors.As(err, &usage), strings.HasPrefix(err.Error(), "unknown command"):
 		return exitUsage, "usage"
-	case strings.HasPrefix(err.Error(), "database not found"):
+	case errors.Is(err, errDatabaseNotFound):
 		return exitNotFound, "database_not_found"
 	}
 	return exitRuntime, "error"

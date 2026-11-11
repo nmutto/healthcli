@@ -64,7 +64,7 @@ the target), heatmap.`,
 				return err
 			}
 			if weeks < 0 || weeks > stats.MaxHeatmapWeeks {
-				return fmt.Errorf("--weeks must be between 0 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
+				return usageErrorf("--weeks must be between 0 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
 			}
 			return runSleep(cmd, opts, date, noColor, ascii, stats.SleepOptions{Nights: nights, Target: d, By: by, Weeks: weeks})
 		},
@@ -83,7 +83,7 @@ the target), heatmap.`,
 func parseSleepTarget(s string) (time.Duration, error) {
 	d, err := time.ParseDuration(strings.TrimSpace(s))
 	if err != nil || d < 4*time.Hour || d > 12*time.Hour {
-		return 0, fmt.Errorf("--sleep-target must be a duration between 4h and 12h such as 8h or 7h30m, got %q", s)
+		return 0, usageErrorf("--sleep-target must be a duration between 4h and 12h such as 8h or 7h30m, got %q", s)
 	}
 	return d, nil
 }

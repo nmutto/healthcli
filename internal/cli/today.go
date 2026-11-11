@@ -218,10 +218,10 @@ func runToday(cmd *cobra.Command, opts *options, date string, noColor, ascii boo
 func checkDateFlag(date string) error {
 	t, err := time.Parse(stats.DayLayout, date)
 	if err != nil {
-		return fmt.Errorf("bad --date %q: want YYYY-MM-DD, e.g. 2026-11-08", date)
+		return usageErrorf("bad --date %q: want YYYY-MM-DD, e.g. 2026-11-08", date)
 	}
 	if y := t.Year(); y < 1900 || y > 2999 {
-		return fmt.Errorf("bad --date %q: year must be between 1900 and 2999", date)
+		return usageErrorf("bad --date %q: year must be between 1900 and 2999", date)
 	}
 	return nil
 }
@@ -258,7 +258,7 @@ const dateFlagHelp = "treat this local day, YYYY-MM-DD, as today (default: today
 // nothing to say about the future; "trend" can still end there.
 func checkNotFuture(date string, now time.Time) error {
 	if today := now.Format(stats.DayLayout); date > today { // "YYYY-MM-DD" strings sort like dates
-		return fmt.Errorf("bad --date %q: that day is in the future (today is %s)", date, today)
+		return usageErrorf("bad --date %q: that day is in the future (today is %s)", date, today)
 	}
 	return nil
 }

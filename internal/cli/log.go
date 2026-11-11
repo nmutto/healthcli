@@ -159,10 +159,10 @@ func parseReading(metricArg, valueArg, unit string) (metrics.Metric, float64, er
 // checkLogTime refuses a time that cannot be a real measurement.
 func checkLogTime(when time.Time, at string, now time.Time) error {
 	if when.Before(earliestLog) {
-		return fmt.Errorf("--at %q is before %s", at, earliestLog.Format("2006-01-02"))
+		return usageErrorf("--at %q is before %s", at, earliestLog.Format("2006-01-02"))
 	}
 	if when.After(now.Add(24 * time.Hour)) {
-		return fmt.Errorf("--at %q is more than a day in the future", at)
+		return usageErrorf("--at %q is more than a day in the future", at)
 	}
 	return nil
 }
@@ -208,10 +208,10 @@ func describeReading(metric metrics.Metric, value float64, when time.Time) strin
 // rows are never deleted by `log`.
 func runLogDelete(cmd *cobra.Command, opts *options, metricArg, unit, at string) error {
 	if at == "" {
-		return fmt.Errorf("--delete needs --at, the time of the reading to delete")
+		return usageErrorf("--delete needs --at, the time of the reading to delete")
 	}
 	if unit != "" {
-		return fmt.Errorf("--unit cannot be used with --delete")
+		return usageErrorf("--unit cannot be used with --delete")
 	}
 	metric, err := metrics.Lookup(metricArg)
 	if err != nil {

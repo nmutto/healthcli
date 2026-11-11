@@ -42,6 +42,8 @@ func TestExitCodes(t *testing.T) {
 		{"usage: extra arg", []string{"overview", "x"}, 2},
 		{"usage: bad flag value", []string{"--db", good, "trend", "steps", "--days", "abc"}, 2},
 		{"usage: negative limit", []string{"--db", good, "query", "select 1", "--limit", "-1"}, 2},
+		{"usage: days out of range", []string{"--db", good, "trend", "steps", "--days", "0"}, 2},
+		{"usage: bad date", []string{"--db", good, "today", "--date", "yesterday"}, 2},
 		{"not found", []string{"--db", missing, "today"}, 3},
 		{"not found: query", []string{"--db", missing, "query", "select 1"}, 3},
 	}

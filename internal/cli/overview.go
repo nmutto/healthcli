@@ -137,7 +137,7 @@ func newOverviewCmd(opts *options) *cobra.Command {
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if heatWeeks < 0 || heatWeeks > stats.MaxHeatmapWeeks {
-				return fmt.Errorf("--weeks must be between 0 and %d, got %d", stats.MaxHeatmapWeeks, heatWeeks)
+				return usageErrorf("--weeks must be between 0 and %d, got %d", stats.MaxHeatmapWeeks, heatWeeks)
 			}
 			cats, err := parseCategories(categoryArg)
 			if err != nil {

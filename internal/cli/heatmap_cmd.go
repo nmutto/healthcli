@@ -86,7 +86,7 @@ func buildNamedHeatmap(ctx context.Context, conn *sql.DB, name string, weeks int
 		return stats.BuildHeatmap(ctx, conn, name, weeks, now)
 	}
 	if weeks < 1 || weeks > stats.MaxHeatmapWeeks {
-		return nil, fmt.Errorf("--weeks must be between 1 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
+		return nil, usageErrorf("--weeks must be between 1 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
 	}
 	// The window starts on the Monday `weeks` calendar weeks back; reading
 	// one day more than needed is harmless, so just go back far enough.
@@ -115,7 +115,7 @@ func buildNamedHeatmap(ctx context.Context, conn *sql.DB, name string, weeks int
 
 func runHeatmap(cmd *cobra.Command, opts *options, name, date string, weeks int, noColor, ascii bool) error {
 	if weeks < 1 || weeks > stats.MaxHeatmapWeeks {
-		return fmt.Errorf("--weeks must be between 1 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
+		return usageErrorf("--weeks must be between 1 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
 	}
 	// Check the name before opening the database (friendly list on a typo).
 	name, err := heatmapName(name)

@@ -47,13 +47,13 @@ All durations are seconds and absent values are left out, never null.`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if days < 1 || days > 365 {
-				return fmt.Errorf("--days must be between 1 and 365, got %d", days)
+				return usageErrorf("--days must be between 1 and 365, got %d", days)
 			}
 			if weeks < 1 || weeks > stats.MaxHeatmapWeeks {
-				return fmt.Errorf("--weeks must be between 1 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
+				return usageErrorf("--weeks must be between 1 and %d, got %d", stats.MaxHeatmapWeeks, weeks)
 			}
 			if by != "" && strings.ToLower(by) != "type" {
-				return fmt.Errorf("--by must be \"type\", got %q", by)
+				return usageErrorf("--by must be \"type\", got %q", by)
 			}
 			now, err := clockFor(date)
 			if err != nil {
