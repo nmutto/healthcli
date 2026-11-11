@@ -12,7 +12,7 @@ func TestSourceClass(t *testing.T) {
 		"manual": ClassManual, "MyFitnessPal": ClassOther, "": ClassOther,
 	}
 	for in, want := range cases {
-		if got := SourceClass(in); got != want {
+		if got := SourceClass(in, ""); got != want {
 			t.Errorf("SourceClass(%q) = %s, want %s", in, got, want)
 		}
 	}

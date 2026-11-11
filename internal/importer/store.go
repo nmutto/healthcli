@@ -22,12 +22,12 @@ const batchSize = 5000
 // schema. Only rows identical in (metric/stage/activity, start, end, source)
 // are treated as duplicates, so iPhone and Watch rows are both kept.
 const (
-	insertSample = `INSERT INTO samples (metric, start_ts, end_ts, value, unit, tz_offset, source)
-		VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`
-	insertSleep = `INSERT INTO sleep_stages (stage, start_ts, end_ts, tz_offset, source)
-		VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`
-	insertWorkout = `INSERT INTO workouts (activity, start_ts, end_ts, duration_s, energy_kcal, distance_m, tz_offset, source)
+	insertSample = `INSERT INTO samples (metric, start_ts, end_ts, value, unit, tz_offset, source, device_model)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`
+	insertSleep = `INSERT INTO sleep_stages (stage, start_ts, end_ts, tz_offset, source, device_model)
+		VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`
+	insertWorkout = `INSERT INTO workouts (activity, start_ts, end_ts, duration_s, energy_kcal, distance_m, tz_offset, source, device_model)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`
 )
 
 // When an insert is dropped because the key exists, these ask whether the
@@ -43,6 +43,20 @@ const (
 		AND (duration_s IS NOT ? OR energy_kcal IS NOT ? OR distance_m IS NOT ?)`
 )
 
+// Backfill: rows imported before migration 0003 have device_model = ”. When a
+// re-import meets such a row and the incoming one knows the model, these fill
+// it in. They never touch the key or the value, and a model that is already
+// set is never replaced. They run only for rows the insert dropped, so they
+// change nothing in the inserted/duplicate/conflict counts.
+const (
+	backfillSample = `UPDATE samples SET device_model = ?
+		WHERE metric = ? AND start_ts = ? AND end_ts = ? AND source = ? AND device_model = ''`
+	backfillSleep = `UPDATE sleep_stages SET device_model = ?
+		WHERE stage = ? AND start_ts = ? AND end_ts = ? AND source = ? AND device_model = ''`
+	backfillWorkout = `UPDATE workouts SET device_model = ?
+		WHERE activity = ? AND start_ts = ? AND end_ts = ? AND source = ? AND device_model = ''`
+)
+
 // writer collects rows into batches and writes them through prepared statements.
 type writer struct {
 	conn    *sql.DB
@@ -53,14 +67,22 @@ type writer struct {
 	workout *sql.Stmt
 	sampleDiff,
 	workoutDiff *sql.Stmt
+	sampleFill,
+	sleepFill,
+	workoutFill *sql.Stmt
 	dryRun  bool // never commit: everything is rolled back at the end
 	pending int  // rows in the current transaction
+
+	// models remembers the device model of each source seen in this import
+	// (non-empty ones only); finish saves it to meta so the overview can class
+	// sources without scanning the samples table.
+	models map[string]string
 
 	committed int64 // rows in batches already committed; they stay saved if the import fails
 }
 
 func newWriter(conn *sql.DB, sum *Summary, dryRun bool) (*writer, error) {
-	w := &writer{conn: conn, sum: sum, dryRun: dryRun}
+	w := &writer{conn: conn, sum: sum, dryRun: dryRun, models: map[string]string{}}
 	if err := w.begin(); err != nil {
 		return nil, err
 	}
@@ -81,6 +103,7 @@ func (w *writer) begin() error {
 	}{
 		{&w.sample, insertSample}, {&w.sleep, insertSleep}, {&w.workout, insertWorkout},
 		{&w.sampleDiff, sampleDiffers}, {&w.workoutDiff, workoutDiffers},
+		{&w.sampleFill, backfillSample}, {&w.sleepFill, backfillSleep}, {&w.workoutFill, backfillWorkout},
 	} {
 		if *p.dst, err = tx.Prepare(p.sql); err != nil {
 			tx.Rollback()
@@ -91,17 +114,22 @@ func (w *writer) begin() error {
 }
 
 func (w *writer) addSample(r sampleData) error {
+	w.noteModel(r.source, r.deviceModel)
 	differs := func() (bool, error) {
 		return w.rowExists(w.sampleDiff, r.metric, r.start, r.end, r.source, r.value)
 	}
-	return w.exec(w.sample, differs, r.metric, r.start, r.end, r.value, r.unit, r.tz, r.source)
+	fill := w.backfill(w.sampleFill, r.deviceModel, r.metric, r.start, r.end, r.source)
+	return w.exec(w.sample, differs, fill, r.metric, r.start, r.end, r.value, r.unit, r.tz, r.source, r.deviceModel)
 }
 
 func (w *writer) addSleep(r sleepData) error {
-	return w.exec(w.sleep, nil, r.stage, r.start, r.end, r.tz, r.source)
+	w.noteModel(r.source, r.deviceModel)
+	fill := w.backfill(w.sleepFill, r.deviceModel, r.stage, r.start, r.end, r.source)
+	return w.exec(w.sleep, nil, fill, r.stage, r.start, r.end, r.tz, r.source, r.deviceModel)
 }
 
 func (w *writer) addWorkout(r workoutData) error {
+	w.noteModel(r.source, r.deviceModel)
 	// A nil *float64 is stored as NULL, so convert it explicitly.
 	var energy, distance any
 	if r.energy != nil {
@@ -113,7 +141,56 @@ func (w *writer) addWorkout(r workoutData) error {
 	differs := func() (bool, error) {
 		return w.rowExists(w.workoutDiff, r.activity, r.start, r.end, r.source, r.duration, energy, distance)
 	}
-	return w.exec(w.workout, differs, r.activity, r.start, r.end, r.duration, energy, distance, r.tz, r.source)
+	fill := w.backfill(w.workoutFill, r.deviceModel, r.activity, r.start, r.end, r.source)
+	return w.exec(w.workout, differs, fill, r.activity, r.start, r.end, r.duration, energy, distance, r.tz, r.source, r.deviceModel)
+}
+
+// noteModel remembers the first device model seen for a source.
+func (w *writer) noteModel(source, model string) {
+	if model != "" && w.models[source] == "" {
+		w.models[source] = model
+	}
+}
+
+// saveSourceModels merges this import's source -> device model pairs into the
+// meta key "source_models" (a JSON object). A source keeps the model it
+// already has there.
+func (w *writer) saveSourceModels() error {
+	if len(w.models) == 0 {
+		return nil
+	}
+	stored := map[string]string{}
+	var old string
+	err := w.tx.QueryRow(`SELECT value FROM meta WHERE key = 'source_models'`).Scan(&old)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+	_ = json.Unmarshal([]byte(old), &stored) // unreadable old value: start again
+	for source, model := range w.models {
+		if stored[source] == "" {
+			stored[source] = model
+		}
+	}
+	out, err := json.Marshal(stored)
+	if err != nil {
+		return err
+	}
+	return w.setMeta("source_models", string(out))
+}
+
+// backfill returns the function exec calls for a row whose insert was dropped.
+// It writes the incoming device model into the stored row if that row has none
+// yet. A row that does not know its model has nothing to add, so it gets nil.
+func (w *writer) backfill(st *sql.Stmt, model string, key ...any) func() error {
+	if model == "" {
+		return nil
+	}
+	return func() error {
+		if _, err := st.Exec(append([]any{model}, key...)...); err != nil {
+			return fmt.Errorf("filling in a device model: %w", err)
+		}
+		return nil
+	}
 }
 
 // rowExists runs one of the "differs" queries and reports whether it found a row.
@@ -131,8 +208,9 @@ func (w *writer) rowExists(st *sql.Stmt, args ...any) (bool, error) {
 
 // exec runs one insert and counts it as new, duplicate or conflict. differs
 // (nil for sleep rows) says whether the row already stored under the same key
-// holds another value. When the batch is full it commits and starts the next.
-func (w *writer) exec(st *sql.Stmt, differs func() (bool, error), args ...any) error {
+// holds another value; fill (nil when the row has no device model) writes the
+// model into that stored row if it has none. When the batch is full it commits and starts the next.
+func (w *writer) exec(st *sql.Stmt, differs func() (bool, error), fill func() error, args ...any) error {
 	res, err := st.Exec(args...)
 	if err != nil {
 		return fmt.Errorf("writing to database: %w", err)
@@ -140,6 +218,11 @@ func (w *writer) exec(st *sql.Stmt, differs func() (bool, error), args ...any) e
 	n, err := res.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("writing to database: %w", err)
+	}
+	if n == 0 && fill != nil {
+		if err := fill(); err != nil {
+			return err
+		}
 	}
 	switch {
 	case n > 0:
@@ -182,6 +265,9 @@ func (w *writer) finish(started time.Time) error {
 		return nil // the deferred rollback throws everything away
 	}
 	if err := w.setMeta("last_import_ts", strconv.FormatInt(started.Unix(), 10)); err != nil {
+		return err
+	}
+	if err := w.saveSourceModels(); err != nil {
 		return err
 	}
 	summary, err := json.Marshal(map[string]any{

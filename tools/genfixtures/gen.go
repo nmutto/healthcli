@@ -29,6 +29,9 @@ type profile struct {
 	// smart scale): only steps, heart rate and weight, no sleep, no workouts,
 	// no malformed records.
 	sparse bool
+	// devices adds Apple's device attribute (the --devices flag). Off by
+	// default so the committed fixtures keep their exact bytes.
+	devices bool
 }
 
 var profiles = map[string]profile{
@@ -64,13 +67,13 @@ func tripsEveryYear(years int) []int {
 
 // source is the device that "recorded" a sample. Real exports use a curly
 // apostrophe (U+2019) in device names, so we do too: it tests UTF-8 handling.
-type source struct{ name, version string }
+type source struct{ name, version, model string }
 
 var (
-	iphone = source{"Alex’s iPhone", "17.2"}
-	watch  = source{"Alex’s Apple Watch", "10.2"}
-	band   = source{"FitBand 3", "2.1"} // the non-Apple device of the sparse profile
-	scale  = source{"SmartScale", "1.0"}
+	iphone = source{"Alex’s iPhone", "17.2", "iPhone"}
+	watch  = source{"Alex’s Apple Watch", "10.2", "Watch"}
+	band   = source{"FitBand 3", "2.1", "FitBand"} // the non-Apple device of the sparse profile
+	scale  = source{"SmartScale", "1.0", "Scale"}
 )
 
 type gen struct {
@@ -291,10 +294,10 @@ func (g *gen) writeWorkout(day int) {
 	if (day/2)%2 == 0 {
 		totals = fmt.Sprintf(` totalDistance="%.4f" totalDistanceUnit="km" totalEnergyBurned="%.4f" totalEnergyBurnedUnit="kcal"`, km, kcal)
 	}
-	fmt.Fprintf(g.w, ` <Workout workoutActivityType="%s" duration="%.4f" durationUnit="min"%s sourceName="%s" sourceVersion="%s" creationDate="%s" startDate="%s" endDate="%s">
+	fmt.Fprintf(g.w, ` <Workout workoutActivityType="%s" duration="%.4f" durationUnit="min"%s sourceName="%s" sourceVersion="%s"%s creationDate="%s" startDate="%s" endDate="%s">
   <MetadataEntry key="HKIndoorWorkout" value="0"/>
 %s%s </Workout>
-`, k.typ, minutes, totals, watch.name, watch.version, fmtTime(end), fmtTime(start), fmtTime(end),
+`, k.typ, minutes, totals, watch.name, watch.version, g.device(watch), fmtTime(end), fmtTime(start), fmtTime(end),
 		stat("ActiveEnergyBurned", kcal, "kcal"), stat(distType, km, "km"))
 }
 
@@ -320,9 +323,18 @@ func (g *gen) writeMalformed(day int) {
 	}
 }
 
+// device is the device attribute of a source, in the format Apple writes, or
+// "" when the profile has no devices.
+func (g *gen) device(src source) string {
+	if !g.prof.devices {
+		return ""
+	}
+	return ` device="&lt;&lt;HKDevice: 0x600000c3c000&gt;, name:` + src.name + `, manufacturer:Apple Inc., model:` + src.model + `, hardware:` + src.model + `1,1, software:` + src.version + `&gt;"`
+}
+
 // record writes one <Record>. `children` is raw XML placed inside it.
 func (g *gen) record(typ string, src source, unit string, start, end time.Time, value, children string) {
-	g.w.WriteString(` <Record type="` + typ + `" sourceName="` + src.name + `" sourceVersion="` + src.version + `"`)
+	g.w.WriteString(` <Record type="` + typ + `" sourceName="` + src.name + `" sourceVersion="` + src.version + `"` + g.device(src))
 	if unit != "" {
 		g.w.WriteString(` unit="` + unit + `"`)
 	}

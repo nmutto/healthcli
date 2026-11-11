@@ -117,20 +117,20 @@ func sleepHeader(r *stats.SleepReport, g glyphSet, width int, st style) string {
 func sleepSourcesShort(n stats.SleepNight, kind string) string {
 	switch {
 	case kind == "in_bed":
-		return sourceLabel(n.InBedSource) + " in bed"
+		return sourceLabel(n.InBedSource, n.InBedClass) + " in bed"
 	case n.InBedSource != "" && n.InBedSource != n.Source:
-		return sourceLabel(n.Source) + ", " + sourceLabel(n.InBedSource)
+		return sourceLabel(n.Source, n.SourceClass) + ", " + sourceLabel(n.InBedSource, n.InBedClass)
 	}
-	return sourceLabel(n.Source)
+	return sourceLabel(n.Source, n.SourceClass)
 }
 
 // sleepSources says where the numbers came from: "Watch stages, iPhone in bed".
 func sleepSources(n stats.SleepNight, kind string) string {
-	label := sourceLabel(n.Source)
+	label := sourceLabel(n.Source, n.SourceClass)
 	var s string
 	switch kind {
 	case "in_bed":
-		return sourceLabel(n.InBedSource) + " in bed, no sleep recorded"
+		return sourceLabel(n.InBedSource, n.InBedClass) + " in bed, no sleep recorded"
 	case "unspecified":
 		s = label + ", no stages (unspecified asleep only)"
 	default:
@@ -140,15 +140,18 @@ func sleepSources(n stats.SleepNight, kind string) string {
 		if n.InBedSource == n.Source {
 			s += ", in bed"
 		} else {
-			s += ", " + sourceLabel(n.InBedSource) + " in bed"
+			s += ", " + sourceLabel(n.InBedSource, n.InBedClass) + " in bed"
 		}
 	}
 	return s
 }
 
-// sourceLabel shortens a source name to Watch or iPhone when it is one.
-func sourceLabel(source string) string {
-	switch stats.SourceClass(source) {
+// sourceLabel shortens a source to Watch or iPhone when its class says so.
+func sourceLabel(source, class string) string {
+	if class == "" { // a night built without a class (tests): go by the name
+		class = stats.SourceClass(source, "")
+	}
+	switch class {
 	case stats.ClassWatch:
 		return "Watch"
 	case stats.ClassIPhone:

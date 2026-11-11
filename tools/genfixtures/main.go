@@ -19,6 +19,7 @@ func main() {
 	seed := flag.Int64("seed", 1, "random seed; the same seed always gives byte-identical output")
 	out := flag.String("out", "", "output directory (default testdata/<size>)")
 	flat := flag.Bool("flat", false, "write DIR/export.xml instead of DIR/apple_health_export/export.xml")
+	devices := flag.Bool("devices", false, "write Apple's device attribute (model:Watch, model:iPhone) on every record and workout")
 	flag.Parse()
 
 	name := *size
@@ -30,6 +31,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "unknown profile %q (want small, large or sparse)\n", name)
 		os.Exit(2)
 	}
+	prof.devices = *devices
 	dir := *out
 	if dir == "" {
 		dir = "testdata/" + name

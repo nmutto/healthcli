@@ -39,7 +39,7 @@ func DailySeries(ctx context.Context, conn *sql.DB, metric, fromDay, toDay strin
 	// the BETWEEN then trims rows that only fell into the window because of
 	// its timezone margin. A sample belongs to the day it STARTS on.
 	rows, err := conn.QueryContext(ctx, `
-		SELECT date(start_ts + tz_offset, 'unixepoch') AS day, source, value
+		SELECT date(start_ts + tz_offset, 'unixepoch') AS day, source, device_model, value
 		FROM samples
 		WHERE metric = ?
 		  AND start_ts >= ? AND start_ts < ?
@@ -55,15 +55,16 @@ func DailySeries(ctx context.Context, conn *sql.DB, metric, fromDay, toDay strin
 	// so the last value we see in a bucket is that day's latest sample.
 	type bucket struct {
 		n      int
+		model  string
 		sum    float64
 		latest float64
 	}
 	byDay := map[string]map[string]*bucket{}
 	var days []string // every day seen; sorted below
 	for rows.Next() {
-		var day, source string
+		var day, source, model string
 		var value float64
-		if err := rows.Scan(&day, &source, &value); err != nil {
+		if err := rows.Scan(&day, &source, &model, &value); err != nil {
 			return nil, fmt.Errorf("stats: read %s: %w", m.Name, err)
 		}
 		if byDay[day] == nil {
@@ -76,6 +77,7 @@ func DailySeries(ctx context.Context, conn *sql.DB, metric, fromDay, toDay strin
 			byDay[day][source] = b
 		}
 		b.n++
+		b.model = keepModel(b.model, model)
 		b.sum += value
 		b.latest = value
 	}
@@ -93,7 +95,7 @@ func DailySeries(ctx context.Context, conn *sql.DB, metric, fromDay, toDay strin
 		best := ""
 		var bb *bucket
 		for source, b := range byDay[day] {
-			if bb == nil || better(source, b.n, best, bb.n) {
+			if bb == nil || better(source, b.model, b.n, best, bb.model, bb.n) {
 				best, bb = source, b
 			}
 		}
@@ -123,6 +125,7 @@ type Sample struct {
 	End    time.Time
 	Day    string // local day of Start
 	Source string
+	model  string // device model of the source; only used to choose between sources
 }
 
 // LatestSample returns the most recent sample of metric (name or alias),
@@ -151,7 +154,7 @@ func latestSampleUpTo(ctx context.Context, conn *sql.DB, metric string, maxStart
 	// Fetch every row at the newest start_ts (usually just one) and let Go
 	// choose between sources, so the priority rule lives in one place.
 	rows, err := conn.QueryContext(ctx, `
-		SELECT start_ts, end_ts, value, unit, tz_offset, source
+		SELECT start_ts, end_ts, value, unit, tz_offset, source, device_model
 		FROM samples
 		WHERE metric = ?
 		  AND start_ts = (SELECT MAX(start_ts) FROM samples WHERE metric = ? AND start_ts <= ?)`,
@@ -167,14 +170,14 @@ func latestSampleUpTo(ctx context.Context, conn *sql.DB, metric string, maxStart
 		var start, end int64
 		var tz int
 		var s Sample
-		if err := rows.Scan(&start, &end, &s.Value, &s.Unit, &tz, &s.Source); err != nil {
+		if err := rows.Scan(&start, &end, &s.Value, &s.Unit, &tz, &s.Source, &s.model); err != nil {
 			return Sample{}, fmt.Errorf("stats: latest %s: %w", m.Name, err)
 		}
 		s.Metric = m.Name
 		s.Start = localTime(start, tz)
 		s.End = localTime(end, tz)
 		s.Day = s.Start.Format(DayLayout)
-		if !found || better(s.Source, 1, best.Source, 1) {
+		if !found || better(s.Source, s.model, 1, best.Source, best.model, 1) {
 			best, found = s, true
 		}
 	}

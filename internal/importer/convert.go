@@ -26,6 +26,7 @@ var sleepStages = map[string]string{
 // Row types: exactly the columns we insert.
 type sampleData struct {
 	metric, unit, source string
+	deviceModel          string // the model: part of Apple's device attribute, or ""
 	start, end           int64
 	value                float64
 	tz                   int
@@ -33,16 +34,36 @@ type sampleData struct {
 
 type sleepData struct {
 	stage, source string
+	deviceModel   string
 	start, end    int64
 	tz            int
 }
 
 type workoutData struct {
 	activity, source string
+	deviceModel      string
 	start, end       int64
 	duration         float64
 	energy, distance *float64 // nil = not recorded (stored as NULL)
 	tz               int
+}
+
+// deviceModel pulls the model out of Apple's device attribute, which looks like
+//
+//	<<HKDevice: 0x600003b44a00>, name:Apple Watch, manufacturer:Apple Inc., model:Watch, hardware:Watch6,1, software:9.0>
+//
+// and returns "Watch". It returns "" when there is no attribute or no model
+// part (many third-party apps write none), which means "unknown".
+func deviceModel(device string) string {
+	_, rest, found := strings.Cut(device, "model:")
+	if !found {
+		return ""
+	}
+	// The value runs to the next ", " (the next field) or the closing ">".
+	if end := strings.IndexAny(rest, ",>"); end >= 0 {
+		rest = rest[:end]
+	}
+	return strings.TrimSpace(rest)
 }
 
 // appleTime parses "2024-12-01 18:00:00 +0100" into UTC unix seconds plus the
@@ -111,7 +132,7 @@ func sampleRow(a map[string]string) (sampleData, string) {
 		return sampleData{}, reasonBadDate
 	}
 	return sampleData{
-		metric: m.Name, unit: m.Unit, source: a["sourceName"],
+		metric: m.Name, unit: m.Unit, source: a["sourceName"], deviceModel: deviceModel(a["device"]),
 		start: start, end: end, value: value, tz: tz,
 	}, ""
 }
@@ -129,7 +150,7 @@ func sleepRow(a map[string]string) (sleepData, string) {
 	if !ok {
 		return sleepData{}, reasonBadDate
 	}
-	return sleepData{stage: stage, source: a["sourceName"], start: start, end: end, tz: tz}, ""
+	return sleepData{stage: stage, source: a["sourceName"], deviceModel: deviceModel(a["device"]), start: start, end: end, tz: tz}, ""
 }
 
 // Factors that turn a workout unit into our fixed units (s, kcal, m).
@@ -216,7 +237,7 @@ func workoutRow(a map[string]string, stats []map[string]string) (workoutData, st
 		return workoutData{}, reasonImplausible
 	}
 	return workoutData{
-		activity: snake(activity), source: a["sourceName"],
+		activity: snake(activity), source: a["sourceName"], deviceModel: deviceModel(a["device"]),
 		start: start, end: end, duration: duration,
 		energy: energy, distance: distance, tz: tz,
 	}, ""

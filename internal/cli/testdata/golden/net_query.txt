@@ -72,7 +72,7 @@ $ healthcli query SELECT 1 AS one, 'two' AS two, NULL AS empty_cell, 2.5 AS thre
   {"one": 1, "two": "two", "empty_cell": null, "three": 2.5, "bytes": "ff"}
 ]
 $ healthcli query SELECT * FROM samples WHERE 0
-id  metric  start_ts  end_ts  value  unit  tz_offset  source
+id  metric  start_ts  end_ts  value  unit  tz_offset  source  device_model
 $ healthcli query SELECT * FROM samples WHERE 0 --json
 []
 $ healthcli query SELECT stage, count(*) AS n FROM sleep_stages GROUP BY stage ORDER BY stage
