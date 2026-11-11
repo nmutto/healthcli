@@ -61,10 +61,10 @@ JSON output (--json):
 // (aliases allowed). The error for a typo also lists sleep and workouts.
 func heatmapName(arg string) (string, error) {
 	switch strings.ToLower(strings.TrimSpace(arg)) {
-	case "sleep":
-		return "sleep", nil
-	case "workouts", "workout":
-		return "workouts", nil
+	case stats.SleepMetric:
+		return stats.SleepMetric, nil
+	case stats.WorkoutsMetric, "workout":
+		return stats.WorkoutsMetric, nil
 	}
 	m, err := metrics.Lookup(arg)
 	if err != nil {
@@ -77,7 +77,7 @@ func heatmapName(arg string) (string, error) {
 // and workouts feed the same engine as steps, just with a different source
 // of "one number per day".
 func buildNamedHeatmap(ctx context.Context, conn *sql.DB, name string, weeks int, now time.Time) (*stats.Heatmap, error) {
-	if name != "sleep" && name != "workouts" {
+	if name != stats.SleepMetric && name != stats.WorkoutsMetric {
 		return stats.BuildHeatmap(ctx, conn, name, weeks, now)
 	}
 	if weeks < 1 || weeks > stats.MaxHeatmapWeeks {
@@ -92,7 +92,7 @@ func buildNamedHeatmap(ctx context.Context, conn *sql.DB, name string, weeks int
 	}
 	var byDay map[string]float64
 	spec := stats.HeatSpec{Title: name, Format: minutesText}
-	if name == "sleep" {
+	if name == stats.SleepMetric {
 		spec.Hue = stats.HueBlue
 		byDay, err = stats.SleepAsleepByDay(ctx, conn, from, today)
 	} else {
@@ -140,7 +140,7 @@ func runHeatmap(cmd *cobra.Command, opts *options, name string, weeks int, noCol
 	}
 	if h.Empty() {
 		what := strings.ReplaceAll(name, "_", " ") + " data"
-		if name == "workouts" {
+		if name == stats.WorkoutsMetric {
 			what = "workouts" // "workouts data" reads wrong
 		}
 		_, err = fmt.Fprintf(out, "No %s in the last %s yet.\n", what, plural(int64(weeks), "week"))

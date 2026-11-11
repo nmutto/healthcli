@@ -27,8 +27,8 @@ const shortBand = 64
 
 // sleepName and workoutsName are --category names that are not registry categories.
 const (
-	sleepName    = "sleep"
-	workoutsName = "workouts"
+	sleepName    = stats.SleepMetric
+	workoutsName = stats.WorkoutsMetric
 )
 
 // categoryNames is every valid --category value, in display order.

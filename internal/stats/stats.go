@@ -22,6 +22,14 @@ import (
 	"time"
 )
 
+// The two pseudo-metrics. They are not rows of the metrics registry (sleep
+// and workouts have their own tables) but the commands treat them like
+// metrics in trend, heatmap and --category.
+const (
+	SleepMetric    = "sleep"
+	WorkoutsMetric = "workouts"
+)
+
 // DayLayout is the Go time layout of a day string, e.g. "2024-12-01".
 const DayLayout = "2006-01-02"
 
