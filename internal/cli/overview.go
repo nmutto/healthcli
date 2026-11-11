@@ -19,15 +19,8 @@ import (
 // and prints it. The text is built in overview_render.go; --json prints the
 // very same stats.Overview struct, so the two cannot drift apart.
 
-func newOverviewCmd(opts *options) *cobra.Command {
-	var noColor, ascii bool
-	var heatWeeks int
-	var heatmapArg, categoryArg []string
-	var compact, full bool
-	cmd := &cobra.Command{
-		Use:   "overview",
-		Short: "One-screen summary of every metric, sleep, workouts and data health",
-		Long: `Show the latest value of each metric next to your 28-day usual, a band that
+// overviewHelp is the long help of "healthcli overview".
+const overviewHelp = `Show the latest value of each metric next to your 28-day usual, a band that
 shows where it sits, a 28-day trend line and how old the reading is; then last
 night's sleep, recent workouts, a calendar heatmap and a data-health summary.
 --category narrows the text and the --json alike, the same way as in "healthcli
@@ -93,6 +86,10 @@ or with --ascii, only plain ASCII characters are used. NO_COLOR and --no-color
 switch colours off; FORCE_COLOR switches them on even for a pipe. Samples dated
 more than a day in the future are ignored.
 
+--date YYYY-MM-DD treats that local day as today (not a future day): everything
+is relative to it, and samples after it are ignored. In --json only "today"
+changes.
+
 JSON output (--json) is the same report:
   today, empty (true when the database has no data)
   categories[]  name, total, better, worse, changed, typical, stale,
@@ -116,7 +113,18 @@ JSON output (--json) is the same report:
              metric name (the sleep calendar is in sleep_summary.heatmap)
   not_tracked[]  metrics with no data at all
   heatmap    the activity grid ("healthcli heatmap --help"), left out if none
-  data       samples, sleep_nights, first_day, last_day, source_samples, last_import, gaps[]`,
+  data       samples, sleep_nights, first_day, last_day, source_samples, last_import, gaps[]`
+
+func newOverviewCmd(opts *options) *cobra.Command {
+	var noColor, ascii bool
+	var heatWeeks int
+	var heatmapArg, categoryArg []string
+	var date string
+	var compact, full bool
+	cmd := &cobra.Command{
+		Use:   "overview",
+		Short: "One-screen summary of every metric, sleep, workouts and data health",
+		Long:  overviewHelp,
 		Example: `  healthcli overview
   healthcli overview --category vitals,activity
   healthcli overview --compact
@@ -124,6 +132,7 @@ JSON output (--json) is the same report:
   healthcli overview --heatmap steps,sleep,workouts --weeks 26
   healthcli overview --category sleep
   healthcli overview --ascii --no-color
+  healthcli overview --date 2026-11-01
   healthcli overview --json`,
 		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -157,7 +166,7 @@ JSON output (--json) is the same report:
 				heatMetrics = append(heatMetrics, name)
 			}
 			view := overviewView{compact: compact, categories: cats, heatmaps: heatmaps, full: full, heatWeeks: heatWeeks, noHeat: heatWeeks == 0}
-			return runOverview(cmd, opts, noColor, ascii, view, stats.OverviewOptions{HeatWeeks: heatWeeks, HeatMetric: heatMetric, HeatMetrics: heatMetrics})
+			return runOverview(cmd, opts, date, noColor, ascii, view, stats.OverviewOptions{HeatWeeks: heatWeeks, HeatMetric: heatMetric, HeatMetrics: heatMetrics})
 		},
 	}
 	cmd.Flags().BoolVar(&noColor, "no-color", false, "never use colours")
@@ -166,11 +175,16 @@ JSON output (--json) is the same report:
 	cmd.Flags().StringSliceVar(&heatmapArg, "heatmap", nil, "heatmaps to show, comma list of\nsteps|sleep|workouts|<metric> (default: steps,\nelse exercise time, else active energy)")
 	cmd.Flags().StringSliceVar(&categoryArg, "category", nil, "only these categories, comma list of\nvitals, activity, body, mobility,\nother, sleep, workouts")
 	cmd.Flags().BoolVar(&compact, "compact", false, "no blank lines between sections;\ngutter is one flag (! + ~)")
+	cmd.Flags().StringVar(&date, "date", "", dateFlagHelp)
 	cmd.Flags().BoolVar(&full, "full", false, "show every section and heatmap")
 	return cmd
 }
 
-func runOverview(cmd *cobra.Command, opts *options, noColor, ascii bool, view overviewView, bo stats.OverviewOptions) error {
+func runOverview(cmd *cobra.Command, opts *options, date string, noColor, ascii bool, view overviewView, bo stats.OverviewOptions) error {
+	now, err := clockFor(date)
+	if err != nil {
+		return err
+	}
 	conn, err := openDB(opts)
 	if err != nil {
 		return err
@@ -183,7 +197,6 @@ func runOverview(cmd *cobra.Command, opts *options, noColor, ascii bool, view ov
 		// Build only as many weeks as fit, so the legend matches the cells.
 		bo.HeatWeeks = min(bo.HeatWeeks, heatWeeksFit(ti.width-len(indent)))
 	}
-	now := nowFunc()
 	report, err := stats.BuildOverview(cmdContext(cmd), conn, now, bo)
 	if err != nil {
 		return err

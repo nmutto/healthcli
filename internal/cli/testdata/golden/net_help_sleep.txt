@@ -23,6 +23,9 @@ efficiency, 15 minutes of clock time) is typical.
 --by picks the calendar value: asleep (time asleep), bedtime (later is
 darker) or efficiency.
 
+--date YYYY-MM-DD treats that local day as today (not a future day): the night
+shown is the one ending on or before it.
+
 JSON output (--json): today, empty, age_days, kind (stages|unspecified|in_bed),
 night (seconds, local clock times, stage rows), seven_nights, fourteen_nights,
 usual (averages; missing numbers are left out, durations in seconds, clock
@@ -36,11 +39,13 @@ Examples:
   healthcli sleep
   healthcli sleep --sleep-target 7h30m --nights 14
   healthcli sleep --by bedtime --weeks 26
+  healthcli sleep --date 2026-11-01
   healthcli sleep --json
 
 Flags:
       --ascii                 use plain ASCII characters only
       --by string             calendar value: asleep, bedtime, efficiency (default "asleep")
+      --date string           treat this local day, YYYY-MM-DD, as today (default: today)
   -h, --help                  help for sleep
       --nights int            nights before the last one in the usual window (7-90) (default 28)
       --no-color              never use colours
