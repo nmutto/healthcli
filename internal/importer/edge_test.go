@@ -31,7 +31,7 @@ func TestEmptyAndNonAppleFilesGiveClearErrors(t *testing.T) {
 		"whitespace only": {"  \n\t ", "no <HealthData>"},
 		"other xml":       {`<?xml version="1.0"?><feed><entry/></feed>`, "no <HealthData>"},
 		"html":            {`<!DOCTYPE html><html><body><br></body></html>`, "XML error"},
-		"binary junk":     {"\x00\x01\x02\xff\xfe", "XML error"},
+		"binary junk":     {"\x00\x01\x02\xff\xfe", "no <HealthData>"}, // the bad bytes are replaced, leaving no XML
 		"truncated":       {`<HealthData>` + oneStepRecord + `<Record type="x`, "XML error"},
 	}
 	for name, c := range cases {
@@ -216,9 +216,13 @@ func TestTruncatedImportSaysHowManyRowsWereSaved(t *testing.T) {
 	if err == nil {
 		t.Fatal("a truncated file should fail")
 	}
-	want := "10000 rows were saved before the error; run the import again to complete it (re-importing is safe)"
+	// The file is damaged, so "run the import again" would be a lie.
+	want := "10000 rows were saved before the error and are kept"
 	if !strings.Contains(err.Error(), want) {
 		t.Errorf("error = %q, want it to contain %q", err, want)
+	}
+	if strings.Contains(err.Error(), "run the import again") {
+		t.Errorf("error = %q, must not suggest a re-import that cannot help", err)
 	}
 	if n := count(t, conn, "SELECT COUNT(*) FROM samples"); n == 0 || n > 10000 {
 		t.Errorf("samples = %d, want the committed rows only", n)
