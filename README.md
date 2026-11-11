@@ -19,7 +19,7 @@ Import your Apple Health export into a SQLite database on your own machine, then
 brew install nmutto/tap/healthcli
 ```
 
-**Go** (needs a recent Go toolchain):
+**Go** (needs Go 1.27.3 or newer, the version in `go.mod`; Go 1.21 and later download that toolchain on their own when `GOTOOLCHAIN` is `auto`, the default):
 
 ```sh
 go install github.com/nmutto/healthcli/cmd/healthcli@latest
