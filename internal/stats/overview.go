@@ -755,8 +755,12 @@ func buildDataHealth(ctx context.Context, conn *sql.DB, rows []MetricRow, now ti
 	if err != nil {
 		return d, err
 	}
+	models, err := sourceModels(ctx, conn)
+	if err != nil {
+		return d, err
+	}
 	for source, n := range bySource {
-		d.SourceCount[SourceClass(source)] += n
+		d.SourceCount[SourceClass(source, models[source])] += n
 	}
 	d.Samples = total
 

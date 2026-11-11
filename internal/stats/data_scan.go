@@ -3,6 +3,7 @@ package stats
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 )
 
@@ -57,6 +58,24 @@ func countBySource(ctx context.Context, conn *sql.DB) (map[string]int64, int64, 
 		counted += n
 	}
 	return counts, total, nil
+}
+
+// sourceModels reads the device model of each source from the meta key
+// "source_models", which the importer keeps up to date. A source missing from
+// it (old imports, `healthcli log`) has no known model. Reading one small row
+// is why this is not a query over the samples table.
+func sourceModels(ctx context.Context, conn *sql.DB) (map[string]string, error) {
+	models := map[string]string{}
+	var value string
+	err := conn.QueryRowContext(ctx, `SELECT value FROM meta WHERE key = 'source_models'`).Scan(&value)
+	if err == sql.ErrNoRows {
+		return models, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("stats: read source models: %w", err)
+	}
+	_ = json.Unmarshal([]byte(value), &models) // unreadable: treat as unknown
+	return models, nil
 }
 
 // sampleSpan returns the first and last local day of the samples that start
