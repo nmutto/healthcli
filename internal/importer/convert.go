@@ -74,29 +74,13 @@ func round4(v float64) float64 { return math.Round(v*10000) / 10000 }
 // cannot be read back as JSON when it holds Inf.
 func finite(v float64) bool { return !math.IsNaN(v) && !math.IsInf(v, 0) }
 
-// positiveOnly lists the heart-rate metrics where 0 or less is not a reading.
-var positiveOnly = map[string]bool{
-	"heart_rate": true, "resting_heart_rate": true, "walking_heart_rate_average": true,
-}
-
-// sensible reports whether value can be a real reading of m. Amounts that add
-// up over a day cannot be negative and a heart rate cannot be 0. Other
-// metrics are left alone: wrist temperature, for one, is a delta below zero.
-// A percentage above 100 is a unit mix-up: Apple writes 0.97 as a fraction
-// (converted to 97), but another source may write 97 with unit "%", which
-// would become 9700.
-func sensible(m metrics.Metric, value float64) bool {
-	if m.IsPercent() && value > 100 {
-		return false
-	}
-	if positiveOnly[m.Name] {
-		return value > 0
-	}
-	if m.Daily == metrics.Sum {
-		return value >= 0
-	}
-	return true
-}
+// reasonImplausible counts records whose number is finite but cannot be a
+// real reading (a negative step count, a weight of 0, a heart rate of 9999).
+// The rule is the registry's (metrics.Metric.Plausible), the same one `log`
+// uses. A percentage above 100 is the common case: Apple writes 0.97 as a
+// fraction (converted to 97), but another source may write 97 with unit "%",
+// which would become 9700.
+const reasonImplausible = "implausible_value"
 
 // sampleRow converts a numeric <Record>. A non-empty reason means "skip it".
 func sampleRow(a map[string]string) (sampleData, string) {
@@ -116,8 +100,11 @@ func sampleRow(a map[string]string) (sampleData, string) {
 		return sampleData{}, reasonBadUnit
 	}
 	// Conversion and rounding can overflow a huge but finite number to Inf.
-	if value = round4(value); !finite(value) || !sensible(m, value) {
+	if value = round4(value); !finite(value) {
 		return sampleData{}, reasonBadValue
+	}
+	if m.Plausible(value) != nil {
+		return sampleData{}, reasonImplausible
 	}
 	start, end, tz, ok := interval(a)
 	if !ok {
@@ -223,6 +210,10 @@ func workoutRow(a map[string]string, stats []map[string]string) (workoutData, st
 	distance, ok2 := total(a, "totalDistance", "totalDistanceUnit", stats, isDistance, toMetres)
 	if !ok1 || !ok2 {
 		return workoutData{}, reasonBadWorkout
+	}
+	// A workout cannot last, burn or cover a negative amount.
+	if duration < 0 || (energy != nil && *energy < 0) || (distance != nil && *distance < 0) {
+		return workoutData{}, reasonImplausible
 	}
 	return workoutData{
 		activity: snake(activity), source: a["sourceName"],

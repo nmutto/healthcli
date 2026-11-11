@@ -135,7 +135,7 @@ func TestNonFiniteNumbersAreSkippedNotFatal(t *testing.T) {
 }
 
 // BUG: nonsense values were stored: -50 steps, a heart rate of 0. Negative
-// amounts and non-positive heart rates are bad_value. Zero steps and a
+// amounts and non-positive heart rates are implausible_value. Zero steps and a
 // negative wrist temperature (a delta) are real and stay.
 func TestNonsenseValuesAreSkipped(t *testing.T) {
 	p := writeFile(t, "export.xml", wrap(`
@@ -150,8 +150,8 @@ func TestNonsenseValuesAreSkipped(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if sum.Inserted != 2 || sum.Skipped[reasonBadValue] != 4 {
-		t.Errorf("summary = %+v, want 2 inserted and 4 bad_value", sum)
+	if sum.Inserted != 2 || sum.Skipped[reasonImplausible] != 4 {
+		t.Errorf("summary = %+v, want 2 inserted and 4 implausible_value", sum)
 	}
 }
 
@@ -174,7 +174,7 @@ func TestOnlyPlainDecimalNumbersAreAccepted(t *testing.T) {
 }
 
 // BUG: a third-party source that writes 97 with unit "%" (Apple writes 0.97)
-// would have become 9700 percent. Such values are skipped as bad_value.
+// would have become 9700 percent. Such values are skipped as implausible_value.
 func TestPercentAbove100IsSkipped(t *testing.T) {
 	p := writeFile(t, "export.xml", wrap(`
 <Record type="HKQuantityTypeIdentifierOxygenSaturation" sourceName="apple" unit="%" `+qaWhen+` value="0.97"/>
@@ -185,8 +185,8 @@ func TestPercentAbove100IsSkipped(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if sum.Inserted != 2 || sum.Skipped[reasonBadValue] != 1 {
-		t.Errorf("summary = %+v, want 2 inserted and 1 bad_value", sum)
+	if sum.Inserted != 2 || sum.Skipped[reasonImplausible] != 1 {
+		t.Errorf("summary = %+v, want 2 inserted and 1 implausible_value", sum)
 	}
 	if n := count(t, conn, "SELECT COUNT(*) FROM samples WHERE value > 100"); n != 0 {
 		t.Errorf("%d rows above 100 percent were stored", n)
@@ -288,5 +288,44 @@ func TestImportIgnoresMachineTimeZone(t *testing.T) {
 		if got != want {
 			t.Errorf("rows differ when the machine zone is %v:\n%s\nwant:\n%s", loc, got, want)
 		}
+	}
+}
+
+// The registry's limits (metrics.Metric.Plausible) decide, the same as for
+// `log`: a weight of 0, a heart rate of 9999 and a blood oxygen of 40 are not
+// readings, while zero flights and a negative wrist temperature are.
+func TestRegistryLimitsDecideImport(t *testing.T) {
+	p := writeFile(t, "export.xml", wrap(`
+<Record type="HKQuantityTypeIdentifierBodyMass" sourceName="a" unit="kg" `+qaWhen+` value="0"/>
+<Record type="HKQuantityTypeIdentifierHeartRate" sourceName="b" unit="count/min" `+qaWhen+` value="9999"/>
+<Record type="HKQuantityTypeIdentifierOxygenSaturation" sourceName="c" unit="%" `+qaWhen+` value="0.4"/>
+<Record type="HKQuantityTypeIdentifierBodyMass" sourceName="d" unit="kg" `+qaWhen+` value="500.5"/>
+<Record type="HKQuantityTypeIdentifierFlightsClimbed" sourceName="e" unit="count" `+qaWhen+` value="0"/>
+<Record type="HKQuantityTypeIdentifierAppleSleepingWristTemperature" sourceName="f" unit="degC" `+qaWhen+` value="-0.4"/>
+<Record type="HKQuantityTypeIdentifierOxygenSaturation" sourceName="g" unit="%" `+qaWhen+` value="0.5"/>`))
+	conn := newDB(t)
+	sum, err := Import(conn, p, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Inserted != 3 || sum.Skipped[reasonImplausible] != 4 {
+		t.Errorf("summary = %+v, want 3 inserted and 4 implausible_value", sum)
+	}
+}
+
+// A workout cannot have a negative duration, energy or distance.
+func TestNegativeWorkoutAmountsAreSkipped(t *testing.T) {
+	p := writeFile(t, "export.xml", wrap(`
+<Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="-5" durationUnit="min" sourceName="a" `+qaWhen+`/>
+<Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="5" durationUnit="min" totalEnergyBurned="-100" totalEnergyBurnedUnit="kcal" sourceName="b" `+qaWhen+`/>
+<Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="5" durationUnit="min" totalDistance="-1" totalDistanceUnit="km" sourceName="c" `+qaWhen+`/>
+<Workout workoutActivityType="HKWorkoutActivityTypeRunning" duration="5" durationUnit="min" totalDistance="0" totalDistanceUnit="km" sourceName="d" `+qaWhen+`/>`))
+	conn := newDB(t)
+	sum, err := Import(conn, p, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if sum.Inserted != 1 || sum.Skipped[reasonImplausible] != 3 {
+		t.Errorf("summary = %+v, want 1 inserted and 3 implausible_value", sum)
 	}
 }
