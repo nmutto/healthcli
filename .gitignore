@@ -1,18 +1,17 @@
 .DS_Store
 /bin/
 /dist/
+/completions/
 *.db
 *.db-*
-# never commit real health data
+*.bak
+*.bundle
+.env
+
+# Never commit real health data. The two small synthetic samples are the exception.
 export.zip
 export.xml
 apple_health_export/
-# synthetic fixtures: the small and sparse samples are committed, large is generated on demand
 !testdata/small/export.xml
 !testdata/sparse/export.xml
 /testdata/large/
-/completions/
-
-*.bundle
-*.bak
-.env
