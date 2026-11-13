@@ -41,13 +41,9 @@ archives:
 checksum:
   name_template: checksums.txt
 
+# Release notes come from CHANGELOG.md (--release-notes), not the git log.
 changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
-      - "^chore:"
+  disable: true
 
 # A GitHub release is only created by a real `goreleaser release` run (no
 # --skip=publish) on a tag, with GITHUB_TOKEN set. Releases start as drafts.
