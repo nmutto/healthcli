@@ -6,7 +6,7 @@ Import your Apple Health export into a SQLite database on your own machine, then
 
 > **Supported source (v0.1): Apple Health only.** Data from other apps and devices works only if it is written into Apple Health on your iPhone.
 
-> **Status: v0.1.0, not yet released.** It has been used on a real Apple Health export, but one person's data does not cover every device, so expect some rough edges and please report them. Every screenshot and output in this README comes from a generated sample person (made-up data, dates shifted to look current).
+> **v0.1.0.** It has been used on a real Apple Health export, but one person's data does not cover every device, so expect some rough edges and please report them. Every screenshot and output in this README comes from a generated sample person (made-up data, dates shifted to look current).
 
 ## What you get
 
