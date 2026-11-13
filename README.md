@@ -4,6 +4,8 @@ Import your Apple Health export into a SQLite database on your own machine, then
 
 ![healthcli demo: import, overview, trend, heatmap and a SQL query](docs/media/demo.gif)
 
+> **Supported source (v0.1): Apple Health only.** Data from other apps and devices works only if it is written into Apple Health on your iPhone.
+
 > **Status: v0.1.0, not yet released.** Built and tested on synthetic data only. It has **not been tried on a real Apple Health export yet**, so expect rough edges and please report them. Every screenshot and output in this README comes from a generated sample person (made-up data, dates shifted to look current).
 
 ## What you get
