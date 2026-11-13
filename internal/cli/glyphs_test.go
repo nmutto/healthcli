@@ -172,3 +172,12 @@ func TestSparkline(t *testing.T) {
 		}
 	}
 }
+
+// Infinite values must not panic: converting an Inf/NaN ratio to int gave an
+// out-of-range index on amd64 (found by the fuzz seeds in CI).
+func TestSparklineInfiniteValues(t *testing.T) {
+	in := []float64{math.Inf(1), math.NaN(), -math.MaxFloat64, 1, math.Inf(-1)}
+	if got := []rune(sparkline(in)); len(got) != len(in) {
+		t.Errorf("got %d characters for %d values", len(got), len(in))
+	}
+}

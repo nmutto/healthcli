@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -154,7 +156,25 @@ func checkViewGolden(t *testing.T, name, got string) {
 	if err != nil {
 		t.Fatalf("%v (run with -update to create it)", err)
 	}
-	if got != string(want) {
+	if normFloats(name, got) != normFloats(name, string(want)) {
 		t.Errorf("output differs from %s (run with -update if intended)\n--- got ---\n%s\n--- want ---\n%s", path, got, want)
 	}
+}
+
+var longFloat = regexp.MustCompile(`-?\d+\.\d{10,}`)
+
+// normFloats rounds long floats in JSON goldens to 9 decimals. Arm64 fuses
+// multiply-add and amd64 does not, so the last digits of a standard
+// deviation differ between the machines that write and run the goldens.
+func normFloats(name, s string) string {
+	if !strings.HasSuffix(name, ".json") {
+		return s
+	}
+	return longFloat.ReplaceAllStringFunc(s, func(m string) string {
+		f, err := strconv.ParseFloat(m, 64)
+		if err != nil {
+			return m
+		}
+		return strconv.FormatFloat(f, 'f', 9, 64)
+	})
 }

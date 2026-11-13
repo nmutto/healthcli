@@ -82,8 +82,13 @@ func (g glyphSet) sparkline(values []float64) string {
 			// full-height bars that would suggest a peak.
 			out = append(out, g.bars[len(g.bars)/2-1])
 		default:
-			idx := int(math.Round((v - lo) / (hi - lo) * float64(len(g.bars)-1)))
-			out = append(out, g.bars[idx])
+			// With an infinite value in the data the ratio is NaN or Inf, and
+			// converting that to int is machine-dependent: clamp first.
+			pos := math.Round((v - lo) / (hi - lo) * float64(len(g.bars)-1))
+			if math.IsNaN(pos) {
+				pos = 0
+			}
+			out = append(out, g.bars[int(math.Max(0, math.Min(float64(len(g.bars)-1), pos)))])
 		}
 	}
 	return string(out)
