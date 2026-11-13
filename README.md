@@ -175,19 +175,13 @@ Read commands open the database read-only, so a backup copy on a read-only volum
 
 ## Install
 
-**Homebrew** (macOS and Linux) — *once the tap is published* (not yet):
-
-```sh
-brew install nmutto/tap/healthcli
-```
-
 **Go** (needs Go 1.27.3 or newer, the version in `go.mod`; Go 1.21 and later download that toolchain on their own when `GOTOOLCHAIN` is `auto`, the default):
 
 ```sh
 go install github.com/nmutto/healthcli/cmd/healthcli@latest
 ```
 
-**Release binaries** — *once a release is published*: download the `tar.gz` for your system (macOS or Linux, Intel/amd64 or ARM/arm64) from the GitHub Releases page, check it against `checksums.txt`, and put `healthcli` somewhere on your `PATH`:
+**Release binaries**: download the `tar.gz` for your system (macOS or Linux, Intel/amd64 or ARM/arm64) from the GitHub Releases page, check it against `checksums.txt`, and put `healthcli` somewhere on your `PATH`:
 
 ```sh
 tar -xzf healthcli_*_darwin_arm64.tar.gz
@@ -726,7 +720,7 @@ $ healthcli sleep
 
 ## Shell completions
 
-If you installed with Homebrew, completions are set up for you. Otherwise generate them yourself:
+Generate completions for your shell:
 
 ```sh
 # zsh (add to ~/.zshrc, after compinit)
@@ -753,7 +747,7 @@ Release archives also ship ready-made files in `completions/`.
 xattr -d com.apple.quarantine /path/to/healthcli
 ```
 
-Installing with Homebrew or `go install` avoids this.
+Installing with `go install` avoids this.
 
 **Does it write to my Health app?** No. It reads an export file and writes only its own SQLite database.
 
@@ -785,7 +779,7 @@ Try a local release build without publishing anything:
 goreleaser release --snapshot --clean --skip=publish
 ```
 
-See [docs/release.md](docs/release.md) for how a real release is cut, and [docs/design.md](docs/design.md) for how the code is organised. Changes are listed in [CHANGELOG.md](CHANGELOG.md).
+See [docs/design.md](docs/design.md) for how the code is organised. Changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Licence
 

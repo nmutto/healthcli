@@ -1,4 +1,3 @@
-# Local file only for now: nothing is pushed anywhere yet.
 name: ci
 
 on:
@@ -45,11 +44,5 @@ jobs:
         with:
           install-only: true
           version: "~> v2"
-      # `goreleaser check` exits 1 when the config is valid but uses the
-      # deprecated `brews` key (kept on purpose, see docs/release.md). Accept
-      # that one message, fail on anything else.
       - name: goreleaser check
-        run: |
-          if out=$(goreleaser check 2>&1); then echo "$out"; exit 0; fi
-          echo "$out"
-          echo "$out" | grep -q "configuration is valid, but uses deprecated properties"
+        run: goreleaser check

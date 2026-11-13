@@ -1,6 +1,6 @@
 # Design
 
-Short, living notes on how `health` is put together. Update when a decision changes.
+Short, living notes on how `healthcli` is put together. Update when a decision changes.
 
 ## Package layout
 

@@ -1,5 +1,5 @@
-# GoReleaser v2 config. Nothing is published unless you run a real release
-# (see docs/release.md). Local test:  goreleaser release --snapshot --clean --skip=publish
+# GoReleaser v2 config. Local test (publishes nothing):
+#   goreleaser release --snapshot --clean --skip=publish
 version: 2
 
 project_name: healthcli
@@ -49,28 +49,11 @@ changelog:
       - "^test:"
       - "^chore:"
 
-# Never publish by accident: a GitHub release is only created when you run
-# goreleaser without --skip=publish AND have a tag and GITHUB_TOKEN.
+# A GitHub release is only created by a real `goreleaser release` run (no
+# --skip=publish) on a tag, with GITHUB_TOKEN set. Releases start as drafts.
 release:
   github:
     owner: nmutto
     name: healthcli
   draft: true
   prerelease: auto
-
-brews:
-  - name: healthcli
-    repository:
-      owner: nmutto
-      name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
-    homepage: https://github.com/nmutto/healthcli
-    description: Local-first CLI that imports Apple Health exports into SQLite
-    license: MIT
-    install: |
-      bin.install "healthcli"
-      bash_completion.install "completions/healthcli.bash" => "healthcli"
-      zsh_completion.install "completions/_healthcli"
-      fish_completion.install "completions/healthcli.fish"
-    test: |
-      assert_match version.to_s, shell_output("#{bin}/healthcli version")
