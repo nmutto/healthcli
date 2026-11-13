@@ -7,10 +7,10 @@ import (
 )
 
 // readmeBlock returns the output that follows the nth (0-based) occurrence of
-// the command line head in the README, up to the closing fence.
+// the command line head in the command reference, up to the closing fence.
 func readmeBlock(t *testing.T, head string, nth int) string {
 	t.Helper()
-	readme, err := os.ReadFile("../../README.md")
+	readme, err := os.ReadFile("../../docs/commands.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,7 +18,7 @@ func readmeBlock(t *testing.T, head string, nth int) string {
 	for i := 0; ; i++ {
 		at := strings.Index(text, head)
 		if at < 0 {
-			t.Fatalf("README example %q (#%d) not found", head, nth)
+			t.Fatalf("command reference example %q (#%d) not found", head, nth)
 		}
 		text = text[at+len(head):]
 		if i == nth {
@@ -27,12 +27,12 @@ func readmeBlock(t *testing.T, head string, nth int) string {
 	}
 	end := strings.Index(text, "\n```")
 	if end < 0 {
-		t.Fatalf("README example %q has no closing fence", head)
+		t.Fatalf("command reference example %q has no closing fence", head)
 	}
 	return text[:end]
 }
 
-// trimLines drops trailing spaces and blank lines at the end: the README
+// trimLines drops trailing spaces and blank lines at the end: the command reference
 // may not keep them, the goldens do.
 func trimLines(s string) string {
 	lines := strings.Split(strings.TrimRight(s, "\n"), "\n")
@@ -42,7 +42,7 @@ func trimLines(s string) string {
 	return strings.Join(lines, "\n")
 }
 
-// Each README block that is a copy of a golden must still equal it. The
+// Each command reference block that is a copy of a golden must still equal it. The
 // "overview --full" block is not listed: it is a marked excerpt, not a copy
 // (the full golden is 3 times longer), so there is nothing to compare.
 // The today block is checked by TestReadmeTodayExampleMatchesGolden.
@@ -66,14 +66,14 @@ func TestReadmeExamplesMatchGoldens(t *testing.T) {
 			want := trimLines(string(golden))
 			got := trimLines(readmeBlock(t, c.head, c.nth))
 			if strings.HasPrefix(c.golden, "heatmap_") {
-				// The README's heatmap title rule is shorter than the 80
-				// columns of the golden (a known copy slip in the README).
+				// The command reference's heatmap title rule is shorter than the 80
+				// columns of the golden (a known copy slip in the command reference).
 				// Compare the title text and every other line exactly.
 				want = heatmapTitle(want)
 				got = heatmapTitle(got)
 			}
 			if got != want {
-				t.Errorf("README example %q differs from testdata/golden/%s\n--- README ---\n%s\n--- golden ---\n%s", c.head, c.golden, got, want)
+				t.Errorf("command reference example %q differs from testdata/golden/%s\n--- command reference ---\n%s\n--- golden ---\n%s", c.head, c.golden, got, want)
 			}
 		})
 	}

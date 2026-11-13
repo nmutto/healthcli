@@ -151,9 +151,9 @@ func TestTodayIndexLineAndWorkoutsSeparator(t *testing.T) {
 	}
 }
 
-// The README example is the golden it claims to be (trailing spaces aside).
+// The command reference example is the golden it claims to be (trailing spaces aside).
 func TestReadmeTodayExampleMatchesGolden(t *testing.T) {
-	readme, err := os.ReadFile("../../README.md")
+	readme, err := os.ReadFile("../../docs/commands.md")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -165,7 +165,7 @@ func TestReadmeTodayExampleMatchesGolden(t *testing.T) {
 	text := string(readme)
 	i := strings.Index(text, head)
 	if i < 0 {
-		t.Fatal("README today example not found")
+		t.Fatal("command reference today example not found")
 	}
 	block := text[i+len(head):]
 	block = block[:strings.Index(block, "\n```")]
@@ -177,7 +177,7 @@ func TestReadmeTodayExampleMatchesGolden(t *testing.T) {
 		return strings.Join(lines, "\n")
 	}
 	if norm(block) != norm(string(golden)) {
-		t.Error("README today example differs from testdata/golden/today_apple_80.txt")
+		t.Error("command reference today example differs from testdata/golden/today_apple_80.txt")
 	}
 }
 

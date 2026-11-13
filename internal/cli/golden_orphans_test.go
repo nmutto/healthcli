@@ -34,7 +34,7 @@ func TestNoOrphanGoldens(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// scratch/{README.md,testdata -> repo, internal/cli/testdata/golden (empty)}
+	// scratch/{docs,testdata -> repo, internal/cli/testdata/golden (empty)}
 	scratch := t.TempDir()
 	pkg := filepath.Join(scratch, "internal", "cli")
 	golden := filepath.Join(pkg, "testdata", "golden")
@@ -42,7 +42,7 @@ func TestNoOrphanGoldens(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, link := range [][2]string{
-		{filepath.Join(repo, "README.md"), filepath.Join(scratch, "README.md")},
+		{filepath.Join(repo, "docs"), filepath.Join(scratch, "docs")},
 		{filepath.Join(repo, "testdata"), filepath.Join(scratch, "testdata")},
 	} {
 		if err := os.Symlink(link[0], link[1]); err != nil {
