@@ -6,7 +6,7 @@ Import your Apple Health export into a SQLite database on your own machine, then
 
 > **Supported source (v0.1): Apple Health only.** Data from other apps and devices works only if it is written into Apple Health on your iPhone.
 
-> **v0.1.0.** It has been used on a real Apple Health export, but one person's data does not cover every device, so expect some rough edges and please report them. Every screenshot and output in this README comes from a generated sample person (made-up data, dates shifted to look current).
+> **v0.1.0.** I use it on my own Apple Health export, but one person's data does not cover every device, so expect some rough edges and please report them. Every screenshot and output in this README comes from a generated sample person (made-up data, dates shifted to look current), never from real health data.
 
 ## What you get
 
@@ -20,7 +20,7 @@ Import your Apple Health export into a SQLite database on your own machine, then
 
 ## Screenshots
 
-All of these are real output from `healthcli` in a terminal on the synthetic sample.
+All of these are real terminal output from `healthcli`, run on the sample data.
 
 ### Overview
 
@@ -201,7 +201,7 @@ You can pass `export.zip` straight to healthcli, or the `export.xml` inside it.
 
 ## Quickstart
 
-The output below is real, produced by running the tool on the synthetic sample in `testdata/small` (a made-up person, December 2024).
+The output below was produced by running `healthcli` on the sample in `testdata/small` (a made-up person, December 2024).
 
 Import it (use `--db` to choose a database file; without it, healthcli uses a per-user default, see below):
 
@@ -341,7 +341,7 @@ $ healthcli --db demo.db overview
  not tracked in your data: 4 metrics
 ```
 
-This example is **synthetic**: it is the real output for the generated "small" fixture (a Watch and an iPhone), with dates shifted to look current. A device that records less gets fewer rows: metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`), and a database with no sleep or no workouts has no SLEEP or WORKOUTS section at all. Metrics are grouped in VITALS / ACTIVITY / BODY / MOBILITY bands; a `!` / `+` / `~` in the left gutter marks worse / better / higher-or-lower rows, and the index line under the headline counts the worse ones. `--category vitals,sleep` shows only some sections, `--compact` drops the blank lines and keeps a one-character `!` / `+` / `~` flag in the margin. Every page fits from 50 to 100 columns.
+The sample has a Watch and an iPhone, and its dates are shifted to look current. A device that records less gets fewer rows: metrics your data does not contain are never shown, only counted in the last line (`--json` lists them as `not_tracked`), and a database with no sleep or no workouts has no SLEEP or WORKOUTS section at all. Metrics are grouped in VITALS / ACTIVITY / BODY / MOBILITY bands; a `!` / `+` / `~` in the left gutter marks worse / better / higher-or-lower rows, and the index line under the headline counts the worse ones. `--category vitals,sleep` shows only some sections, `--compact` drops the blank lines and keeps a one-character `!` / `+` / `~` flag in the margin. Every page fits from 50 to 100 columns.
 
 `overview --full` shows everything: the sleep table with every row, the weekly workout bars and personal bests, and a heatmap for sleep, workouts and activity. An excerpt (the middle of the page):
 
@@ -475,7 +475,7 @@ $ healthcli --db demo.db today --date 2026-11-08
  Sleep debt   59m short last night, 7 nights: 6h 05m short vs 8h target
 ```
 
-The example is **synthetic**: real output for the generated "small" fixture (made-up data, no real health data), with dates shifted to look current. `today` uses the same category bands, gutter markers (`!` worse, `+` better, `~` changed), colours and 50–100 column widths as `overview`, and the same index line under the headline (without a "not tracked" tail). Each row reads LATEST, USUAL and VS USUAL, with the range gauge after the delta when it fits; the 28-day usual is the 28 days before that day, and sleep's usual is the nights before the one shown. Only metrics with a reading on that day get a row; one dim line counts the tracked metrics with none, and a day with no workouts has no WORKOUTS section. Sleep belongs to the date it ends on, counting sleep that ends after 18:00 as the next day's night.
+`today` uses the same category bands, gutter markers (`!` worse, `+` better, `~` changed), colours and 50–100 column widths as `overview`, and the same index line under the headline (without a "not tracked" tail). Each row reads LATEST, USUAL and VS USUAL, with the range gauge after the delta when it fits; the 28-day usual is the 28 days before that day, and sleep's usual is the nights before the one shown. Only metrics with a reading on that day get a row; one dim line counts the tracked metrics with none, and a day with no workouts has no WORKOUTS section. Sleep belongs to the date it ends on, counting sleep that ends after 18:00 as the next day's night.
 
 Without `--date`, `today` shows today; if that day has no data at all, the latest day with data is shown instead, with a dim line saying so (`No data for 2026-11-09; showing 2026-11-08, the latest day with data`). A future date is an error. `--category`, `--compact`, `--ascii` and `--no-color` work as in `overview`; `--category` narrows the text and `--json` alike. `--json` keeps its documented fields (see `healthcli today --help`) and adds category, polarity, verdict, usual, `range` (the same object as in the overview, only for metrics with a reference range), `categories`, `tracked_without_reading` and `sleep_summary`. The day shown falls back to the latest day with data, but never past today's date.
 
@@ -543,7 +543,7 @@ $ healthcli --db demo.db query "SELECT metric, count(*) AS n FROM samples GROUP 
 
 `healthcli heatmap [metric]` draws a GitHub-style calendar: a row per weekday, a column per week, newest on the right. Each day is one coloured block, and the colour intensity is the metric's own quintile over the window (green for workouts, orange for steps and other activity, blue for sleep); the legend gives the actual cut points. Without colour (a pipe, `NO_COLOR`, `--ascii`) the blocks fall back to five heights so the level is still readable. A day without data is a dot, never the lowest shade; `◂` marks today. The default metric is `step_count`, `--weeks` sets the maximum (default 12; a narrow terminal drops the oldest weeks), and `--json` prints the grid.
 
-The output below is from a synthetic test database (made-up step counts), not real data:
+Sample data (made-up step counts):
 
 ```console
 $ healthcli heatmap
@@ -583,7 +583,7 @@ _ no data   < today   steps per day
 
 `healthcli workouts [--days N] [--weeks N] [--by type]` shows totals per activity type with a share bar, weekly training time (the current week is marked and gets no change figure), personal bests over 90 days (an activity needs 3 sessions), every session of the last 7 days (RECENT: today included, newest first; with a shorter `--days` it covers only that window) and a calendar of workout minutes per day, where empty days after your first workout are rest days. `--by type` draws each day's main activity as a letter. Columns with no data (no calories or distance recorded) disappear, and with no workouts you get one line, not an error. `--json` prints the report (durations in seconds; values that are absent are left out, never `null`).
 
-Synthetic data, not real:
+Sample data:
 
 ```console
 $ healthcli workouts
@@ -643,7 +643,7 @@ Delete that file to start over.
 
 ### Sleep
 
-`healthcli sleep` shows last night as a hypnogram (awake, REM, core and deep over the night; a short awakening still shows), then last night, your last 7 nights and the change against your usual: the `--nights` nights (default 28) BEFORE the night shown, the same rule in `sleep`, `overview` and `today` (the 7- and 14-night figures include the night shown), with bedtime regularity and sleep debt against `--sleep-target` (default `8h`). A calendar of the nights follows (`--weeks`, `0` hides it; `--by asleep|bedtime|efficiency`); with fewer than 14 nights you get a small bar per night instead. Only what your data holds is shown: a device that records just "asleep" gets a single bar, in-bed time alone is not counted as a night of sleep and shows no sleep numbers, and rows without data are left out (one dim `not available:` line names them). Green is better, red worse, always with a word; rows with no good direction (bedtime, in bed) have no colour and say later/earlier, longer/shorter or higher/lower. A night is the sleep that ends on a date (18:00 to 18:00). Output below is synthetic.
+`healthcli sleep` shows last night as a hypnogram (awake, REM, core and deep over the night; a short awakening still shows), then last night, your last 7 nights and the change against your usual: the `--nights` nights (default 28) BEFORE the night shown, the same rule in `sleep`, `overview` and `today` (the 7- and 14-night figures include the night shown), with bedtime regularity and sleep debt against `--sleep-target` (default `8h`). A calendar of the nights follows (`--weeks`, `0` hides it; `--by asleep|bedtime|efficiency`); with fewer than 14 nights you get a small bar per night instead. Only what your data holds is shown: a device that records just "asleep" gets a single bar, in-bed time alone is not counted as a night of sleep and shows no sleep numbers, and rows without data are left out (one dim `not available:` line names them). Green is better, red worse, always with a word; rows with no good direction (bedtime, in bed) have no colour and say later/earlier, longer/shorter or higher/lower. A night is the sleep that ends on a date (18:00 to 18:00). Output below is from the sample data.
 
 ```
 $ healthcli sleep
@@ -739,7 +739,7 @@ Release archives also ship ready-made files in `completions/`.
 
 **Which data wins if my Watch and iPhone both record steps?** The Apple Watch takes priority over the iPhone, so you aren't double-counted. Overlapping sleep records are merged and duplicate workouts from two sources are collapsed.
 
-**Has it been tested on real exports?** Yes, on the author's own Apple Health export. The automated tests and all screenshots use synthetic data generated by `tools/genfixtures`, so no real health data is in this repository. Other devices and iOS versions record different things; if something breaks on yours, that is useful to know.
+**Has it been tested on real exports?** Yes, on my own Apple Health export. The automated tests and all screenshots use sample data generated by `tools/genfixtures`, so no real health data is in this repository. Other devices and iOS versions record different things; if something breaks on yours, I'd like to know.
 
 **Why does macOS say the app can't be opened / is from an unidentified developer?** The release binaries are not signed or notarized for v0.1. After downloading, remove the quarantine flag once:
 
