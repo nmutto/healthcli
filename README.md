@@ -1,8 +1,168 @@
 # healthcli
 
-Import your Apple Health export into a SQLite database on your own machine, then look at it from the terminal: a one-screen overview, today's numbers against your baseline, trends over time, and plain SQL for everything else.
+Import your Apple Health export into a SQLite database on your own machine, then look at it from the terminal: a one-screen overview, today's numbers against your baseline, sleep, workouts, calendar heatmaps, trends over time, and plain SQL for everything else.
 
-> **Status: v0.1.0, not yet released.** Built and tested on synthetic data only. It has **not been tried on a real Apple Health export yet**, so expect rough edges and please report them.
+![healthcli demo: import, overview, trend, heatmap and a SQL query](docs/media/demo.gif)
+
+> **Status: v0.1.0, not yet released.** Built and tested on synthetic data only. It has **not been tried on a real Apple Health export yet**, so expect rough edges and please report them. Every screenshot and output in this README comes from a generated sample person (made-up data, dates shifted to look current).
+
+## What you get
+
+- **`overview`**: every metric against your own 28-day usual, grouped as vitals, activity, body and mobility, with last night's sleep, recent workouts, an activity calendar and a health check of the data itself.
+- **`today`**: one day's numbers against the 28 days before it.
+- **`sleep`**: a hypnogram of last night, then 7-night and usual comparisons, bedtime regularity and sleep debt.
+- **`workouts`**: totals per activity, weekly volume, personal bests and a calendar.
+- **`heatmap`** and **`trend`**: a GitHub-style calendar and a sparkline for any metric.
+- **`query`**: read-only SQL on your own data, with `--json` on every command for scripts.
+- **Local and private**: one SQLite file, no network, no accounts. Output degrades to plain ASCII on a pipe and never relies on colour alone.
+
+## Screenshots
+
+All of these are real output from `healthcli` in a terminal on the synthetic sample.
+
+### Overview
+
+Every metric, its change against your usual (in words as well as colour), a range gauge and a 4-week trend:
+
+![healthcli overview](docs/media/overview.png)
+
+### Today
+
+A single day against the 28 days before it, with that night's sleep:
+
+![healthcli today](docs/media/today.png)
+
+### Sleep
+
+![healthcli sleep](docs/media/sleep.png)
+
+### Workouts
+
+![healthcli workouts](docs/media/workouts.png)
+
+### Heatmap and trend
+
+![healthcli heatmap](docs/media/heatmap.png)
+
+![healthcli trend](docs/media/trend.png)
+
+## Usage cases
+
+Short recipes. Each one is a real command; the full output of the main ones is shown further down.
+
+### Look at your data for the first time
+
+Export from the Health app (see below), import, then start with the overview:
+
+```sh
+healthcli import apple export.zip
+healthcli overview
+```
+
+The bottom of the overview (`DATA`) tells you what was imported, over which dates, from which devices, and which metrics your data does not contain. If a number looks wrong, check there first.
+
+### A quick morning check
+
+```sh
+healthcli today                  # yesterday or today, whichever has data, vs your usual
+healthcli sleep                  # last night: stages, regularity, sleep debt
+healthcli overview --compact --category vitals   # just the vitals, no blank lines
+```
+
+`!` in the left margin marks a metric that moved the wrong way against your own usual, `+` the right way, `~` a change with no good direction.
+
+### Is my sleep slipping?
+
+```sh
+healthcli sleep --sleep-target 7h30m             # debt against your own target
+healthcli sleep --nights 14 --by bedtime         # calendar coloured by bedtime
+healthcli trend sleep --days 30                  # hours asleep per night
+healthcli heatmap sleep --weeks 12
+```
+
+### Review your training
+
+```sh
+healthcli workouts                      # totals, weekly volume, bests, recent sessions
+healthcli workouts --days 90 --by type  # calendar where each day shows its main activity
+```
+
+### Keep an eye on one number
+
+```sh
+healthcli trend rhr --days 30           # resting heart rate sparkline and 7-day change
+healthcli trend weight --days 90
+healthcli heatmap steps                 # 12 weeks of steps as a calendar
+```
+
+`healthcli trend --help` lists every metric and alias (`rhr`, `hrv`, `spo2`, `steps`, `weight`, ...).
+
+### Check back on a past day
+
+`--date` treats any day as today, on `today`, `trend`, `overview`, `sleep`, `workouts` and `heatmap`:
+
+```sh
+healthcli today --date 2026-03-14
+healthcli overview --date 2026-03-14
+```
+
+### Keep it up to date
+
+Health exports are full snapshots. Export again whenever you like and import the new file; what is already stored is skipped, so re-importing is always safe:
+
+```sh
+healthcli import apple export.zip --dry-run   # count only, write nothing
+healthcli import apple export.zip
+```
+
+Between exports, add a reading by hand (and take it back if you mistyped):
+
+```sh
+healthcli log weight 72.5
+healthcli log weight 72.5 --at "2026-11-01 08:30"
+healthcli log --delete weight --at "2026-11-01 08:30"
+```
+
+### Ask your own questions with SQL
+
+`query` runs one read-only `SELECT`. The tables are `samples`, `sleep_stages` and `workouts` (timestamps are UTC unix seconds):
+
+```sh
+# your five biggest step days
+healthcli query "SELECT date(start_ts,'unixepoch') AS day, round(sum(value)) AS steps
+                 FROM samples WHERE metric = 'step_count'
+                 GROUP BY day ORDER BY steps DESC LIMIT 5"
+
+# distance per workout type
+healthcli query "SELECT activity, count(*) AS n, round(sum(distance_m)/1000,1) AS km
+                 FROM workouts GROUP BY activity"
+```
+
+### Use it in scripts
+
+Every command takes `--json`. Combined with `jq`:
+
+```sh
+# what changed for the worse or better today?
+healthcli overview --json | jq -r '.metrics[] | select(.verdict=="better" or .verdict=="worse") | "\(.label): \(.verdict)"'
+
+# average steps over the last 14 days
+healthcli trend steps --days 14 --json | jq '.summary.mean'
+
+# exit code 3 means "no database yet"
+healthcli today >/dev/null 2>&1 || echo "run healthcli import apple first"
+```
+
+With `--json`, errors are printed as `{"error": {"code": ..., "message": ...}}` on stdout, so a script can tell them apart. Colour is off on a pipe, so you can also paste plain output into a note or an email.
+
+### Work in another place or on a copy
+
+```sh
+healthcli --db ~/Documents/health-2026.db overview    # a specific database file
+HEALTHCLI_DB=~/Documents/health-2026.db healthcli today
+```
+
+Read commands open the database read-only, so a backup copy on a read-only volume works.
 
 ## Privacy
 
@@ -53,7 +213,8 @@ Import it (use `--db` to choose a database file; without it, healthcli uses a pe
 $ healthcli --db demo.db import apple testdata/small/export.xml
 Read:       1480 records
 Inserted:   1468
-Duplicates: 9 (already in the database)
+Duplicates: 3 (same key and value as a row already stored or earlier in the file)
+Conflicts:  6 (same key, different value: the stored one was kept)
 Skipped:    3
   bad_date             1
   missing_value        1
@@ -69,9 +230,11 @@ Importing the same file again is safe and adds nothing:
 $ healthcli --db demo.db import apple testdata/small/export.xml
 Read:       1480 records
 Inserted:   0
-Duplicates: 1477 (already in the database)
+Duplicates: 1471 (same key and value as a row already stored or earlier in the file)
+Conflicts:  6 (same key, different value: the stored one was kept)
 Skipped:    3
   ...
+Backup:     demo.db.bak
 ```
 
 Log a reading by hand:
@@ -553,7 +716,7 @@ $ healthcli sleep
 
 - **Import is safe to repeat and to interrupt.** `import apple` checks the file before it touches the database, copies an existing database to `<db>.bak` first (skip with `--no-backup`), and `--dry-run` reads and counts everything without writing. Ctrl-C stops after the last whole batch and says so. A damaged byte in the export (invalid UTF-8) is replaced and counted, not fatal. Records that clash with a stored one are counted as `Duplicates` when identical and as `Conflicts` when the value differs (the stored value is kept).
 - **Sources are told apart by device.** The import keeps Apple's device model, so a renamed Watch is still a Watch. Re-importing an older export fills in the model for rows that lack it.
-- **Plausible values only.** `import` and `log` share one range per metric (for example heart rate above 0 and up to 300 bpm). `log` refuses times before 1990, more than a day ahead, and times that do not exist or happen twice at a daylight-saving change (give an offset such as `+01:00`). `healthcli log --delete hr --at 2025-03-01T08:30` removes a reading you typed; imported rows cannot be deleted this way.
+- **Plausible values only.** `import` and `log` share one range per metric (for example heart rate above 0 and up to 300 bpm). `log` refuses times before 1990, more than a day ahead, and times that do not exist or happen twice at a daylight-saving change (give an offset such as `+01:00`). `healthcli log --delete hr --at "2025-03-01 08:30"` removes a reading you typed; imported rows cannot be deleted this way.
 - **`query` is bounded.** It streams rows, shows 1000 by default (`--limit N`, `0` for all) and stops after 30 s (`--timeout`).
 - **`--date YYYY-MM-DD`** treats that day as today on `today`, `trend`, `overview`, `sleep`, `workouts` and `heatmap`.
 - **Exit codes:** 0 success, 1 runtime error, 2 usage error, 3 database not found. With `--json` an error is printed as `{"error": {"code": ..., "message": ...}}` on stdout.
@@ -606,6 +769,12 @@ Generate synthetic fixtures (no real data is ever needed or committed):
 
 ```sh
 go run ./tools/genfixtures --size small --seed 1 --out testdata/small --flat
+```
+
+Regenerate the screenshots and demo GIF in `docs/media/` (needs [VHS](https://github.com/charmbracelet/vhs) and `sqlite3`; the scripts are the `.tape` files next to them):
+
+```sh
+tools/media.sh
 ```
 
 Try a local release build without publishing anything:
