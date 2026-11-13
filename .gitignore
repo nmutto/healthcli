@@ -12,3 +12,7 @@ apple_health_export/
 !testdata/sparse/export.xml
 /testdata/large/
 /completions/
+
+*.bundle
+*.bak
+.env
