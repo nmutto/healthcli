@@ -24,9 +24,12 @@ Import your Apple Health export into a SQLite database on your own machine, then
 go install github.com/nmutto/healthcli/cmd/healthcli@latest
 ```
 
+This puts `healthcli` in `$(go env GOBIN)`, or in `~/go/bin` if that is unset. Make sure that folder is on your `PATH`.
+
 **Release binaries**: download the `tar.gz` for your system (macOS or Linux, Intel/amd64 or ARM/arm64) from the GitHub Releases page, check it against `checksums.txt`, and put `healthcli` somewhere on your `PATH`:
 
 ```sh
+shasum -a 256 -c checksums.txt --ignore-missing
 tar -xzf healthcli_*_darwin_arm64.tar.gz
 sudo mv healthcli /usr/local/bin/
 ```
